@@ -1,5 +1,11 @@
 import { academicRowsFor, DAYS } from "../data/weekTemplate";
-import type { BlockLetter, ClassEntry, ScheduleEvent, Student } from "../types";
+import type {
+  BlockLetter,
+  ClassEntry,
+  CohortId,
+  ScheduleEvent,
+  Student,
+} from "../types";
 
 export type Classmate = {
   id: string;
@@ -34,6 +40,7 @@ function entriesInBlock(student: Student, block: BlockLetter): ClassEntry[] {
 export function classmatesFor(
   students: Student[],
   event: ScheduleEvent,
+  cohort: CohortId,
 ): Classmate[] {
   if (!event.block || event.kind !== "class") return [];
   const block = event.block;
@@ -44,6 +51,7 @@ export function classmatesFor(
     room: event.room,
   });
   return students
+    .filter((student) => student.cohort === cohort)
     .filter((student) =>
       entriesInBlock(student, block).some((entry) => classKey(entry) === key),
     )

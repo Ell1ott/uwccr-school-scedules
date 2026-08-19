@@ -27,7 +27,14 @@ export function ClassDetailSheet({
   const titleId = useId();
   const closeRef = useRef<HTMLButtonElement>(null);
   const onCloseRef = useRef(onClose);
-  const classmates = useMemo(() => classmatesFor(students, event), [students, event]);
+  const currentStudent = students.find((item) => item.id === currentStudentId);
+  const classmates = useMemo(
+    () =>
+      currentStudent
+        ? classmatesFor(students, event, currentStudent.cohort)
+        : [],
+    [students, event, currentStudent],
+  );
   const meetings = event.block
     ? meetingsForBlock(event.block, communityMeeting)
     : [];
@@ -53,10 +60,12 @@ export function ClassDetailSheet({
     };
   }, []);
 
-  const chip =
-    event.level && event.block
-      ? `${event.level} · Block ${event.block}`
-      : event.level || (event.block ? `Block ${event.block}` : null);
+  const chipParts = [
+    currentStudent?.cohort,
+    event.level,
+    event.block ? `Block ${event.block}` : null,
+  ].filter(Boolean);
+  const chip = chipParts.length > 0 ? chipParts.join(" · ") : null;
 
   return createPortal(
     <div className="fixed inset-0 z-[80] flex items-end justify-center md:items-center md:p-6">

@@ -126,7 +126,7 @@ export function StudentPicker({
               <li key={student.id} role="option" aria-selected={student.id === selectedId}>
                 <button
                   type="button"
-                  className={`flex w-full items-center justify-between px-4 py-2.5 text-left text-body-md ${
+                  className={`flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-body-md ${
                     index === activeIndex
                       ? "bg-secondary-container text-on-secondary-container"
                       : "text-on-surface hover:bg-surface-container"
@@ -134,10 +134,15 @@ export function StudentPicker({
                   onMouseEnter={() => setActiveIndex(index)}
                   onClick={() => choose(student.id)}
                 >
-                  <span>{student.name}</span>
-                  {student.id === selectedId ? (
-                    <Check size={14} strokeWidth={1.75} aria-hidden />
-                  ) : null}
+                  <span className="min-w-0 flex-1 truncate">{student.name}</span>
+                  <span className="flex shrink-0 items-center gap-2">
+                    <span className="text-[11px] font-medium tracking-wide text-on-surface-variant">
+                      {student.cohort}
+                    </span>
+                    {student.id === selectedId ? (
+                      <Check size={14} strokeWidth={1.75} aria-hidden />
+                    ) : null}
+                  </span>
                 </button>
               </li>
             ))

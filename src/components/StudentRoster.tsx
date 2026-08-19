@@ -52,7 +52,7 @@ export function StudentRoster({
     <div className="mx-auto max-w-6xl px-container-padding-mobile pt-safe pb-16 md:px-container-padding-desktop">
       <div className="pt-8 pb-6 md:pt-10">
         <p className="text-label-sm tracking-[0.14em] text-on-surface-variant uppercase">
-          IB1 · {students.length} students
+          IB1 & IB2 · {students.length} students
         </p>
         <h2 className="mt-1 text-headline-lg-mobile tracking-tight md:text-headline-lg">
           Find yourself
@@ -139,8 +139,13 @@ export function StudentRoster({
                         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-secondary-container text-[12px] font-semibold tracking-wide text-on-secondary-container">
                           {initials(student.name)}
                         </span>
-                        <span className="min-w-0 flex-1 truncate text-body-md font-medium text-on-surface">
-                          {student.name}
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-body-md font-medium text-on-surface">
+                            {student.name}
+                          </span>
+                          <span className="text-[11px] font-medium tracking-wide text-on-surface-variant">
+                            {student.cohort}
+                          </span>
                         </span>
                       </button>
                     </li>

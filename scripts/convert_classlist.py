@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Convert IB1 Class list Excel into students.json for the schedule app."""
+"""Convert IB1 and IB2 class-list Excel files into students.json."""
 
 from __future__ import annotations
 
@@ -14,8 +14,22 @@ from openpyxl import load_workbook
 from openpyxl.utils import range_boundaries
 
 ROOT = Path(__file__).resolve().parents[1]
-XLSX = ROOT / "IB1 Class list 2026-2028.xlsx"
 OUT = ROOT / "src" / "data" / "students.json"
+
+# Filenames were swapped on disk. Map by who is already in the app:
+# IB2 Class list.xlsx is the current IB1 cohort; IB1 2025-2026 is IB2.
+SOURCES = [
+    {
+        "cohort": "IB1",
+        "xlsx": ROOT / "IB2 Class list.xlsx",
+        "id_prefix": "",
+    },
+    {
+        "cohort": "IB2",
+        "xlsx": ROOT / "IB1 Class list 2025-2026.xlsx",
+        "id_prefix": "ib2-",
+    },
+]
 
 STUDENT_START_ROW = 8
 BLOCKS = list("ABCDEFGH")
@@ -129,14 +143,23 @@ def normalize_subject(subject: str) -> str:
     aliases = {
         "Eng L&L": "English Lang & Lit",
         "English LangLit": "English Lang & Lit",
+        "English LangLit SL": "English Lang & Lit",
         "English Lang & Lit": "English Lang & Lit",
         "Spanish Lang Lit": "Spanish Lang & Lit",
+        "Spanish LangLit": "Spanish Lang & Lit",
+        "Spanish LangLit SL": "Spanish Lang & Lit",
+        "Spanish Ab Initio": "Spanish AB",
         "GloPo": "Global Politics",
+        "Global Politics/Política Global": "Global Politics",
         "Math AA": "Math Analysis and Approaches",
+        "Maths AA": "Math Analysis and Approaches",
         "Maths A&A": "Math Analysis and Approaches",
         "Maths A&I": "Math Applications and Interpretation",
+        "Maths AI": "Math Applications and Interpretation",
+        "Maths AI (in Spanish)": "Math Applications and Interpretation",
         "Mate A&I": "Math Applications and Interpretation",
         "Historia": "History",
+        "SSST Lit": "SSST",
         "TDC": "TOK",
     }
     return aliases.get(subject, subject)
@@ -173,11 +196,11 @@ def pick_canonical_raw(raws: list[str]) -> str:
     return scored[0][5]
 
 
-def main() -> None:
-    if not XLSX.exists():
-        raise SystemExit(f"Missing spreadsheet: {XLSX}")
+def convert_source(xlsx: Path, cohort: str, id_prefix: str) -> dict:
+    if not xlsx.exists():
+        raise SystemExit(f"Missing spreadsheet: {xlsx}")
 
-    wb = load_workbook(XLSX, data_only=True)
+    wb = load_workbook(xlsx, data_only=True)
     ws = wb.active
     merge_map = build_merge_map(ws)
 
@@ -191,7 +214,7 @@ def main() -> None:
         room = cell_value(ws, merge_map, 5, col)
         room = "" if room is None else str(room).strip()
         level = normalize_level(str(cell_value(ws, merge_map, 3, col) or ""))
-        students: list[str] = []
+        names: list[str] = []
         for row in range(STUDENT_START_ROW, ws.max_row + 1):
             value = cell_value(ws, merge_map, row, col)
             if value is None:
@@ -199,7 +222,7 @@ def main() -> None:
             name = str(value).strip()
             if not name or name.isdigit():
                 continue
-            students.append(name)
+            names.append(name)
         classes.append(
             {
                 "block": block,
@@ -207,7 +230,7 @@ def main() -> None:
                 "level": level,
                 "teacher": teacher,
                 "room": room,
-                "students": students,
+                "students": names,
             }
         )
 
@@ -231,13 +254,11 @@ def main() -> None:
 
     canonical_of: dict[str, str] = {}
     aliases_merged: list[dict] = []
-    for root, members in clusters.items():
+    for _root, members in clusters.items():
         raws: list[str] = []
         for member in members:
             raws.extend(raw_by_norm[member])
         canonical_raw = pick_canonical_raw(raws)
-        canonical_key = normalize_name(canonical_raw)
-        # Prefer the member whose normalized form matches the chosen display name
         for member in members:
             canonical_of[member] = canonical_raw
         unique_norms = sorted(set(members))
@@ -263,13 +284,18 @@ def main() -> None:
         for raw in cls["students"]:
             key = normalize_name(raw)
             display = canonical_of[key]
-            student_id = slugify(display)
+            student_id = f"{id_prefix}{slugify(display)}"
             if student_id in seen_in_class:
                 continue
             seen_in_class.add(student_id)
             student = students.setdefault(
                 student_id,
-                {"id": student_id, "name": display, "blocks": {}},
+                {
+                    "id": student_id,
+                    "name": display,
+                    "cohort": cohort,
+                    "blocks": {},
+                },
             )
             block_list = student["blocks"].setdefault(cls["block"], [])
             fingerprint = (
@@ -309,35 +335,76 @@ def main() -> None:
         if missing:
             missing_blocks.append({"student": student["name"], "missing": missing})
         payload_students.append(
-            {"id": student["id"], "name": student["name"], "blocks": compact_blocks}
+            {
+                "id": student["id"],
+                "name": student["name"],
+                "cohort": cohort,
+                "blocks": compact_blocks,
+            }
         )
+
+    return {
+        "cohort": cohort,
+        "source": xlsx.name,
+        "students": payload_students,
+        "class_columns": len(classes),
+        "aliases_merged": aliases_merged,
+        "conflicts": conflicts,
+        "missing_blocks": missing_blocks,
+    }
+
+
+def print_cohort_report(result: dict) -> None:
+    students = result["students"]
+    print(f"\n{result['cohort']}  ({result['source']})")
+    print(f"  Students: {len(students)}")
+    print(f"  Class columns: {result['class_columns']}")
+    print(f"  Aliases merged: {len(result['aliases_merged'])}")
+    for item in result["aliases_merged"]:
+        print(f"    - {item['canonical']}: {', '.join(item['aliases'])}")
+    print(f"  Same-block conflicts: {len(result['conflicts'])}")
+    for item in result["conflicts"]:
+        print(
+            f"    - {item['student']} block {item['block']}: "
+            f"{', '.join(item['classes'])}"
+        )
+    notable_missing = [
+        item for item in result["missing_blocks"] if len(item["missing"]) >= 2
+    ]
+    print(
+        f"  Students missing 2+ lettered blocks: {len(notable_missing)} "
+        f"(of {len(result['missing_blocks'])} with a study period)"
+    )
+    for item in notable_missing[:20]:
+        print(f"    - {item['student']}: {', '.join(item['missing'])}")
+    if len(notable_missing) > 20:
+        print(f"    ... {len(notable_missing) - 20} more")
+
+
+def main() -> None:
+    results = [
+        convert_source(source["xlsx"], source["cohort"], source["id_prefix"])
+        for source in SOURCES
+    ]
+    payload_students = []
+    for result in results:
+        payload_students.extend(result["students"])
 
     OUT.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "generatedAt": datetime.now(timezone.utc).isoformat(),
-        "source": XLSX.name,
+        "source": " + ".join(result["source"] for result in results),
         "students": payload_students,
     }
-    OUT.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    OUT.write_text(
+        json.dumps(payload, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
 
     print(f"Wrote {OUT.relative_to(ROOT)}")
     print(f"Students: {len(payload_students)}")
-    print(f"Class columns: {len(classes)}")
-    print(f"Aliases merged: {len(aliases_merged)}")
-    for item in aliases_merged:
-        print(f"  - {item['canonical']}: {', '.join(item['aliases'])}")
-    print(f"Same-block conflicts: {len(conflicts)}")
-    for item in conflicts:
-        print(f"  - {item['student']} block {item['block']}: {', '.join(item['classes'])}")
-    notable_missing = [item for item in missing_blocks if len(item["missing"]) >= 2]
-    print(
-        f"Students missing 2+ lettered blocks: {len(notable_missing)} "
-        f"(of {len(missing_blocks)} with a study period)"
-    )
-    for item in notable_missing[:20]:
-        print(f"  - {item['student']}: {', '.join(item['missing'])}")
-    if len(notable_missing) > 20:
-        print(f"  ... {len(notable_missing) - 20} more")
+    for result in results:
+        print_cohort_report(result)
 
 
 if __name__ == "__main__":

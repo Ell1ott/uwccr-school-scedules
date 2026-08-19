@@ -1,5 +1,7 @@
 export type BlockLetter = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "H";
 
+export type CohortId = "IB1" | "IB2";
+
 export type ClassEntry = {
   subject: string;
   level: string;
@@ -11,6 +13,7 @@ export type ClassEntry = {
 export type Student = {
   id: string;
   name: string;
+  cohort: CohortId;
   blocks: Partial<Record<BlockLetter, ClassEntry>>;
 };
 

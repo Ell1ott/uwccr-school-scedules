@@ -18,6 +18,7 @@ import {
   storePalette,
   storeStudentId,
 } from "./lib/storage";
+import { cohortCaption } from "./lib/cohort";
 import type { PaletteId } from "./lib/tones";
 import type { DayId, ScheduleEvent, Student, StudentsFile } from "./types";
 
@@ -76,9 +77,9 @@ export default function App() {
             <div className="min-w-0">
               <h1 className="truncate text-title-md tracking-tight">Week View</h1>
               <p className="hidden text-label-sm text-on-surface-variant md:block">
-                {communityMeeting
-                  ? "IB1 2026–2027 · Community meeting"
-                  : "IB1 2026–2027"}
+                {student
+                  ? cohortCaption(student.cohort, communityMeeting)
+                  : "IB1 & IB2 2026–2027"}
               </p>
             </div>
             <div className="flex min-w-0 items-center gap-2">

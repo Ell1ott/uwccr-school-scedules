@@ -2,6 +2,7 @@ import { X } from "lucide-react";
 import { useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
 import type { Student } from "../types";
+import { cohortCaption } from "../lib/cohort";
 import { CommunityToggle } from "./CommunityToggle";
 import { PalettePicker } from "./PalettePicker";
 import { StudentPicker } from "./StudentPicker";
@@ -24,6 +25,7 @@ export function ScheduleMenu({
   const titleId = useId();
   const closeRef = useRef<HTMLButtonElement>(null);
   const onCloseRef = useRef(onClose);
+  const selected = students.find((item) => item.id === selectedId);
 
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -68,9 +70,9 @@ export function ScheduleMenu({
                 Week View
               </h2>
               <p className="mt-0.5 text-label-sm text-on-surface-variant">
-                {communityMeeting
-                  ? "IB1 2026–2027 · Community meeting"
-                  : "IB1 2026–2027"}
+                {selected
+                  ? cohortCaption(selected.cohort, communityMeeting)
+                  : "IB1 & IB2 2026–2027"}
               </p>
             </div>
             <button
