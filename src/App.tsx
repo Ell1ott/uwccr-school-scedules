@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useState } from "react";
 import studentsFile from "./data/students.json" with { type: "json" };
 import { DAYS } from "./data/weekTemplate";
 import { ClassDetailSheet } from "./components/ClassDetailSheet";
@@ -59,6 +59,14 @@ export default function App() {
     () => (student ? buildSchedule(student, communityMeeting) : null),
     [student, communityMeeting],
   );
+
+  useLayoutEffect(() => {
+    if (!selectedId) return;
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+    window.scrollTo(0, 0);
+  }, [selectedId]);
 
   return (
     <PaletteProvider palette={palette} setPalette={choosePalette}>
