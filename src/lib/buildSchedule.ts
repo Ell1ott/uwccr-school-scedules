@@ -1,7 +1,7 @@
 import {
-  ACADEMIC_ROWS,
+  academicRowsFor,
   DAYS,
-  FIXED_BY_DAY,
+  fixedByDayFor,
   SHARED_BREAKS,
 } from "../data/weekTemplate";
 import type {
@@ -32,14 +32,18 @@ export function todayDayId(now = new Date()): DayId | null {
 
 export function buildSchedule(
   student: Student,
+  communityMeeting = false,
 ): Record<DayId, ScheduleEvent[]> {
   const week = {} as Record<DayId, ScheduleEvent[]>;
+  const academicRows = academicRowsFor(communityMeeting);
+  const fixedByDay = fixedByDayFor(communityMeeting);
 
   for (const day of DAYS) {
     const events: ScheduleEvent[] = [];
 
-    for (const row of ACADEMIC_ROWS) {
+    for (const row of academicRows) {
       const block = row.blocks[day.id];
+      if (!block) continue;
       const entry = student.blocks[block];
       if (entry) {
         events.push({
@@ -85,7 +89,7 @@ export function buildSchedule(
       });
     }
 
-    for (const slot of FIXED_BY_DAY[day.id]) {
+    for (const slot of fixedByDay[day.id]) {
       events.push({
         id: `${day.id}-${slot.title}-${slot.start}`,
         start: slot.start,

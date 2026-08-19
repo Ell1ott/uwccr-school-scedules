@@ -1,8 +1,10 @@
+import { EllipsisVertical } from "lucide-react";
 import { useMemo, useState } from "react";
 import { DAYS } from "../data/weekTemplate";
 import { formatTime } from "../lib/buildSchedule";
-import type { DayId, ScheduleEvent } from "../types";
+import type { DayId, ScheduleEvent, Student } from "../types";
 import { EventCard } from "./EventCard";
+import { ScheduleMenu } from "./ScheduleMenu";
 
 export function DayTimeline({
   dayId,
@@ -10,14 +12,25 @@ export function DayTimeline({
   events,
   now,
   onClassClick,
+  students,
+  selectedId,
+  communityMeeting,
+  onSelectStudent,
+  onCommunityChange,
 }: {
   dayId: DayId;
   onDayChange: (id: DayId) => void;
   events: ScheduleEvent[];
   now?: Date;
   onClassClick?: (event: ScheduleEvent) => void;
+  students: Student[];
+  selectedId: string | null;
+  communityMeeting: boolean;
+  onSelectStudent: (id: string) => void;
+  onCommunityChange: (on: boolean) => void;
 }) {
   const index = DAYS.findIndex((d) => d.id === dayId);
+  const [menuOpen, setMenuOpen] = useState(false);
   const [nowMin] = useState(() => {
     const d = now ?? new Date();
     return d.getHours() * 60 + d.getMinutes();
@@ -35,26 +48,48 @@ export function DayTimeline({
 
   return (
     <div className="flex flex-col">
-      <div className="sticky top-16 z-40 bg-surface/80 px-container-padding-mobile pt-4 pb-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)] backdrop-blur-md">
-        <div className="relative flex items-center justify-between rounded-full bg-surface-container p-1">
-          <div
-            className="absolute top-1 bottom-1 w-[19%] rounded-full bg-surface-container-lowest shadow-sm transition-all duration-300 ease-in-out"
-            style={{ left: `${index * 20 + 1}%` }}
-          />
-          {DAYS.map((day) => (
-            <button
-              key={day.id}
-              type="button"
-              className={`relative z-10 flex-1 rounded-full py-1.5 text-center text-label-sm uppercase tracking-wide ${
-                day.id === dayId ? "text-on-surface" : "text-on-surface-variant"
-              }`}
-              onClick={() => onDayChange(day.id)}
-            >
-              {day.short}
-            </button>
-          ))}
+      <div className="sticky top-0 z-40 bg-surface/80 px-container-padding-mobile pt-[calc(env(safe-area-inset-top,0px)+1rem)] pb-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)] backdrop-blur-md">
+        <div className="flex items-center gap-2">
+          <div className="relative flex min-w-0 flex-1 items-center justify-between rounded-full bg-surface-container p-1">
+            <div
+              className="absolute top-1 bottom-1 w-[19%] rounded-full bg-surface-container-lowest shadow-sm transition-all duration-300 ease-in-out"
+              style={{ left: `${index * 20 + 1}%` }}
+            />
+            {DAYS.map((day) => (
+              <button
+                key={day.id}
+                type="button"
+                className={`relative z-10 flex-1 rounded-full py-1.5 text-center text-label-sm uppercase tracking-wide ${
+                  day.id === dayId ? "text-on-surface" : "text-on-surface-variant"
+                }`}
+                onClick={() => onDayChange(day.id)}
+              >
+                {day.short}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-container text-on-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+            aria-label="Schedule options"
+            aria-haspopup="dialog"
+            aria-expanded={menuOpen}
+            onClick={() => setMenuOpen(true)}
+          >
+            <EllipsisVertical size={18} strokeWidth={1.75} aria-hidden />
+          </button>
         </div>
       </div>
+      {menuOpen ? (
+        <ScheduleMenu
+          students={students}
+          selectedId={selectedId}
+          communityMeeting={communityMeeting}
+          onSelectStudent={onSelectStudent}
+          onCommunityChange={onCommunityChange}
+          onClose={() => setMenuOpen(false)}
+        />
+      ) : null}
 
       <div className="relative mt-2 flex flex-col gap-3 px-container-padding-mobile pb-16">
         {events.map((event) => {

@@ -42,7 +42,7 @@ export function StudentRoster({
   }
 
   return (
-    <div className="mx-auto max-w-6xl px-container-padding-mobile pb-16 md:px-container-padding-desktop">
+    <div className="mx-auto max-w-6xl px-container-padding-mobile pt-safe pb-16 md:px-container-padding-desktop">
       <div className="pt-8 pb-6 md:pt-10">
         <p className="text-label-sm tracking-[0.14em] text-on-surface-variant uppercase">
           IB1 · {students.length} students
@@ -51,13 +51,17 @@ export function StudentRoster({
           Find yourself
         </h2>
         <p className="mt-2 max-w-lg text-body-md text-on-surface-variant">
-          Names are A–Z. Tap a card, or search up top if you already know yours.
+          Names are A–Z. Tap a card
+          <span className="hidden md:inline">
+            , or search up top if you already know yours
+          </span>
+          .
         </p>
       </div>
 
       <nav
         aria-label="Jump to letter"
-        className="sticky top-[calc(4rem+env(safe-area-inset-top,0px))] z-20 -mx-container-padding-mobile border-b border-outline-variant/60 bg-surface/90 px-container-padding-mobile py-2 backdrop-blur-xl md:-mx-container-padding-desktop md:px-container-padding-desktop"
+        className="sticky top-[env(safe-area-inset-top,0px)] z-20 -mx-container-padding-mobile border-b border-outline-variant/60 bg-surface/90 px-container-padding-mobile py-2 backdrop-blur-xl md:top-[calc(4rem+env(safe-area-inset-top,0px))] md:-mx-container-padding-desktop md:px-container-padding-desktop"
       >
         <ul className="flex gap-1 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           {letters.map((letter) => (
@@ -82,7 +86,7 @@ export function StudentRoster({
               sectionRefs.current[letter] = node;
             }}
             aria-labelledby={`roster-letter-${letter}`}
-            className="scroll-mt-[calc(8.75rem+env(safe-area-inset-top,0px))]"
+            className="scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))] md:scroll-mt-[calc(8.75rem+env(safe-area-inset-top,0px))]"
           >
             <h3
               id={`roster-letter-${letter}`}

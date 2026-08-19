@@ -1,4 +1,4 @@
-import { ACADEMIC_ROWS, DAYS } from "../data/weekTemplate";
+import { academicRowsFor, DAYS } from "../data/weekTemplate";
 import type { BlockLetter, ClassEntry, ScheduleEvent, Student } from "../types";
 
 export type Classmate = {
@@ -51,10 +51,14 @@ export function classmatesFor(
     .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
 }
 
-export function meetingsForBlock(block: BlockLetter): BlockMeeting[] {
+export function meetingsForBlock(
+  block: BlockLetter,
+  communityMeeting = false,
+): BlockMeeting[] {
   const meetings: BlockMeeting[] = [];
+  const rows = academicRowsFor(communityMeeting);
   for (const day of DAYS) {
-    const row = ACADEMIC_ROWS.find((item) => item.blocks[day.id] === block);
+    const row = rows.find((item) => item.blocks[day.id] === block);
     if (!row) continue;
     meetings.push({
       dayId: day.id,

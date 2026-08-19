@@ -27,7 +27,9 @@ function eveningEvents(events: ScheduleEvent[]): ScheduleEvent[] {
 
 function visualHeight(event: ScheduleEvent): string {
   if (isBandKind(event.kind)) return "h-11";
-  if (event.kind === "class" || event.kind === "study") return "h-[7.5rem]";
+  if (event.kind === "class" || event.kind === "study" || event.kind === "community") {
+    return "h-[7.5rem]";
+  }
   const minutes = event.endMin - event.startMin;
   if (minutes >= 120) return "h-32";
   return "h-28";
@@ -89,7 +91,7 @@ export function WeekGrid({
           <div key={day.id} className="flex min-h-28 flex-col gap-3">
             {afternoonEvents(week[day.id]).map((event, index) => (
               <div key={event.id} className="flex flex-col gap-1.5">
-                {index > 0 ? (
+                {index > 0 || event.start !== "14:00" ? (
                   <div className="pt-0.5 text-right tabular-nums whitespace-nowrap md:text-left">
                     <div className="text-label-sm text-on-surface-variant">
                       {formatTime(event.start)}

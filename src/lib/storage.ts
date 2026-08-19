@@ -2,6 +2,7 @@ import { DEFAULT_PALETTE, isPaletteId, type PaletteId } from "./tones";
 
 const STORAGE_KEY = "uwccr-selected-student";
 const PALETTE_KEY = "uwccr-color-palette";
+const COMMUNITY_KEY = "uwccr-community-meeting";
 
 export function readStoredStudentId(): string | null {
   try {
@@ -32,6 +33,22 @@ export function readStoredPalette(): PaletteId {
 export function storePalette(id: PaletteId): void {
   try {
     localStorage.setItem(PALETTE_KEY, id);
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
+
+export function readStoredCommunityMeeting(): boolean {
+  try {
+    return localStorage.getItem(COMMUNITY_KEY) === "1";
+  } catch {
+    return false;
+  }
+}
+
+export function storeCommunityMeeting(on: boolean): void {
+  try {
+    localStorage.setItem(COMMUNITY_KEY, on ? "1" : "0");
   } catch {
     /* ignore quota / private mode */
   }

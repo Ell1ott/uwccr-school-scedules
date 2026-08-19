@@ -19,7 +19,19 @@ function Swatch({
   );
 }
 
-export function PalettePicker() {
+export function PalettePicker({
+  showLabel,
+  className,
+  buttonClassName,
+  listClassName,
+  inlineList,
+}: {
+  showLabel?: boolean;
+  className?: string;
+  buttonClassName?: string;
+  listClassName?: string;
+  inlineList?: boolean;
+} = {}) {
   const { palette, setPalette } = usePalette();
   const [open, setOpen] = useState(false);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -44,22 +56,26 @@ export function PalettePicker() {
   }, []);
 
   return (
-    <div ref={wrapRef} className="relative flex-shrink-0">
+    <div ref={wrapRef} className={`relative flex-shrink-0 ${className ?? ""}`}>
       <button
         type="button"
         aria-label="Color palette"
         aria-expanded={open}
         aria-controls={listId}
-        className="flex h-10 items-center gap-2 rounded-full bg-surface-container px-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+        className={`flex h-10 items-center gap-2 rounded-full bg-surface-container px-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 ${buttonClassName ?? ""}`}
         onClick={() => setOpen((value) => !value)}
       >
-        <span className="flex items-center -space-x-1">
-          {(current?.swatches ?? []).slice(0, 4).map((swatch) => (
-            <Swatch key={swatch} swatch={swatch} ring="ring-surface-container" />
-          ))}
-        </span>
-        <span className="hidden text-label-sm tracking-wide text-on-surface-variant sm:inline">
-          {current?.label}
+        <span className="flex min-w-0 items-center gap-2">
+          <span className="flex items-center -space-x-1">
+            {(current?.swatches ?? []).slice(0, 4).map((swatch) => (
+              <Swatch key={swatch} swatch={swatch} ring="ring-surface-container" />
+            ))}
+          </span>
+          <span
+            className={`${showLabel ? "inline" : "hidden sm:inline"} truncate text-label-sm tracking-wide text-on-surface-variant`}
+          >
+            {current?.label}
+          </span>
         </span>
         {open ? (
           <ChevronUp
@@ -81,7 +97,7 @@ export function PalettePicker() {
         <ul
           id={listId}
           role="listbox"
-          className="absolute right-0 z-50 mt-2 max-h-[min(28rem,70vh)] w-64 overflow-auto rounded-2xl bg-surface-container-lowest py-2 shadow-[0_12px_32px_rgba(4,22,39,0.12)] ring-1 ring-outline-variant"
+          className={`${inlineList ? "relative" : "absolute right-0 z-50"} mt-2 max-h-[min(28rem,70vh)] ${inlineList ? "w-full" : "w-64"} overflow-auto rounded-2xl bg-surface-container-lowest py-2 shadow-[0_12px_32px_rgba(4,22,39,0.12)] ring-1 ring-outline-variant ${listClassName ?? ""}`}
         >
           {PALETTE_OPTIONS.map((option) => {
             const selected = option.id === palette;

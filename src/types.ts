@@ -29,7 +29,8 @@ export type EventKind =
   | "meal"
   | "activity"
   | "office"
-  | "residential";
+  | "residential"
+  | "community";
 
 export type ScheduleEvent = {
   id: string;

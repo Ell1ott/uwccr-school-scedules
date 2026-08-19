@@ -15,7 +15,7 @@ export const DAY_END_MIN = 21 * 60;
 export type AcademicRow = {
   start: string;
   end: string;
-  blocks: Record<DayId, BlockLetter>;
+  blocks: Partial<Record<DayId, BlockLetter>>;
 };
 
 export const ACADEMIC_ROWS: AcademicRow[] = [
@@ -59,7 +59,7 @@ export type FixedSlot = {
   title: string;
   subtitle?: string;
   icon?: string;
-  kind: "activity" | "office" | "residential";
+  kind: "activity" | "office" | "residential" | "community";
 };
 
 export const FIXED_BY_DAY: Record<DayId, FixedSlot[]> = {
@@ -167,3 +167,92 @@ export const FIXED_BY_DAY: Record<DayId, FixedSlot[]> = {
     },
   ],
 };
+
+/** Monday B/C/D shift later; community meeting takes 8:55–10:15. */
+export const COMMUNITY_ACADEMIC_ROWS: AcademicRow[] = [
+  {
+    start: "07:30",
+    end: "08:50",
+    blocks: { mon: "A", tue: "E", wed: "B", thu: "G", fri: "C" },
+  },
+  {
+    start: "08:55",
+    end: "10:15",
+    blocks: { tue: "F", wed: "C", thu: "H", fri: "D" },
+  },
+  {
+    start: "10:35",
+    end: "11:55",
+    blocks: { mon: "B", tue: "G", wed: "D", thu: "E", fri: "A" },
+  },
+  {
+    start: "12:00",
+    end: "13:20",
+    blocks: { mon: "C", tue: "H", wed: "A", thu: "F", fri: "B" },
+  },
+  {
+    start: "14:20",
+    end: "15:40",
+    blocks: { mon: "D" },
+  },
+];
+
+export const COMMUNITY_FIXED_BY_DAY: Record<DayId, FixedSlot[]> = {
+  mon: [
+    {
+      start: "08:55",
+      end: "10:15",
+      title: "Community Meeting",
+      subtitle: "Every 4 weeks",
+      icon: "users",
+      kind: "community",
+    },
+    {
+      start: "16:00",
+      end: "18:00",
+      title: "CAS or Life Skills",
+      subtitle: "Leadership",
+      icon: "mountain",
+      kind: "activity",
+    },
+    {
+      start: "19:00",
+      end: "20:00",
+      title: "Cleaning / Check-in",
+      subtitle: "Residential area",
+      icon: "home",
+      kind: "residential",
+    },
+  ],
+  tue: FIXED_BY_DAY.tue,
+  wed: FIXED_BY_DAY.wed,
+  thu: FIXED_BY_DAY.thu,
+  fri: [
+    {
+      start: "15:00",
+      end: "18:00",
+      title: "CAS or Life Skills",
+      subtitle: "Leadership",
+      icon: "mountain",
+      kind: "activity",
+    },
+    {
+      start: "19:00",
+      end: "20:00",
+      title: "Cleaning / Check-in",
+      subtitle: "Residential area",
+      icon: "home",
+      kind: "residential",
+    },
+  ],
+};
+
+export function academicRowsFor(communityMeeting: boolean): AcademicRow[] {
+  return communityMeeting ? COMMUNITY_ACADEMIC_ROWS : ACADEMIC_ROWS;
+}
+
+export function fixedByDayFor(
+  communityMeeting: boolean,
+): Record<DayId, FixedSlot[]> {
+  return communityMeeting ? COMMUNITY_FIXED_BY_DAY : FIXED_BY_DAY;
+}

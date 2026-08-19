@@ -13,10 +13,12 @@ export function StudentPicker({
   students,
   selectedId,
   onSelect,
+  inlineList,
 }: {
   students: Student[];
   selectedId: string | null;
   onSelect: (id: string) => void;
+  inlineList?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -56,7 +58,7 @@ export function StudentPicker({
   }
 
   return (
-    <div ref={wrapRef} className="relative w-full min-w-0 max-w-md md:max-w-xs">
+    <div ref={wrapRef} className={`relative w-full min-w-0 ${inlineList ? "" : "max-w-md md:max-w-xs"}`}>
       <div className="flex items-center gap-2 rounded-full bg-surface-container px-3 py-2 focus-within:ring-2 focus-within:ring-primary/20">
         <Search
           size={16}
@@ -113,7 +115,7 @@ export function StudentPicker({
         <ul
           id={listId}
           role="listbox"
-          className="absolute z-50 mt-2 max-h-72 w-full overflow-auto rounded-2xl bg-surface-container-lowest py-2 shadow-[0_12px_32px_rgba(4,22,39,0.12)] ring-1 ring-outline-variant"
+          className={`${inlineList ? "relative" : "absolute z-50"} mt-2 max-h-72 w-full overflow-auto rounded-2xl bg-surface-container-lowest py-2 shadow-[0_12px_32px_rgba(4,22,39,0.12)] ring-1 ring-outline-variant`}
         >
           {results.length === 0 ? (
             <li className="px-4 py-3 text-body-md text-on-surface-variant">

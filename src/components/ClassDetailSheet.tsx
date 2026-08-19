@@ -11,12 +11,14 @@ export function ClassDetailSheet({
   event,
   students,
   currentStudentId,
+  communityMeeting = false,
   onClose,
   onSelectStudent,
 }: {
   event: ScheduleEvent;
   students: Student[];
   currentStudentId: string | null;
+  communityMeeting?: boolean;
   onClose: () => void;
   onSelectStudent: (id: string) => void;
 }) {
@@ -26,7 +28,9 @@ export function ClassDetailSheet({
   const closeRef = useRef<HTMLButtonElement>(null);
   const onCloseRef = useRef(onClose);
   const classmates = useMemo(() => classmatesFor(students, event), [students, event]);
-  const meetings = event.block ? meetingsForBlock(event.block) : [];
+  const meetings = event.block
+    ? meetingsForBlock(event.block, communityMeeting)
+    : [];
 
   useEffect(() => {
     onCloseRef.current = onClose;
