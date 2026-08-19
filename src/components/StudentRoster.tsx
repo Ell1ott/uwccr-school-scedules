@@ -1,4 +1,5 @@
-import { useMemo, useRef } from "react";
+import { Search } from "lucide-react";
+import { useMemo, useRef, useState } from "react";
 import { initials } from "../lib/classDetail";
 import type { Student } from "../types";
 
@@ -30,7 +31,13 @@ export function StudentRoster({
   students: Student[];
   onSelect: (id: string) => void;
 }) {
-  const groups = useMemo(() => groupedStudents(students), [students]);
+  const [query, setQuery] = useState("");
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return students;
+    return students.filter((student) => student.name.toLowerCase().includes(q));
+  }, [students, query]);
+  const groups = useMemo(() => groupedStudents(filtered), [filtered]);
   const letters = groups.map(([letter]) => letter);
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
@@ -52,74 +59,102 @@ export function StudentRoster({
         </h2>
         <p className="mt-2 max-w-lg text-body-md text-on-surface-variant">
           Names are A–Z. Tap a card
+          <span className="md:hidden">, or search if you already know yours</span>
           <span className="hidden md:inline">
             , or search up top if you already know yours
           </span>
           .
         </p>
+        <label className="mt-4 flex items-center gap-2 rounded-full bg-surface-container px-3 py-2.5 focus-within:ring-2 focus-within:ring-primary/20 md:hidden">
+          <span className="sr-only">Search names</span>
+          <Search
+            size={16}
+            strokeWidth={1.75}
+            className="shrink-0 text-on-surface-variant"
+            aria-hidden
+          />
+          <input
+            type="search"
+            autoComplete="off"
+            autoCorrect="off"
+            spellCheck={false}
+            className="w-full bg-transparent text-body-md text-on-surface outline-none placeholder:text-on-surface-variant/70"
+            placeholder="Search names"
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </label>
       </div>
 
-      <nav
-        aria-label="Jump to letter"
-        className="sticky top-[env(safe-area-inset-top,0px)] z-20 -mx-container-padding-mobile border-b border-outline-variant/60 bg-surface/90 px-container-padding-mobile py-2 backdrop-blur-xl md:top-[calc(4rem+env(safe-area-inset-top,0px))] md:-mx-container-padding-desktop md:px-container-padding-desktop"
-      >
-        <ul className="flex gap-1 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-          {letters.map((letter) => (
-            <li key={letter}>
-              <button
-                type="button"
-                className="flex h-8 min-w-8 items-center justify-center rounded-full px-2.5 text-[13px] font-semibold text-on-surface-variant hover:bg-surface-container hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
-                onClick={() => jumpTo(letter)}
-              >
-                {letter}
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
-
-      <div className="mt-4 flex flex-col gap-8">
-        {groups.map(([letter, group]) => (
-          <section
-            key={letter}
-            ref={(node) => {
-              sectionRefs.current[letter] = node;
-            }}
-            aria-labelledby={`roster-letter-${letter}`}
-            className="scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))] md:scroll-mt-[calc(8.75rem+env(safe-area-inset-top,0px))]"
+      {groups.length > 0 ? (
+        <>
+          <nav
+            aria-label="Jump to letter"
+            className="sticky top-[env(safe-area-inset-top,0px)] z-20 -mx-container-padding-mobile border-b border-outline-variant/60 bg-surface/90 px-container-padding-mobile py-2 backdrop-blur-xl md:top-[calc(4rem+env(safe-area-inset-top,0px))] md:-mx-container-padding-desktop md:px-container-padding-desktop"
           >
-            <h3
-              id={`roster-letter-${letter}`}
-              className="mb-3 flex items-baseline gap-2 text-label-sm tracking-[0.16em] text-on-surface-variant uppercase"
-            >
-              <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[12px] font-semibold tracking-normal text-on-primary">
-                {letter}
-              </span>
-              <span className="font-medium tracking-normal text-on-surface-variant/80 normal-case">
-                {group.length}
-              </span>
-            </h3>
-            <ul className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-              {group.map((student) => (
-                <li key={student.id}>
+            <ul className="flex gap-1 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+              {letters.map((letter) => (
+                <li key={letter}>
                   <button
                     type="button"
-                    className="flex w-full items-center gap-3 rounded-[14px] bg-surface-container-lowest px-3 py-2.5 text-left shadow-[0_4px_12px_rgba(4,22,39,0.05)] transition-[filter,box-shadow,transform] duration-200 hover:shadow-[0_6px_16px_rgba(4,22,39,0.1)] hover:brightness-[0.99] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
-                    onClick={() => onSelect(student.id)}
+                    className="flex h-8 min-w-8 items-center justify-center rounded-full px-2.5 text-[13px] font-semibold text-on-surface-variant hover:bg-surface-container hover:text-on-surface focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                    onClick={() => jumpTo(letter)}
                   >
-                    <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-secondary-container text-[12px] font-semibold tracking-wide text-on-secondary-container">
-                      {initials(student.name)}
-                    </span>
-                    <span className="min-w-0 flex-1 truncate text-body-md font-medium text-on-surface">
-                      {student.name}
-                    </span>
+                    {letter}
                   </button>
                 </li>
               ))}
             </ul>
-          </section>
-        ))}
-      </div>
+          </nav>
+
+          <div className="mt-4 flex flex-col gap-8">
+            {groups.map(([letter, group]) => (
+              <section
+                key={letter}
+                ref={(node) => {
+                  sectionRefs.current[letter] = node;
+                }}
+                aria-labelledby={`roster-letter-${letter}`}
+                className="scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))] md:scroll-mt-[calc(8.75rem+env(safe-area-inset-top,0px))]"
+              >
+                <h3
+                  id={`roster-letter-${letter}`}
+                  className="mb-3 flex items-baseline gap-2 text-label-sm tracking-[0.16em] text-on-surface-variant uppercase"
+                >
+                  <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary text-[12px] font-semibold tracking-normal text-on-primary">
+                    {letter}
+                  </span>
+                  <span className="font-medium tracking-normal text-on-surface-variant/80 normal-case">
+                    {group.length}
+                  </span>
+                </h3>
+                <ul className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                  {group.map((student) => (
+                    <li key={student.id}>
+                      <button
+                        type="button"
+                        className="flex w-full items-center gap-3 rounded-[14px] bg-surface-container-lowest px-3 py-2.5 text-left shadow-[0_4px_12px_rgba(4,22,39,0.05)] transition-[filter,box-shadow,transform] duration-200 hover:shadow-[0_6px_16px_rgba(4,22,39,0.1)] hover:brightness-[0.99] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                        onClick={() => onSelect(student.id)}
+                      >
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-secondary-container text-[12px] font-semibold tracking-wide text-on-secondary-container">
+                          {initials(student.name)}
+                        </span>
+                        <span className="min-w-0 flex-1 truncate text-body-md font-medium text-on-surface">
+                          {student.name}
+                        </span>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </section>
+            ))}
+          </div>
+        </>
+      ) : (
+        <p className="mt-2 text-body-md text-on-surface-variant">
+          No students match that name
+        </p>
+      )}
     </div>
   );
 }
