@@ -1,0 +1,344 @@
+#!/usr/bin/env python3
+"""Convert IB1 Class list Excel into students.json for the schedule app."""
+
+from __future__ import annotations
+
+import json
+import re
+import unicodedata
+from collections import Counter, defaultdict
+from datetime import datetime, timezone
+from pathlib import Path
+
+from openpyxl import load_workbook
+from openpyxl.utils import range_boundaries
+
+ROOT = Path(__file__).resolve().parents[1]
+XLSX = ROOT / "IB1 Class list 2026-2028.xlsx"
+OUT = ROOT / "src" / "data" / "students.json"
+
+STUDENT_START_ROW = 8
+BLOCKS = list("ABCDEFGH")
+
+
+def strip_accents(text: str) -> str:
+    decomposed = unicodedata.normalize("NFKD", text)
+    return "".join(ch for ch in decomposed if not unicodedata.combining(ch))
+
+
+def normalize_name(name: str) -> str:
+    name = name.replace("\t", " ").replace("\n", " ")
+    name = strip_accents(name)
+    name = name.replace("’", "'").replace("`", "'")
+    name = re.sub(r"[^A-Za-z0-9'\- ]+", " ", name)
+    name = re.sub(r"\s+", " ", name).strip().lower()
+    return name
+
+
+def tokens(name: str) -> set[str]:
+    return {t for t in re.findall(r"[a-z0-9]+", normalize_name(name)) if t}
+
+
+def levenshtein(a: str, b: str) -> int:
+    if a == b:
+        return 0
+    if not a:
+        return len(b)
+    if not b:
+        return len(a)
+    prev = list(range(len(b) + 1))
+    for i, ca in enumerate(a, 1):
+        curr = [i]
+        for j, cb in enumerate(b, 1):
+            curr.append(
+                min(prev[j] + 1, curr[j - 1] + 1, prev[j - 1] + (ca != cb))
+            )
+        prev = curr
+    return prev[-1]
+
+
+def display_name(raw: str) -> str:
+    cleaned = re.sub(r"\s+", " ", raw.replace("\t", " ").replace("\n", " ")).strip()
+    words = cleaned.split()
+    if not words:
+        return cleaned
+    upperish = sum(1 for w in words if w.isupper() and len(w) > 1)
+    if cleaned.isupper() or cleaned.islower() or upperish >= max(1, len(words) / 2):
+        return cleaned.title()
+    return cleaned
+
+
+def slugify(name: str) -> str:
+    slug = re.sub(r"[^a-z0-9]+", "-", normalize_name(name)).strip("-")
+    return slug or "student"
+
+
+def last_similar(a: str, b: str) -> bool:
+    la, lb = normalize_name(a).split()[-1], normalize_name(b).split()[-1]
+    if la == lb:
+        return True
+    if la.startswith(lb) or lb.startswith(la):
+        return min(len(la), len(lb)) >= 4
+    return levenshtein(la, lb) <= 3 and min(len(la), len(lb)) >= 4
+
+
+def should_merge(a: str, b: str) -> bool:
+    if a == b:
+        return True
+    ta, tb = tokens(a), tokens(b)
+    if len(ta) < 2 or len(tb) < 2:
+        return False
+    shorter, longer = (ta, tb) if len(ta) <= len(tb) else (tb, ta)
+    if shorter.issubset(longer) and len(shorter) >= 2:
+        return True
+    jaccard = len(ta & tb) / len(ta | tb)
+    na, nb = normalize_name(a).split(), normalize_name(b).split()
+    first_similar = na[0] == nb[0] or levenshtein(na[0], nb[0]) <= 2
+    if first_similar and last_similar(a, b) and len(ta & tb) >= 2:
+        return True
+    if na[0] == nb[0] and len(na) >= 3 and len(nb) >= 3 and na[1] == nb[1]:
+        if levenshtein(na[-1], nb[-1]) <= 3:
+            return True
+    return jaccard >= 0.75
+
+
+class UnionFind:
+    def __init__(self, items: list[str]) -> None:
+        self.parent = {x: x for x in items}
+
+    def find(self, x: str) -> str:
+        while self.parent[x] != x:
+            self.parent[x] = self.parent[self.parent[x]]
+            x = self.parent[x]
+        return x
+
+    def union(self, a: str, b: str) -> None:
+        ra, rb = self.find(a), self.find(b)
+        if ra != rb:
+            self.parent[rb] = ra
+
+
+def normalize_level(level: str) -> str:
+    level = (level or "").strip().upper()
+    mapping = {"TK": "TOK", "NM": "SL"}
+    return mapping.get(level, level)
+
+
+def normalize_subject(subject: str) -> str:
+    subject = re.sub(r"\s+", " ", (subject or "").strip())
+    aliases = {
+        "Eng L&L": "English Lang & Lit",
+        "English LangLit": "English Lang & Lit",
+        "English Lang & Lit": "English Lang & Lit",
+        "Spanish Lang Lit": "Spanish Lang & Lit",
+        "GloPo": "Global Politics",
+        "Math AA": "Math Analysis and Approaches",
+        "Maths A&A": "Math Analysis and Approaches",
+        "Maths A&I": "Math Applications and Interpretation",
+        "Mate A&I": "Math Applications and Interpretation",
+        "Historia": "History",
+        "TDC": "TOK",
+    }
+    return aliases.get(subject, subject)
+
+
+def cell_value(ws, merge_map, row: int, col: int):
+    if (row, col) in merge_map:
+        return merge_map[(row, col)]
+    return ws.cell(row, col).value
+
+
+def build_merge_map(ws) -> dict[tuple[int, int], object]:
+    merge_map: dict[tuple[int, int], object] = {}
+    for merged in ws.merged_cells.ranges:
+        min_col, min_row, max_col, max_row = range_boundaries(str(merged))
+        value = ws.cell(min_row, min_col).value
+        for r in range(min_row, max_row + 1):
+            for c in range(min_col, max_col + 1):
+                merge_map[(r, c)] = value
+    return merge_map
+
+
+def pick_canonical_raw(raws: list[str]) -> str:
+    displays = [display_name(raw) for raw in raws]
+    freq = Counter(displays)
+    scored = []
+    for cleaned in set(displays):
+        toks = normalize_name(cleaned).split()
+        unique = len(set(toks))
+        dup = len(toks) - unique
+        camel = 1 if re.search(r"[a-z][A-Z]", re.sub(r"\s+", "", cleaned)) else 0
+        scored.append((freq[cleaned], unique, -dup, -camel, -len(toks), cleaned))
+    scored.sort(reverse=True)
+    return scored[0][5]
+
+
+def main() -> None:
+    if not XLSX.exists():
+        raise SystemExit(f"Missing spreadsheet: {XLSX}")
+
+    wb = load_workbook(XLSX, data_only=True)
+    ws = wb.active
+    merge_map = build_merge_map(ws)
+
+    classes: list[dict] = []
+    for col in range(2, ws.max_column + 1):
+        block = str(cell_value(ws, merge_map, 1, col) or "").strip().upper()
+        subject = str(cell_value(ws, merge_map, 2, col) or "").strip()
+        if block not in BLOCKS or not subject:
+            continue
+        teacher = str(cell_value(ws, merge_map, 4, col) or "").strip()
+        room = cell_value(ws, merge_map, 5, col)
+        room = "" if room is None else str(room).strip()
+        level = normalize_level(str(cell_value(ws, merge_map, 3, col) or ""))
+        students: list[str] = []
+        for row in range(STUDENT_START_ROW, ws.max_row + 1):
+            value = cell_value(ws, merge_map, row, col)
+            if value is None:
+                continue
+            name = str(value).strip()
+            if not name or name.isdigit():
+                continue
+            students.append(name)
+        classes.append(
+            {
+                "block": block,
+                "subject": normalize_subject(subject),
+                "level": level,
+                "teacher": teacher,
+                "room": room,
+                "students": students,
+            }
+        )
+
+    raw_by_norm: dict[str, list[str]] = defaultdict(list)
+    for cls in classes:
+        for name in cls["students"]:
+            key = normalize_name(name)
+            if key and name not in raw_by_norm[key]:
+                raw_by_norm[key].append(name)
+
+    keys = list(raw_by_norm)
+    uf = UnionFind(keys)
+    for i, a in enumerate(keys):
+        for b in keys[i + 1 :]:
+            if should_merge(a, b):
+                uf.union(a, b)
+
+    clusters: dict[str, list[str]] = defaultdict(list)
+    for key in keys:
+        clusters[uf.find(key)].append(key)
+
+    canonical_of: dict[str, str] = {}
+    aliases_merged: list[dict] = []
+    for root, members in clusters.items():
+        raws: list[str] = []
+        for member in members:
+            raws.extend(raw_by_norm[member])
+        canonical_raw = pick_canonical_raw(raws)
+        canonical_key = normalize_name(canonical_raw)
+        # Prefer the member whose normalized form matches the chosen display name
+        for member in members:
+            canonical_of[member] = canonical_raw
+        unique_norms = sorted(set(members))
+        if len(unique_norms) > 1:
+            aliases_merged.append(
+                {
+                    "canonical": canonical_raw,
+                    "aliases": sorted(
+                        {display_name(raw_by_norm[m][0]) for m in unique_norms}
+                    ),
+                }
+            )
+
+    students: dict[str, dict] = {}
+    for cls in classes:
+        entry = {
+            "subject": cls["subject"],
+            "level": cls["level"],
+            "teacher": cls["teacher"],
+            "room": cls["room"],
+        }
+        seen_in_class: set[str] = set()
+        for raw in cls["students"]:
+            key = normalize_name(raw)
+            display = canonical_of[key]
+            student_id = slugify(display)
+            if student_id in seen_in_class:
+                continue
+            seen_in_class.add(student_id)
+            student = students.setdefault(
+                student_id,
+                {"id": student_id, "name": display, "blocks": {}},
+            )
+            block_list = student["blocks"].setdefault(cls["block"], [])
+            fingerprint = (
+                entry["subject"],
+                entry["level"],
+                entry["teacher"],
+                entry["room"],
+            )
+            if any(
+                (e["subject"], e["level"], e["teacher"], e["room"]) == fingerprint
+                for e in block_list
+            ):
+                continue
+            block_list.append(dict(entry))
+
+    payload_students = []
+    conflicts = []
+    missing_blocks = []
+    for student in sorted(students.values(), key=lambda s: s["name"].lower()):
+        compact_blocks = {}
+        for block, entries in student["blocks"].items():
+            primary = dict(entries[0])
+            if len(entries) > 1:
+                primary["extras"] = entries[1:]
+                conflicts.append(
+                    {
+                        "student": student["name"],
+                        "block": block,
+                        "classes": [
+                            f"{e['subject']} {e['level']}" for e in entries
+                        ],
+                    }
+                )
+            compact_blocks[block] = primary
+        present = set(compact_blocks)
+        missing = [b for b in BLOCKS if b not in present]
+        if missing:
+            missing_blocks.append({"student": student["name"], "missing": missing})
+        payload_students.append(
+            {"id": student["id"], "name": student["name"], "blocks": compact_blocks}
+        )
+
+    OUT.parent.mkdir(parents=True, exist_ok=True)
+    payload = {
+        "generatedAt": datetime.now(timezone.utc).isoformat(),
+        "source": XLSX.name,
+        "students": payload_students,
+    }
+    OUT.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+    print(f"Wrote {OUT.relative_to(ROOT)}")
+    print(f"Students: {len(payload_students)}")
+    print(f"Class columns: {len(classes)}")
+    print(f"Aliases merged: {len(aliases_merged)}")
+    for item in aliases_merged:
+        print(f"  - {item['canonical']}: {', '.join(item['aliases'])}")
+    print(f"Same-block conflicts: {len(conflicts)}")
+    for item in conflicts:
+        print(f"  - {item['student']} block {item['block']}: {', '.join(item['classes'])}")
+    notable_missing = [item for item in missing_blocks if len(item["missing"]) >= 2]
+    print(
+        f"Students missing 2+ lettered blocks: {len(notable_missing)} "
+        f"(of {len(missing_blocks)} with a study period)"
+    )
+    for item in notable_missing[:20]:
+        print(f"  - {item['student']}: {', '.join(item['missing'])}")
+    if len(notable_missing) > 20:
+        print(f"  ... {len(notable_missing) - 20} more")
+
+
+if __name__ == "__main__":
+    main()
