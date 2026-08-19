@@ -67,7 +67,7 @@ export function buildSchedule(
           title: "Study Period",
           subtitle: "Self-directed",
           block,
-          icon: "local_library",
+          icon: "book-open",
         });
       }
     }

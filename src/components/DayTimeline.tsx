@@ -9,11 +9,13 @@ export function DayTimeline({
   onDayChange,
   events,
   now,
+  onClassClick,
 }: {
   dayId: DayId;
   onDayChange: (id: DayId) => void;
   events: ScheduleEvent[];
   now?: Date;
+  onClassClick?: (event: ScheduleEvent) => void;
 }) {
   const index = DAYS.findIndex((d) => d.id === dayId);
   const [nowMin] = useState(() => {
@@ -59,12 +61,26 @@ export function DayTimeline({
           const isNowHere =
             showNow !== null && showNow >= event.startMin && showNow < event.endMin;
           return (
-            <div key={event.id} className="relative flex flex-row gap-item-gap">
-              <div className="w-[72px] flex-shrink-0 pt-4 text-right font-semibold tabular-nums whitespace-nowrap text-time-stamp text-on-surface-variant">
-                {formatTime(event.start)}
+            <div
+              key={event.id}
+              className={`relative flex flex-row gap-item-gap ${
+                event.kind === "study" ? "items-center" : ""
+              }`}
+            >
+              <div
+                className={`w-[72px] flex-shrink-0 text-right tabular-nums whitespace-nowrap ${
+                  event.kind === "study" ? "" : "pt-4"
+                }`}
+              >
+                <div className="font-semibold text-time-stamp text-on-surface-variant">
+                  {formatTime(event.start)}
+                </div>
+                <div className="mt-0.5 text-[11px] leading-4 font-medium text-on-surface-variant/45">
+                  {formatTime(event.end)}
+                </div>
               </div>
               <div className="min-w-0 flex-1">
-                <EventCard event={event} />
+                <EventCard event={event} onOpen={onClassClick} />
               </div>
               {isNowHere ? (
                 <div className="pointer-events-none absolute inset-x-0 top-2 z-20 flex items-center">

@@ -1,15 +1,22 @@
 import { useMemo, useState } from "react";
 import studentsFile from "./data/students.json" with { type: "json" };
 import { DAYS } from "./data/weekTemplate";
+import { ClassDetailSheet } from "./components/ClassDetailSheet";
 import { PalettePicker } from "./components/PalettePicker";
 import { StudentPicker } from "./components/StudentPicker";
+import { StudentRoster } from "./components/StudentRoster";
 import { DayTimeline } from "./components/DayTimeline";
 import { WeekGrid } from "./components/WeekGrid";
 import { buildSchedule, todayDayId } from "./lib/buildSchedule";
 import { PaletteProvider } from "./lib/palette";
-import { readStoredPalette, readStoredStudentId, storePalette } from "./lib/storage";
+import {
+  readStoredPalette,
+  readStoredStudentId,
+  storePalette,
+  storeStudentId,
+} from "./lib/storage";
 import type { PaletteId } from "./lib/tones";
-import type { DayId, Student, StudentsFile } from "./types";
+import type { DayId, ScheduleEvent, Student, StudentsFile } from "./types";
 
 const data = studentsFile as StudentsFile;
 
@@ -22,10 +29,17 @@ export default function App() {
     () => todayDayId() ?? DAYS[0].id,
   );
   const [palette, setPalette] = useState<PaletteId>(() => readStoredPalette());
+  const [openEvent, setOpenEvent] = useState<ScheduleEvent | null>(null);
 
   function choosePalette(id: PaletteId) {
     setPalette(id);
     storePalette(id);
+  }
+
+  function chooseStudent(id: string) {
+    setSelectedId(id);
+    storeStudentId(id);
+    setOpenEvent(null);
   }
 
   const student: Student | undefined = students.find((s) => s.id === selectedId);
@@ -50,7 +64,7 @@ export default function App() {
               <StudentPicker
                 students={students}
                 selectedId={selectedId}
-                onSelect={setSelectedId}
+                onSelect={chooseStudent}
               />
             </div>
           </div>
@@ -58,33 +72,32 @@ export default function App() {
 
         <main className="pt-16">
           {!student || !week ? (
-            <div className="mx-auto flex max-w-lg flex-col items-center px-container-padding-mobile py-24 text-center">
-              <div className="mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-on-primary">
-                <span className="material-symbols-outlined text-[28px]">person_search</span>
-              </div>
-              <h2 className="text-headline-lg-mobile md:text-headline-lg">
-                Pick a student
-              </h2>
-              <p className="mt-2 text-body-md text-on-surface-variant">
-                Search the IB1 class list to see their weekly schedule — full week on
-                desktop, one day at a time on a phone.
-              </p>
-            </div>
+            <StudentRoster students={students} onSelect={chooseStudent} />
           ) : (
             <>
               <div className="hidden md:block pt-6">
-                <WeekGrid week={week} />
+                <WeekGrid week={week} onClassClick={setOpenEvent} />
               </div>
               <div className="md:hidden">
                 <DayTimeline
                   dayId={dayId}
                   onDayChange={setDayId}
                   events={week[dayId]}
+                  onClassClick={setOpenEvent}
                 />
               </div>
             </>
           )}
         </main>
+        {openEvent ? (
+          <ClassDetailSheet
+            event={openEvent}
+            students={students}
+            currentStudentId={selectedId}
+            onClose={() => setOpenEvent(null)}
+            onSelectStudent={chooseStudent}
+          />
+        ) : null}
       </div>
     </PaletteProvider>
   );

@@ -33,19 +33,32 @@ function visualHeight(event: ScheduleEvent): string {
   return "h-28";
 }
 
-function Slot({ event }: { event: ScheduleEvent | undefined }) {
+function Slot({
+  event,
+  onClassClick,
+}: {
+  event: ScheduleEvent | undefined;
+  onClassClick?: (event: ScheduleEvent) => void;
+}) {
   if (!event) return <div />;
   return (
     <div className={visualHeight(event)}>
-      <EventCard event={event} fill compact={isBandKind(event.kind)} />
+      <EventCard
+        event={event}
+        fill
+        compact={isBandKind(event.kind)}
+        onOpen={onClassClick}
+      />
     </div>
   );
 }
 
 export function WeekGrid({
   week,
+  onClassClick,
 }: {
   week: Record<DayId, ScheduleEvent[]>;
+  onClassClick?: (event: ScheduleEvent) => void;
 }) {
   return (
     <div className="px-container-padding-desktop pb-16">
@@ -63,7 +76,12 @@ export function WeekGrid({
 
       <div className="grid grid-cols-[88px_repeat(5,minmax(0,1fr))] items-start gap-x-4 gap-y-3">
         {MORNING_STARTS.map((start) => (
-          <TimeRow key={start} start={start} week={week} />
+          <TimeRow
+            key={start}
+            start={start}
+            week={week}
+            onClassClick={onClassClick}
+          />
         ))}
 
         <TimeLabel start="14:00" />
@@ -72,31 +90,47 @@ export function WeekGrid({
             {afternoonEvents(week[day.id]).map((event, index) => (
               <div key={event.id} className="flex flex-col gap-1.5">
                 {index > 0 ? (
-                  <span className="pt-0.5 text-right text-label-sm tabular-nums text-on-surface-variant md:text-left">
-                    {formatTime(event.start)}
-                  </span>
+                  <div className="pt-0.5 text-right tabular-nums whitespace-nowrap md:text-left">
+                    <div className="text-label-sm text-on-surface-variant">
+                      {formatTime(event.start)}
+                    </div>
+                    <div className="text-[11px] leading-4 font-medium text-on-surface-variant/45">
+                      {formatTime(event.end)}
+                    </div>
+                  </div>
                 ) : null}
-                <Slot event={event} />
+                <Slot event={event} onClassClick={onClassClick} />
               </div>
             ))}
           </div>
         ))}
 
-        <TimeRow start={DINNER_START} week={week} />
+        <TimeRow start={DINNER_START} week={week} onClassClick={onClassClick} />
 
         <TimeLabel start="19:00" />
         {DAYS.map((day) => (
-          <Slot key={day.id} event={eveningEvents(week[day.id])[0]} />
+          <Slot
+            key={day.id}
+            event={eveningEvents(week[day.id])[0]}
+            onClassClick={onClassClick}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-function TimeLabel({ start }: { start: string }) {
+function TimeLabel({ start, end }: { start: string; end?: string }) {
   return (
-    <div className="pt-3 text-right font-semibold whitespace-nowrap tabular-nums text-time-stamp text-on-surface-variant">
-      {formatTime(start)}
+    <div className="pt-3 text-right whitespace-nowrap tabular-nums">
+      <div className="font-semibold text-time-stamp text-on-surface-variant">
+        {formatTime(start)}
+      </div>
+      {end ? (
+        <div className="mt-0.5 text-[11px] leading-4 font-medium text-on-surface-variant/45">
+          {formatTime(end)}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -104,15 +138,22 @@ function TimeLabel({ start }: { start: string }) {
 function TimeRow({
   start,
   week,
+  onClassClick,
 }: {
   start: string;
   week: Record<DayId, ScheduleEvent[]>;
+  onClassClick?: (event: ScheduleEvent) => void;
 }) {
+  const sample = DAYS.map((day) => eventAt(week[day.id], start)).find(Boolean);
   return (
     <>
-      <TimeLabel start={start} />
+      <TimeLabel start={start} end={sample?.end} />
       {DAYS.map((day) => (
-        <Slot key={day.id} event={eventAt(week[day.id], start)} />
+        <Slot
+          key={day.id}
+          event={eventAt(week[day.id], start)}
+          onClassClick={onClassClick}
+        />
       ))}
     </>
   );

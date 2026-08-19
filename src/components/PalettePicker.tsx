@@ -1,3 +1,4 @@
+import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import { useEffect, useId, useRef, useState } from "react";
 import { usePalette } from "../lib/palette";
 import { PALETTE_OPTIONS } from "../lib/tones";
@@ -60,9 +61,21 @@ export function PalettePicker() {
         <span className="hidden text-label-sm tracking-wide text-on-surface-variant sm:inline">
           {current?.label}
         </span>
-        <span className="material-symbols-outlined text-[18px] text-on-surface-variant">
-          {open ? "expand_less" : "expand_more"}
-        </span>
+        {open ? (
+          <ChevronUp
+            size={14}
+            strokeWidth={1.75}
+            className="shrink-0 text-on-surface-variant"
+            aria-hidden
+          />
+        ) : (
+          <ChevronDown
+            size={14}
+            strokeWidth={1.75}
+            className="shrink-0 text-on-surface-variant"
+            aria-hidden
+          />
+        )}
       </button>
       {open ? (
         <ul
@@ -104,9 +117,7 @@ export function PalettePicker() {
                     </span>
                   </span>
                   {selected ? (
-                    <span className="material-symbols-outlined text-[18px]">
-                      check
-                    </span>
+                    <Check size={14} strokeWidth={1.75} className="shrink-0" aria-hidden />
                   ) : null}
                 </button>
               </li>

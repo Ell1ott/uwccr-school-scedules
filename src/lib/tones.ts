@@ -26,6 +26,18 @@ export const PALETTE_OPTIONS: {
   swatches: string[];
 }[] = [
   {
+    id: "system",
+    label: "System",
+    hint: "iOS blue, red, pink, green",
+    swatches: [
+      "oklch(0.900 0.062 257.4)",
+      "oklch(0.900 0.067 28.7)",
+      "oklch(0.900 0.068 17.9)",
+      "oklch(0.900 0.072 147.4)",
+      "oklch(0.900 0.062 278.3)",
+    ],
+  },
+  {
     id: "classic",
     label: "Classic",
     hint: "Original navy and cream",
@@ -121,21 +133,9 @@ export const PALETTE_OPTIONS: {
       "oklch(0.88 0.03 350)",
     ],
   },
-  {
-    id: "system",
-    label: "System",
-    hint: "iOS blue, red, pink, green",
-    swatches: [
-      "oklch(0.900 0.062 257.4)",
-      "oklch(0.900 0.067 28.7)",
-      "oklch(0.900 0.068 17.9)",
-      "oklch(0.900 0.072 147.4)",
-      "oklch(0.900 0.062 278.3)",
-    ],
-  },
 ];
 
-export const DEFAULT_PALETTE: PaletteId = "classic";
+export const DEFAULT_PALETTE: PaletteId = "system";
 
 type SubjectKey =
   | "biology"

@@ -1,3 +1,4 @@
+import { Check, Search, User } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { storeStudentId } from "../lib/storage";
 import type { Student } from "../types";
@@ -25,7 +26,15 @@ export function StudentPicker({
   const selected = students.find((s) => s.id === selectedId) ?? null;
 
   const results = useMemo(
-    () => students.filter((s) => matches(s, query)),
+    () =>
+      students
+        .filter((s) => matches(s, query))
+        .sort((a, b) =>
+          a.name.localeCompare(b.name, undefined, {
+            sensitivity: "base",
+            numeric: true,
+          }),
+        ),
     [students, query],
   );
 
@@ -49,9 +58,12 @@ export function StudentPicker({
   return (
     <div ref={wrapRef} className="relative w-full min-w-0 max-w-md md:max-w-xs">
       <div className="flex items-center gap-2 rounded-full bg-surface-container px-3 py-2 focus-within:ring-2 focus-within:ring-primary/20">
-        <span className="material-symbols-outlined text-on-surface-variant text-[20px]">
-          search
-        </span>
+        <Search
+          size={16}
+          strokeWidth={1.75}
+          className="shrink-0 text-on-surface-variant"
+          aria-hidden
+        />
         <input
           role="combobox"
           aria-expanded={open}
@@ -93,7 +105,7 @@ export function StudentPicker({
             aria-label="Selected student"
             onClick={() => setOpen(true)}
           >
-            <span className="material-symbols-outlined text-[16px]">person</span>
+            <User size={12} strokeWidth={1.75} aria-hidden />
           </button>
         ) : null}
       </div>
@@ -122,7 +134,7 @@ export function StudentPicker({
                 >
                   <span>{student.name}</span>
                   {student.id === selectedId ? (
-                    <span className="material-symbols-outlined text-[18px]">check</span>
+                    <Check size={14} strokeWidth={1.75} aria-hidden />
                   ) : null}
                 </button>
               </li>

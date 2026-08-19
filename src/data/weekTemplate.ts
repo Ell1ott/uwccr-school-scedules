@@ -49,8 +49,8 @@ export const SHARED_BREAKS: {
   kind: "break" | "meal";
 }[] = [
   { start: "10:15", end: "10:35", title: "Break", icon: "coffee", kind: "break" },
-  { start: "13:20", end: "14:00", title: "Lunch", icon: "restaurant", kind: "meal" },
-  { start: "18:00", end: "19:00", title: "Dinner", icon: "dinner_dining", kind: "meal" },
+  { start: "13:20", end: "14:00", title: "Lunch", icon: "utensils", kind: "meal" },
+  { start: "18:00", end: "19:00", title: "Dinner", icon: "cooking-pot", kind: "meal" },
 ];
 
 export type FixedSlot = {
@@ -69,7 +69,7 @@ export const FIXED_BY_DAY: Record<DayId, FixedSlot[]> = {
       end: "15:00",
       title: "Faculty / TOK",
       subtitle: "Meetings",
-      icon: "groups",
+      icon: "users",
       kind: "activity",
     },
     {
@@ -77,7 +77,7 @@ export const FIXED_BY_DAY: Record<DayId, FixedSlot[]> = {
       end: "18:00",
       title: "CAS or Life Skills",
       subtitle: "Leadership",
-      icon: "hiking",
+      icon: "mountain",
       kind: "activity",
     },
     {
@@ -94,7 +94,7 @@ export const FIXED_BY_DAY: Record<DayId, FixedSlot[]> = {
       start: "14:00",
       end: "16:00",
       title: "Teachers' Office Hours",
-      icon: "schedule",
+      icon: "clock",
       kind: "office",
     },
     {
@@ -102,7 +102,7 @@ export const FIXED_BY_DAY: Record<DayId, FixedSlot[]> = {
       end: "21:00",
       title: "Residence Meetings",
       subtitle: "7:00 – 9:00pm",
-      icon: "night_shelter",
+      icon: "moon",
       kind: "residential",
     },
   ],
@@ -112,7 +112,7 @@ export const FIXED_BY_DAY: Record<DayId, FixedSlot[]> = {
       end: "15:00",
       title: "Mentor Group",
       subtitle: "Every 4 weeks",
-      icon: "groups",
+      icon: "users",
       kind: "activity",
     },
     {
@@ -120,7 +120,7 @@ export const FIXED_BY_DAY: Record<DayId, FixedSlot[]> = {
       end: "18:00",
       title: "CAS or Life Skills",
       subtitle: "Leadership",
-      icon: "hiking",
+      icon: "mountain",
       kind: "activity",
     },
     {
@@ -137,7 +137,7 @@ export const FIXED_BY_DAY: Record<DayId, FixedSlot[]> = {
       start: "14:00",
       end: "16:00",
       title: "Teachers' Office Hours",
-      icon: "schedule",
+      icon: "clock",
       kind: "office",
     },
     {
@@ -154,7 +154,7 @@ export const FIXED_BY_DAY: Record<DayId, FixedSlot[]> = {
       start: "14:00",
       end: "16:00",
       title: "Life Skills",
-      icon: "self_improvement",
+      icon: "sparkles",
       kind: "activity",
     },
     {
