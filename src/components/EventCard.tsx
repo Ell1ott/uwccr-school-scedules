@@ -1,23 +1,29 @@
 import { EventIcon } from "../lib/icons";
 import { usePalette } from "../lib/palette";
 import { isBandKind, toneForEvent } from "../lib/tones";
-import type { ScheduleEvent } from "../types";
+import type { DayId, ScheduleEvent } from "../types";
+import { LiveNowBadge } from "./LiveNowBadge";
 
 export function EventCard({
   event,
   compact = false,
   fill = false,
+  dayId,
   onOpen,
 }: {
   event: ScheduleEvent;
   compact?: boolean;
   fill?: boolean;
+  dayId?: DayId;
   onOpen?: (event: ScheduleEvent) => void;
 }) {
   const { palette } = usePalette();
   const tone = toneForEvent(event, palette);
   const padding = compact ? "px-2.5 py-2" : "px-3 py-2.5";
   const minHeight = fill || compact ? "" : "min-h-[7.5rem]";
+  const live = dayId && !isBandKind(event.kind) ? (
+    <LiveNowBadge dayId={dayId} startMin={event.startMin} endMin={event.endMin} />
+  ) : null;
 
   if (isBandKind(event.kind)) {
     return (
@@ -37,7 +43,7 @@ export function EventCard({
   if (event.kind === "study") {
     return (
       <div
-        className={`flex h-full items-center justify-center gap-2 ${
+        className={`relative flex h-full items-center justify-center gap-2 ${
           fill || compact ? "" : "min-h-[7.5rem]"
         }`}
       >
@@ -49,6 +55,7 @@ export function EventCard({
             {event.block}
           </span>
         ) : null}
+        {live}
       </div>
     );
   }
@@ -113,6 +120,7 @@ export function EventCard({
           </p>
         ))}
       </div>
+      {live}
     </>
   );
 

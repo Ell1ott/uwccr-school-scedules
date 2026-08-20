@@ -37,9 +37,11 @@ function visualHeight(event: ScheduleEvent): string {
 
 function Slot({
   event,
+  dayId,
   onClassClick,
 }: {
   event: ScheduleEvent | undefined;
+  dayId: DayId;
   onClassClick?: (event: ScheduleEvent) => void;
 }) {
   if (!event) return <div />;
@@ -47,6 +49,7 @@ function Slot({
     <div className={visualHeight(event)}>
       <EventCard
         event={event}
+        dayId={dayId}
         fill
         compact={isBandKind(event.kind)}
         onOpen={onClassClick}
@@ -101,7 +104,7 @@ export function WeekGrid({
                     </div>
                   </div>
                 ) : null}
-                <Slot event={event} onClassClick={onClassClick} />
+                <Slot event={event} dayId={day.id} onClassClick={onClassClick} />
               </div>
             ))}
           </div>
@@ -114,6 +117,7 @@ export function WeekGrid({
           <Slot
             key={day.id}
             event={eveningEvents(week[day.id])[0]}
+            dayId={day.id}
             onClassClick={onClassClick}
           />
         ))}
@@ -154,6 +158,7 @@ function TimeRow({
         <Slot
           key={day.id}
           event={eventAt(week[day.id], start)}
+          dayId={day.id}
           onClassClick={onClassClick}
         />
       ))}
