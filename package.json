@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "npm run update-schedule",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
+    "update-schedule": ".venv/bin/python scripts/convert_classlist.py",
     "convert": ".venv/bin/python scripts/convert_classlist.py"
   },
   "dependencies": {

@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-08-19T22:52:19.390608+00:00",
-  "source": "IB2 Class list.xlsx + IB1 Class list 2025-2026.xlsx",
+  "generatedAt": "2026-08-20T18:05:31.640749+00:00",
+  "source": "https://docs.google.com/spreadsheets/d/1pGFqN1XrL4T_NDr_a9fkAmuwMf5ob3e_0_f6_uFDC8c/export?format=xlsx&gid=0 + students.json (IB2 unchanged)",
   "students": [
     {
       "id": "adrian-muwonge",
@@ -46,7 +46,7 @@
         "H": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "18"
         }
       }
@@ -136,10 +136,10 @@
           "room": "5"
         },
         "G": {
-          "subject": "Math Applications and Interpretation",
+          "subject": "Math Analysis and Approaches",
           "level": "SL",
-          "teacher": "Carolina",
-          "room": "7"
+          "teacher": "JD",
+          "room": "10"
         },
         "H": {
           "subject": "TOK",
@@ -438,7 +438,7 @@
         "H": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "18"
         }
       }
@@ -518,7 +518,7 @@
         "E": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "F": {
@@ -528,18 +528,10 @@
           "room": "6"
         },
         "G": {
-          "subject": "Math Analysis and Approaches",
-          "level": "SL",
-          "teacher": "JD",
-          "room": "10",
-          "extras": [
-            {
-              "subject": "TOK",
-              "level": "TOK",
-              "teacher": "QQ",
-              "room": "4"
-            }
-          ]
+          "subject": "TOK",
+          "level": "TOK",
+          "teacher": "QQ",
+          "room": "4"
         },
         "H": {
           "subject": "Math Analysis and Approaches",
@@ -630,7 +622,7 @@
         "E": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "F": {
@@ -728,7 +720,7 @@
         "F": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "G": {
@@ -820,7 +812,7 @@
         "E": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "F": {
@@ -887,7 +879,7 @@
         "H": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "18"
         }
       }
@@ -936,7 +928,7 @@
         "H": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "18"
         }
       }
@@ -1065,7 +1057,7 @@
         "E": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "F": {
@@ -1132,7 +1124,7 @@
         "H": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "18"
         }
       }
@@ -1377,7 +1369,7 @@
         "H": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "18"
         }
       }
@@ -1414,7 +1406,7 @@
         "F": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "G": {
@@ -1512,7 +1504,7 @@
         "F": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "G": {
@@ -1573,7 +1565,7 @@
         "H": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "18"
         }
       }
@@ -1665,7 +1657,7 @@
         "F": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "G": {
@@ -1910,7 +1902,7 @@
         "H": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "18"
         }
       }
@@ -2088,7 +2080,7 @@
         "E": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "F": {
@@ -2192,7 +2184,7 @@
         "F": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "G": {
@@ -2253,7 +2245,7 @@
         "H": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "18"
         }
       }
@@ -2284,7 +2276,7 @@
         "E": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "F": {
@@ -2339,7 +2331,7 @@
         "F": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "G": {
@@ -2388,7 +2380,7 @@
         "F": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "G": {
@@ -2449,7 +2441,7 @@
         "H": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "18"
         }
       }
@@ -2480,7 +2472,7 @@
         "E": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "F": {
@@ -2578,7 +2570,7 @@
         "E": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "F": {
@@ -2939,7 +2931,7 @@
         "H": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "18"
         }
       }
@@ -3129,7 +3121,7 @@
         "H": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "18"
         }
       }
@@ -3166,7 +3158,7 @@
         "E": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "F": {
@@ -3264,7 +3256,7 @@
         "E": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "F": {
@@ -3423,7 +3415,7 @@
         "H": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "18"
         }
       }
@@ -3509,7 +3501,7 @@
         "E": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "F": {
@@ -3558,7 +3550,7 @@
         "F": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "G": {
@@ -3587,10 +3579,10 @@
           "room": "2"
         },
         "B": {
-          "subject": "Global Politics",
+          "subject": "Economics",
           "level": "HL",
-          "teacher": "Ryan",
-          "room": "10"
+          "teacher": "Brian",
+          "room": "9"
         },
         "C": {
           "subject": "ESS",
@@ -3717,7 +3709,7 @@
         "H": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "18"
         }
       }
@@ -3962,7 +3954,7 @@
         "H": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "18"
         }
       }
@@ -4146,7 +4138,7 @@
         "F": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "G": {
@@ -4195,7 +4187,7 @@
         "F": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "G": {
@@ -4293,7 +4285,7 @@
         "F": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "G": {
@@ -4581,7 +4573,7 @@
         "E": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "F": {
@@ -4679,7 +4671,7 @@
         "E": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "F": {
@@ -4728,7 +4720,7 @@
         "E": {
           "subject": "English Lang & Lit",
           "level": "SL",
-          "teacher": "Sofía",
+          "teacher": "Heloise",
           "room": "16"
         },
         "F": {
@@ -4748,6 +4740,55 @@
           "level": "TOK",
           "teacher": "Christine",
           "room": "17"
+        }
+      }
+    },
+    {
+      "id": "yune-sandi-wone",
+      "name": "Yune Sandi Wone",
+      "cohort": "IB1",
+      "blocks": {
+        "A": {
+          "subject": "Physics",
+          "level": "HL",
+          "teacher": "Erick",
+          "room": "14"
+        },
+        "B": {
+          "subject": "Visual Arts",
+          "level": "HL",
+          "teacher": "Melissa",
+          "room": "3"
+        },
+        "C": {
+          "subject": "Math Analysis and Approaches",
+          "level": "HL",
+          "teacher": "Chris",
+          "room": "8"
+        },
+        "D": {
+          "subject": "Global Politics",
+          "level": "SL",
+          "teacher": "Ryan",
+          "room": "10"
+        },
+        "E": {
+          "subject": "English Lang & Lit",
+          "level": "SL",
+          "teacher": "Heloise",
+          "room": "16"
+        },
+        "F": {
+          "subject": "Spanish B",
+          "level": "SL",
+          "teacher": "Ana Teresa",
+          "room": "6"
+        },
+        "H": {
+          "subject": "TOK",
+          "level": "TOK",
+          "teacher": "Jeff Lile",
+          "room": "12"
         }
       }
     },
@@ -4797,6 +4838,55 @@
           "level": "TOK",
           "teacher": "Christine",
           "room": "17"
+        }
+      }
+    },
+    {
+      "id": "zhixuan-li-ethan",
+      "name": "Zhixuan Li (Ethan)",
+      "cohort": "IB1",
+      "blocks": {
+        "A": {
+          "subject": "Biology",
+          "level": "HL",
+          "teacher": "Jeff",
+          "room": "15"
+        },
+        "B": {
+          "subject": "Economics",
+          "level": "HL",
+          "teacher": "Brian",
+          "room": "9"
+        },
+        "C": {
+          "subject": "Chemistry",
+          "level": "HL",
+          "teacher": "Karina",
+          "room": "13"
+        },
+        "E": {
+          "subject": "Math Analysis and Approaches",
+          "level": "SL",
+          "teacher": "JD",
+          "room": "10"
+        },
+        "F": {
+          "subject": "TOK",
+          "level": "TOK",
+          "teacher": "Meli",
+          "room": "3"
+        },
+        "G": {
+          "subject": "English Lang & Lit",
+          "level": "SL",
+          "teacher": "Sofía",
+          "room": "18"
+        },
+        "H": {
+          "subject": "SSST",
+          "level": "SL",
+          "teacher": "Rolando",
+          "room": "5"
         }
       }
     },
