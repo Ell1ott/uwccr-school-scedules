@@ -1,16 +1,17 @@
 import { EllipsisVertical } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { DAYS } from "../data/weekTemplate";
 import { formatTime } from "../lib/buildSchedule";
 import type { DayId, ScheduleEvent, Student } from "../types";
 import { EventCard } from "./EventCard";
 import { ScheduleMenu } from "./ScheduleMenu";
 
+const LINE_HALF_PX = 4;
+
 export function DayTimeline({
   dayId,
   onDayChange,
   events,
-  now,
   onClassClick,
   students,
   selectedId,
@@ -21,7 +22,6 @@ export function DayTimeline({
   dayId: DayId;
   onDayChange: (id: DayId) => void;
   events: ScheduleEvent[];
-  now?: Date;
   onClassClick?: (event: ScheduleEvent) => void;
   students: Student[];
   selectedId: string | null;
@@ -31,20 +31,27 @@ export function DayTimeline({
 }) {
   const index = DAYS.findIndex((d) => d.id === dayId);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [nowMin] = useState(() => {
-    const d = now ?? new Date();
-    return d.getHours() * 60 + d.getMinutes();
-  });
+  const listRef = useRef<HTMLDivElement>(null);
+  const lineRef = useRef<HTMLDivElement>(null);
 
-  const showNow = useMemo(() => {
-    const jsDay = (now ?? new Date()).getDay();
-    const today = DAYS.find((d) => d.jsDay === jsDay);
-    if (!today || today.id !== dayId) return null;
-    const first = events[0]?.startMin ?? 0;
-    const last = events[events.length - 1]?.endMin ?? 0;
-    if (nowMin < first || nowMin > last) return null;
-    return nowMin;
-  }, [dayId, events, now, nowMin]);
+  useLayoutEffect(() => {
+    const list = listRef.current;
+    const line = lineRef.current;
+    if (!list || !line) return;
+
+    let frame = 0;
+    let cancelled = false;
+    const tick = () => {
+      if (cancelled) return;
+      placeNowLine(list, line, dayId);
+      frame = requestAnimationFrame(tick);
+    };
+    tick();
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(frame);
+    };
+  }, [dayId, events]);
 
   return (
     <div className="flex flex-col">
@@ -91,45 +98,113 @@ export function DayTimeline({
         />
       ) : null}
 
-      <div className="relative mt-2 flex flex-col gap-3 px-container-padding-mobile pb-16">
-        {events.map((event) => {
-          const isNowHere =
-            showNow !== null && showNow >= event.startMin && showNow < event.endMin;
-          return (
+      <div
+        ref={listRef}
+        className="relative mt-2 flex flex-col gap-3 px-container-padding-mobile pb-16"
+      >
+        {events.map((event) => (
+          <div
+            key={event.id}
+            data-start={event.startMin}
+            data-end={event.endMin}
+            className={`relative flex flex-row gap-item-gap ${
+              event.kind === "study" ? "items-center" : ""
+            }`}
+          >
             <div
-              key={event.id}
-              className={`relative flex flex-row gap-item-gap ${
-                event.kind === "study" ? "items-center" : ""
+              className={`w-[72px] flex-shrink-0 text-right tabular-nums whitespace-nowrap ${
+                event.kind === "study" ? "" : "pt-4"
               }`}
             >
-              <div
-                className={`w-[72px] flex-shrink-0 text-right tabular-nums whitespace-nowrap ${
-                  event.kind === "study" ? "" : "pt-4"
-                }`}
-              >
-                <div className="font-semibold text-time-stamp text-on-surface-variant">
-                  {formatTime(event.start)}
-                </div>
-                <div className="mt-0.5 text-[11px] leading-4 font-medium text-on-surface-variant/45">
-                  {formatTime(event.end)}
-                </div>
+              <div className="font-semibold text-time-stamp text-on-surface-variant">
+                {formatTime(event.start)}
               </div>
-              <div className="min-w-0 flex-1">
-                <EventCard event={event} onOpen={onClassClick} />
+              <div className="mt-0.5 text-[11px] leading-4 font-medium text-on-surface-variant/45">
+                {formatTime(event.end)}
               </div>
-              {isNowHere ? (
-                <div className="pointer-events-none absolute inset-x-0 top-2 z-20 flex items-center">
-                  <div className="w-[72px]" />
-                  <div className="flex flex-1 items-center">
-                    <div className="-ml-1 h-2 w-2 rounded-full bg-primary" />
-                    <div className="h-[2px] flex-1 bg-primary/30" />
-                  </div>
-                </div>
-              ) : null}
             </div>
-          );
-        })}
+            <div className="min-w-0 flex-1">
+              <EventCard event={event} onOpen={onClassClick} />
+            </div>
+          </div>
+        ))}
+        <div
+          ref={lineRef}
+          aria-hidden
+          className="pointer-events-none absolute top-0 right-2.5 z-20 flex items-center opacity-0 left-[calc(72px+var(--spacing-item-gap))]"
+        >
+          <div className="absolute left-0 size-2 -translate-x-1/2 rounded-full bg-primary" />
+          <div className="h-[2px] w-full bg-primary/30" />
+        </div>
       </div>
     </div>
   );
+}
+
+function minutesOfDay(date: Date) {
+  return (
+    date.getHours() * 60 +
+    date.getMinutes() +
+    date.getSeconds() / 60 +
+    date.getMilliseconds() / 60_000
+  );
+}
+
+function lerp(a: number, b: number, t: number) {
+  return a + (b - a) * Math.min(1, Math.max(0, t));
+}
+
+function nowLineOffset(
+  slots: { startMin: number; endMin: number; top: number; bottom: number }[],
+  nowMin: number,
+) {
+  const first = slots[0];
+  const last = slots[slots.length - 1];
+  if (!first || nowMin < first.startMin || nowMin > last.endMin) return null;
+
+  for (let i = 0; i < slots.length; i++) {
+    const slot = slots[i];
+    const next = slots[i + 1];
+
+    if (nowMin <= slot.endMin) {
+      const duration = slot.endMin - slot.startMin;
+      const t = duration <= 0 ? 0 : (nowMin - slot.startMin) / duration;
+      return lerp(slot.top, slot.bottom, t);
+    }
+
+    if (next && nowMin < next.startMin) {
+      const duration = next.startMin - slot.endMin;
+      const t = duration <= 0 ? 1 : (nowMin - slot.endMin) / duration;
+      return lerp(slot.bottom, next.top, t);
+    }
+  }
+
+  return last.bottom;
+}
+
+function placeNowLine(list: HTMLElement, line: HTMLElement, dayId: DayId) {
+  const now = new Date();
+  const today = DAYS.find((day) => day.jsDay === now.getDay());
+  if (!today || today.id !== dayId) {
+    line.style.opacity = "0";
+    return;
+  }
+
+  const slots = Array.from(
+    list.querySelectorAll<HTMLElement>(":scope > [data-start]"),
+  ).map((row) => ({
+    startMin: Number(row.dataset.start),
+    endMin: Number(row.dataset.end),
+    top: row.offsetTop,
+    bottom: row.offsetTop + row.offsetHeight,
+  }));
+
+  const y = nowLineOffset(slots, minutesOfDay(now));
+  if (y == null) {
+    line.style.opacity = "0";
+    return;
+  }
+
+  line.style.opacity = "1";
+  line.style.transform = `translateY(${y - LINE_HALF_PX}px)`;
 }
