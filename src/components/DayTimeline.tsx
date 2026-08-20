@@ -98,43 +98,45 @@ export function DayTimeline({
         />
       ) : null}
 
-      <div
-        ref={listRef}
-        className="relative mt-2 flex flex-col gap-3 px-container-padding-mobile pb-16"
-      >
-        {events.map((event) => (
-          <div
-            key={event.id}
-            data-start={event.startMin}
-            data-end={event.endMin}
-            className={`relative flex flex-row gap-item-gap ${
-              event.kind === "study" ? "items-center" : ""
-            }`}
-          >
+      <div className="mt-2 px-container-padding-mobile pb-16">
+        <div ref={listRef} className="relative flex flex-col gap-3">
+          {events.map((event) => (
             <div
-              className={`w-[72px] flex-shrink-0 text-right tabular-nums whitespace-nowrap ${
-                event.kind === "study" ? "" : "pt-4"
+              key={event.id}
+              data-start={event.startMin}
+              data-end={event.endMin}
+              className={`relative flex flex-row gap-item-gap ${
+                event.kind === "study" ? "items-center" : ""
               }`}
             >
-              <div className="font-semibold text-time-stamp text-on-surface-variant">
-                {formatTime(event.start)}
+              <div
+                className={`w-[72px] flex-shrink-0 text-right tabular-nums whitespace-nowrap ${
+                  event.kind === "study" ? "" : "pt-4"
+                }`}
+              >
+                <div className="font-semibold text-time-stamp text-on-surface-variant">
+                  {formatTime(event.start)}
+                </div>
+                <div className="mt-0.5 text-[11px] leading-4 font-medium text-on-surface-variant/45">
+                  {formatTime(event.end)}
+                </div>
               </div>
-              <div className="mt-0.5 text-[11px] leading-4 font-medium text-on-surface-variant/45">
-                {formatTime(event.end)}
+              <div className="min-w-0 flex-1">
+                <EventCard event={event} onOpen={onClassClick} />
               </div>
             </div>
-            <div className="min-w-0 flex-1">
-              <EventCard event={event} onOpen={onClassClick} />
+          ))}
+          <div
+            ref={lineRef}
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 z-20 flex items-center gap-item-gap opacity-0"
+          >
+            <div className="w-[72px] shrink-0" />
+            <div className="relative min-w-0 flex-1">
+              <div className="absolute top-1/2 left-0 size-2 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary" />
+              <div className="h-[2px] w-full bg-primary/30" />
             </div>
           </div>
-        ))}
-        <div
-          ref={lineRef}
-          aria-hidden
-          className="pointer-events-none absolute top-0 right-2.5 z-20 flex items-center opacity-0 left-[calc(72px+var(--spacing-item-gap))]"
-        >
-          <div className="absolute left-0 size-2 -translate-x-1/2 rounded-full bg-primary" />
-          <div className="h-[2px] w-full bg-primary/30" />
         </div>
       </div>
     </div>
