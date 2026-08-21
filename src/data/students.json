@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-20T18:05:31.640749+00:00",
+  "generatedAt": "2026-08-21T14:19:07.666778+00:00",
   "source": "https://docs.google.com/spreadsheets/d/1pGFqN1XrL4T_NDr_a9fkAmuwMf5ob3e_0_f6_uFDC8c/export?format=xlsx&gid=0 + students.json (IB2 unchanged)",
   "students": [
     {
@@ -341,7 +341,7 @@
           "subject": "TOK",
           "level": "TOK",
           "teacher": "Tiya",
-          "room": "17"
+          "room": "2"
         }
       }
     },
@@ -1027,7 +1027,7 @@
           "subject": "TOK",
           "level": "TOK",
           "teacher": "Tiya",
-          "room": "17"
+          "room": "2"
         }
       }
     },
@@ -1223,7 +1223,7 @@
           "subject": "TOK",
           "level": "TOK",
           "teacher": "Tiya",
-          "room": "17"
+          "room": "2"
         }
       }
     },
@@ -1690,6 +1690,12 @@
           "level": "HL",
           "teacher": "Norman",
           "room": "11"
+        },
+        "D": {
+          "subject": "English B",
+          "level": "SL",
+          "teacher": "Mauricio",
+          "room": "5"
         },
         "F": {
           "subject": "Math Applications and Interpretation",
@@ -2191,7 +2197,7 @@
           "subject": "TOK",
           "level": "TOK",
           "teacher": "Tiya",
-          "room": "17"
+          "room": "2"
         },
         "H": {
           "subject": "Math Analysis and Approaches",
@@ -2730,7 +2736,7 @@
           "subject": "TOK",
           "level": "TOK",
           "teacher": "Tiya",
-          "room": "17"
+          "room": "2"
         },
         "H": {
           "subject": "ESS",
@@ -2877,7 +2883,7 @@
           "subject": "TOK",
           "level": "TOK",
           "teacher": "Tiya",
-          "room": "17"
+          "room": "2"
         },
         "H": {
           "subject": "ESS",
@@ -2975,7 +2981,7 @@
           "subject": "TOK",
           "level": "TOK",
           "teacher": "Tiya",
-          "room": "17"
+          "room": "2"
         },
         "H": {
           "subject": "SSST",
@@ -3068,6 +3074,12 @@
           "level": "SL",
           "teacher": "JD",
           "room": "10"
+        },
+        "G": {
+          "subject": "English Lang & Lit",
+          "level": "SL",
+          "teacher": "Sofía",
+          "room": "18"
         },
         "H": {
           "subject": "SSST",
@@ -3210,12 +3222,6 @@
           "teacher": "Paula",
           "room": "2"
         },
-        "G": {
-          "subject": "TOK",
-          "level": "TOK",
-          "teacher": "Tiya",
-          "room": "17"
-        },
         "H": {
           "subject": "Math Analysis and Approaches",
           "level": "SL",
@@ -3312,7 +3318,7 @@
           "subject": "TOK",
           "level": "TOK",
           "teacher": "Tiya",
-          "room": "17"
+          "room": "2"
         },
         "H": {
           "subject": "SSST",
@@ -3361,7 +3367,7 @@
           "subject": "TOK",
           "level": "TOK",
           "teacher": "Tiya",
-          "room": "17"
+          "room": "2"
         },
         "H": {
           "subject": "ESS",
@@ -3410,7 +3416,7 @@
           "subject": "TOK",
           "level": "TOK",
           "teacher": "Tiya",
-          "room": "17"
+          "room": "2"
         },
         "H": {
           "subject": "English Lang & Lit",
@@ -3851,7 +3857,7 @@
           "subject": "TOK",
           "level": "TOK",
           "teacher": "Tiya",
-          "room": "17"
+          "room": "2"
         },
         "H": {
           "subject": "ESS",
@@ -4390,7 +4396,7 @@
           "subject": "TOK",
           "level": "TOK",
           "teacher": "Tiya",
-          "room": "17"
+          "room": "2"
         },
         "H": {
           "subject": "ESS",
@@ -4586,7 +4592,7 @@
           "subject": "TOK",
           "level": "TOK",
           "teacher": "Tiya",
-          "room": "17"
+          "room": "2"
         },
         "H": {
           "subject": "ESS",
