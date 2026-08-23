@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-21T14:19:07.666778+00:00",
+  "generatedAt": "2026-08-23T03:05:52.203742+00:00",
   "source": "https://docs.google.com/spreadsheets/d/1pGFqN1XrL4T_NDr_a9fkAmuwMf5ob3e_0_f6_uFDC8c/export?format=xlsx&gid=0 + students.json (IB2 unchanged)",
   "students": [
     {
@@ -118,10 +118,10 @@
           "room": "3"
         },
         "C": {
-          "subject": "ESS",
+          "subject": "Math Analysis and Approaches",
           "level": "HL",
-          "teacher": "Heidy",
-          "room": "9"
+          "teacher": "Chris",
+          "room": "8"
         },
         "D": {
           "subject": "English Lit",
@@ -135,17 +135,17 @@
           "teacher": "Rolando",
           "room": "5"
         },
-        "G": {
-          "subject": "Math Analysis and Approaches",
-          "level": "SL",
-          "teacher": "JD",
-          "room": "10"
-        },
-        "H": {
+        "F": {
           "subject": "TOK",
           "level": "TOK",
-          "teacher": "Jeff Lile",
-          "room": "12"
+          "teacher": "Meli",
+          "room": "3"
+        },
+        "H": {
+          "subject": "ESS",
+          "level": "SL",
+          "teacher": "Heidy",
+          "room": "9"
         }
       }
     },
@@ -4270,9 +4270,15 @@
           "teacher": "Erick",
           "room": "14"
         },
+        "B": {
+          "subject": "Math Analysis and Approaches",
+          "level": "HL",
+          "teacher": "Chris",
+          "room": "8"
+        },
         "C": {
           "subject": "Global Politics",
-          "level": "HL",
+          "level": "SL",
           "teacher": "Tiya",
           "room": "2"
         },
@@ -4293,12 +4299,6 @@
           "level": "SL",
           "teacher": "Heloise",
           "room": "16"
-        },
-        "G": {
-          "subject": "Math Analysis and Approaches",
-          "level": "SL",
-          "teacher": "JD",
-          "room": "10"
         },
         "H": {
           "subject": "TOK",
@@ -4711,6 +4711,12 @@
           "teacher": "Erick",
           "room": "14"
         },
+        "B": {
+          "subject": "Math Analysis and Approaches",
+          "level": "HL",
+          "teacher": "Chris",
+          "room": "8"
+        },
         "C": {
           "subject": "Chemistry",
           "level": "HL",
@@ -4719,7 +4725,7 @@
         },
         "D": {
           "subject": "Global Politics",
-          "level": "HL",
+          "level": "SL",
           "teacher": "Ryan",
           "room": "10"
         },
@@ -4734,12 +4740,6 @@
           "level": "SL",
           "teacher": "Andrés",
           "room": "4"
-        },
-        "G": {
-          "subject": "Math Analysis and Approaches",
-          "level": "SL",
-          "teacher": "JD",
-          "room": "10"
         },
         "H": {
           "subject": "TOK",
