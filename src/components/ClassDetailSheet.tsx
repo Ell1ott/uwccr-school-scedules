@@ -1,12 +1,19 @@
 import { DoorOpen, User, Users, X } from "lucide-react";
-import { useEffect, useId, useMemo, useRef, type ReactNode } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { formatTime } from "../lib/buildSchedule";
-import { classmatesFor, initials, meetingsForBlock } from "../lib/classDetail";
+import {
+  classmatesFor,
+  initials,
+  meetingsForBlock,
+  studyMatesFor,
+} from "../lib/classDetail";
 import { usePalette } from "../lib/palette";
 import { teacherIdForName, formatCohorts } from "../lib/teachers";
 import { toneForEvent } from "../lib/tones";
-import type { PersonKind, ScheduleEvent, Student } from "../types";
+import type { CohortId, PersonKind, ScheduleEvent, Student } from "../types";
+
+const COHORTS: CohortId[] = ["IB1", "IB2"];
 
 export function ClassDetailSheet({
   event,
@@ -34,18 +41,24 @@ export function ClassDetailSheet({
   const onCloseRef = useRef(onClose);
   const currentStudent = students.find((item) => item.id === currentStudentId);
   const teacherView = viewerKind === "teacher";
+  const isStudy = event.kind === "study";
+  const [rosterCohort, setRosterCohort] = useState<CohortId>(
+    () => currentStudent?.cohort ?? "IB1",
+  );
   const classmates = useMemo(
     () =>
-      classmatesFor(
-        students,
-        event,
-        teacherView
-          ? { ignoreLevel: true }
-          : currentStudent
-            ? { cohort: currentStudent.cohort }
-            : undefined,
-      ),
-    [students, event, currentStudent, teacherView],
+      isStudy
+        ? studyMatesFor(students, event, rosterCohort)
+        : classmatesFor(
+            students,
+            event,
+            teacherView
+              ? { ignoreLevel: true }
+              : currentStudent
+                ? { cohort: currentStudent.cohort }
+                : undefined,
+          ),
+    [students, event, currentStudent, teacherView, isStudy, rosterCohort],
   );
   const meetings = event.block
     ? meetingsForBlock(event.block, communityMeeting)
@@ -55,6 +68,10 @@ export function ClassDetailSheet({
   useEffect(() => {
     onCloseRef.current = onClose;
   }, [onClose]);
+
+  useEffect(() => {
+    setRosterCohort(currentStudent?.cohort ?? "IB1");
+  }, [event.id, currentStudent?.cohort]);
 
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
@@ -73,21 +90,34 @@ export function ClassDetailSheet({
     };
   }, []);
 
-  const chipParts = [
-    event.cohorts && event.cohorts.length > 0
-      ? formatCohorts(event.cohorts)
-      : currentStudent?.cohort,
-    event.level,
-    event.block ? `Block ${event.block}` : null,
-  ].filter(Boolean);
-  const chip = chipParts.length > 0 ? chipParts.join(" · ") : null;
-  const rosterLabel = teacherView ? "Students" : "Classmates";
+  const chipParts = isStudy
+    ? [event.block ? `Block ${event.block}` : null]
+    : [
+        event.cohorts && event.cohorts.length > 0
+          ? formatCohorts(event.cohorts)
+          : currentStudent?.cohort,
+        event.level,
+        event.block ? `Block ${event.block}` : null,
+      ];
+  const chip = chipParts.filter(Boolean).join(" · ") || null;
+  const rosterLabel = isStudy
+    ? "Also free"
+    : teacherView
+      ? "Students"
+      : "Classmates";
+  const kindLabel =
+    isStudy && event.title === "Prep" ? "Prep" : isStudy ? "Study" : "Class";
+  const emptyRoster = isStudy
+    ? `No ${rosterCohort} students are free this block.`
+    : teacherView
+      ? "No students are listed in this class."
+      : "No one else is listed in this class.";
 
   return createPortal(
     <div className="fixed inset-0 z-[80] flex items-end justify-center md:items-center md:p-6">
       <button
         type="button"
-        className="sheet-overlay absolute inset-0 bg-primary/40 backdrop-blur-[2px]"
+        className="sheet-overlay absolute inset-0 bg-primary/45"
         aria-label="Close class details"
         onClick={onClose}
       />
@@ -104,7 +134,7 @@ export function ClassDetailSheet({
           <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-current/25 md:hidden" />
           <div className="flex items-center justify-between gap-3">
             <p className="text-label-sm tracking-[0.14em] text-current/70 uppercase">
-              Class
+              {kindLabel}
             </p>
             <button
               ref={closeRef}
@@ -131,30 +161,32 @@ export function ClassDetailSheet({
           ) : null}
         </div>
 
-        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-5 pb-safe">
-          <dl className="grid grid-cols-2 gap-3">
-            <Fact
-              label="Teacher"
-              value={event.teacher ?? "—"}
-              icon={<User size={14} strokeWidth={1.75} />}
-              onClick={
-                !teacherView && teacherId
-                  ? () => {
-                      onSelectTeacher(teacherId);
-                      onClose();
-                    }
-                  : undefined
-              }
-            />
-            <Fact
-              label="Room"
-              value={event.room ? `Rm ${event.room}` : "—"}
-              icon={<DoorOpen size={14} strokeWidth={1.75} />}
-            />
-          </dl>
+        <div className="sheet-scroll min-h-0 flex-1 px-5 pt-5 pb-safe">
+          {!isStudy ? (
+            <dl className="grid grid-cols-2 gap-3">
+              <Fact
+                label="Teacher"
+                value={event.teacher ?? "—"}
+                icon={<User size={14} strokeWidth={1.75} />}
+                onClick={
+                  !teacherView && teacherId
+                    ? () => {
+                        onSelectTeacher(teacherId);
+                        onClose();
+                      }
+                    : undefined
+                }
+              />
+              <Fact
+                label="Room"
+                value={event.room ? `Rm ${event.room}` : "—"}
+                icon={<DoorOpen size={14} strokeWidth={1.75} />}
+              />
+            </dl>
+          ) : null}
 
           {meetings.length > 0 ? (
-            <section className="mt-6">
+            <section className={isStudy ? "" : "mt-6"}>
               <h3 className="text-label-sm tracking-[0.12em] text-on-surface-variant uppercase">
                 Meets
               </h3>
@@ -201,20 +233,45 @@ export function ClassDetailSheet({
           ) : null}
 
           <section className="mt-6 pb-6">
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 className="flex items-center gap-1.5 text-label-sm tracking-[0.12em] text-on-surface-variant uppercase">
                 <Users size={12} strokeWidth={1.75} aria-hidden />
                 {rosterLabel}
+                <span className="rounded-full bg-surface-container px-2 py-0.5 text-[11px] font-medium tracking-normal text-on-surface-variant normal-case tabular-nums">
+                  {classmates.length}
+                </span>
               </h3>
-              <span className="rounded-full bg-surface-container px-2 py-0.5 text-[11px] font-medium text-on-surface-variant">
-                {classmates.length}
-              </span>
+              {isStudy ? (
+                <div
+                  role="radiogroup"
+                  aria-label="Year"
+                  className="flex rounded-full bg-surface-container p-1"
+                >
+                  {COHORTS.map((id) => {
+                    const selected = rosterCohort === id;
+                    return (
+                      <button
+                        key={id}
+                        type="button"
+                        role="radio"
+                        aria-checked={selected}
+                        className={`rounded-full px-3 py-1 text-label-sm tracking-wide ${
+                          selected
+                            ? "bg-primary text-on-primary"
+                            : "text-on-surface-variant hover:text-on-surface"
+                        }`}
+                        onClick={() => setRosterCohort(id)}
+                      >
+                        {id}
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : null}
             </div>
             {classmates.length === 0 ? (
               <p className="mt-3 text-body-md text-on-surface-variant">
-                {teacherView
-                  ? "No students are listed in this class."
-                  : "No one else is listed in this class."}
+                {emptyRoster}
               </p>
             ) : (
               <ul className="mt-2 divide-y divide-outline-variant/60">
@@ -247,7 +304,7 @@ export function ClassDetailSheet({
                         <span className="min-w-0 flex-1 truncate text-body-md">
                           {mate.name}
                         </span>
-                        {teacherView ? (
+                        {teacherView && !isStudy ? (
                           <span className="text-[11px] font-medium tracking-wide text-on-surface-variant">
                             {mate.cohort}
                           </span>

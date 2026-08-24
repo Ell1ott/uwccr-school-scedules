@@ -87,6 +87,26 @@ export function classmatesFor(
     );
 }
 
+export function studyMatesFor(
+  students: Student[],
+  event: ScheduleEvent,
+  cohort: CohortId,
+): Classmate[] {
+  if (!event.block || event.kind !== "study") return [];
+  const block = event.block;
+  return students
+    .filter((student) => student.cohort === cohort)
+    .filter((student) => !student.blocks[block])
+    .map((student) => ({
+      id: student.id,
+      name: student.name,
+      cohort: student.cohort,
+    }))
+    .sort((a, b) =>
+      a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
+    );
+}
+
 export function meetingsForBlock(
   block: BlockLetter,
   communityMeeting = false,

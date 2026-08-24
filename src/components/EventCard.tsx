@@ -42,12 +42,16 @@ export function EventCard({
   }
 
   if (event.kind === "study") {
-    return (
-      <div
-        className={`relative flex h-full items-center justify-center gap-2 ${
-          fill || compact ? "" : "min-h-[7.5rem]"
-        }`}
-      >
+    const interactive = Boolean(onOpen) && Boolean(event.block);
+    const className = `relative flex h-full w-full items-center justify-center gap-2 appearance-none ${
+      fill || compact ? "" : "min-h-[7.5rem]"
+    } ${
+      interactive
+        ? "cursor-pointer rounded-[10px] hover:bg-black/[0.03] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+        : ""
+    }`;
+    const body = (
+      <>
         <span className="text-[13px] font-medium tracking-wide text-black/45">
           {event.title}
         </span>
@@ -57,8 +61,22 @@ export function EventCard({
           </span>
         ) : null}
         {live}
-      </div>
+      </>
     );
+    if (interactive) {
+      return (
+        <button
+          type="button"
+          className={className}
+          aria-haspopup="dialog"
+          aria-label={`${event.title} details`}
+          onClick={() => onOpen?.(event)}
+        >
+          {body}
+        </button>
+      );
+    }
+    return <div className={className}>{body}</div>;
   }
 
   const chipLabel =

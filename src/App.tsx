@@ -1,6 +1,8 @@
+import { Shuffle } from "lucide-react";
 import { useLayoutEffect, useMemo, useState } from "react";
 import studentsFile from "./data/students.json" with { type: "json" };
 import { DAYS } from "./data/weekTemplate";
+import { ClassChooser } from "./components/ClassChooser";
 import { ClassDetailSheet } from "./components/ClassDetailSheet";
 import { CommunityToggle } from "./components/CommunityToggle";
 import { PalettePicker } from "./components/PalettePicker";
@@ -44,6 +46,7 @@ export default function App() {
     () => readStoredCommunityMeeting(),
   );
   const [openEvent, setOpenEvent] = useState<ScheduleEvent | null>(null);
+  const [chooserOpen, setChooserOpen] = useState(false);
 
   function choosePalette(id: PaletteId) {
     setPalette(id);
@@ -62,6 +65,11 @@ export default function App() {
     setOpenEvent(null);
   }
 
+  function openChooser() {
+    setOpenEvent(null);
+    setChooserOpen(true);
+  }
+
   const student =
     selected?.kind === "student"
       ? students.find((item) => item.id === selected.id)
@@ -71,10 +79,11 @@ export default function App() {
       ? teachers.find((item) => item.id === selected.id)
       : undefined;
   const week = useMemo(() => {
+    if (chooserOpen) return null;
     if (student) return buildSchedule(student, communityMeeting);
     if (teacher) return buildTeacherSchedule(teacher, communityMeeting);
     return null;
-  }, [student, teacher, communityMeeting]);
+  }, [chooserOpen, student, teacher, communityMeeting]);
 
   useLayoutEffect(() => {
     if (!selected) return;
@@ -92,6 +101,14 @@ export default function App() {
 
   return (
     <PaletteProvider palette={palette} setPalette={choosePalette}>
+      {chooserOpen ? (
+        <ClassChooser
+          students={students}
+          currentStudent={student}
+          communityMeeting={communityMeeting}
+          onClose={() => setChooserOpen(false)}
+        />
+      ) : (
       <div className="min-h-dvh bg-surface text-on-surface">
         <header className="fixed top-0 z-50 hidden w-full bg-surface/80 pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)] backdrop-blur-xl md:block">
           <div className="flex h-16 items-center justify-between gap-3 px-container-padding-mobile md:px-container-padding-desktop">
@@ -102,6 +119,22 @@ export default function App() {
               </p>
             </div>
             <div className="flex min-w-0 items-center gap-2">
+              <button
+                type="button"
+                className="flex h-10 flex-shrink-0 items-center gap-2 rounded-full bg-surface-container px-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+                aria-label="Try classes"
+                onClick={openChooser}
+              >
+                <Shuffle
+                  size={14}
+                  strokeWidth={1.75}
+                  className="shrink-0 text-on-surface-variant"
+                  aria-hidden
+                />
+                <span className="hidden text-label-sm tracking-wide text-on-surface-variant lg:inline">
+                  Try classes
+                </span>
+              </button>
               <PalettePicker />
               <CommunityToggle
                 on={communityMeeting}
@@ -159,6 +192,7 @@ export default function App() {
           />
         ) : null}
       </div>
+      )}
     </PaletteProvider>
   );
 }
