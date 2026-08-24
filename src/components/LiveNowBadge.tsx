@@ -13,13 +13,15 @@ export function LiveNowBadge({
   dayId,
   startMin,
   endMin,
+  weekStart,
 }: {
   dayId: DayId;
   startMin: number;
   endMin: number;
+  weekStart?: string;
 }) {
   const now = useNow();
-  if (!isHappeningNow(dayId, startMin, endMin, now)) return null;
+  if (!isHappeningNow(dayId, startMin, endMin, now, weekStart)) return null;
 
   const remainingMin = Math.max(0, endMin - minutesOfDay(now));
   const duration = Math.max(endMin - startMin, 1);

@@ -1,4 +1,4 @@
-import { ArrowLeft, Shuffle } from "lucide-react";
+import { ArrowLeft, CircleAlert, Shuffle } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { academicRowsFor, DAYS } from "../data/weekTemplate";
 import { formatTime } from "../lib/buildSchedule";
@@ -8,6 +8,7 @@ import {
   keepOfferedPicks,
   offeringKey,
   offeringsForCohort,
+  issuesByBlock,
   seedBlocksFromStudent,
   toClassEntry,
   validateChooser,
@@ -74,6 +75,10 @@ export function ClassChooser({
   const counts = useMemo(() => countLevels(blocks), [blocks]);
   const issues = useMemo(
     () => (cohort ? validateChooser(blocks) : []),
+    [cohort, blocks],
+  );
+  const flaggedBlocks = useMemo(
+    () => (cohort ? issuesByBlock(blocks) : {}),
     [cohort, blocks],
   );
   const academicRows = useMemo(
@@ -230,6 +235,7 @@ export function ClassChooser({
                   block={block}
                   offerings={catalog?.[block] ?? []}
                   selected={blocks[block]}
+                  issue={flaggedBlocks[block]}
                   communityMeeting={communityMeeting}
                   palette={palette}
                   onSelect={(offering) => selectOffering(block, offering)}
@@ -333,6 +339,7 @@ function BlockColumn({
   block,
   offerings,
   selected,
+  issue,
   communityMeeting,
   palette,
   onSelect,
@@ -341,6 +348,7 @@ function BlockColumn({
   block: BlockLetter;
   offerings: ClassOffering[];
   selected?: ClassEntry;
+  issue?: string;
   communityMeeting: boolean;
   palette: Parameters<typeof toneForEvent>[1];
   onSelect: (offering: ClassOffering) => void;
@@ -353,11 +361,19 @@ function BlockColumn({
   return (
     <section className="flex min-w-0 flex-1 flex-col">
       <div className="sticky top-0 z-10 bg-surface pb-2">
-        <div className="mb-2 flex items-baseline justify-between gap-2 px-0.5">
-          <h3 className="text-label-sm tracking-[0.12em] text-on-surface uppercase">
+        <div className="mb-2 flex items-center justify-between gap-2 px-0.5">
+          <h3 className="flex min-w-0 items-center gap-1 text-label-sm tracking-[0.12em] text-on-surface uppercase">
             Block {block}
+            {issue ? (
+              <CircleAlert
+                size={12}
+                strokeWidth={2.25}
+                className="shrink-0 text-error"
+                aria-label={issue}
+              />
+            ) : null}
           </h3>
-          <span className="text-[10px] font-medium tracking-wide text-on-surface-variant tabular-nums">
+          <span className="shrink-0 text-[10px] font-medium tracking-wide text-on-surface-variant tabular-nums">
             {meetingLabel(block, communityMeeting)}
           </span>
         </div>

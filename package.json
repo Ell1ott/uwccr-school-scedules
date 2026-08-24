@@ -9,7 +9,7 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "update-schedule": ".venv/bin/python scripts/convert_classlist.py",
+    "update-schedule": ".venv/bin/python scripts/convert_classlist.py && .venv/bin/python scripts/convert_calendar.py",
     "convert": ".venv/bin/python scripts/convert_classlist.py"
   },
   "dependencies": {

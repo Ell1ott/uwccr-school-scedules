@@ -11,19 +11,26 @@ export function EventCard({
   fill = false,
   dayId,
   onOpen,
+  weekStart,
 }: {
   event: ScheduleEvent;
   compact?: boolean;
   fill?: boolean;
   dayId?: DayId;
   onOpen?: (event: ScheduleEvent) => void;
+  weekStart?: string;
 }) {
   const { palette } = usePalette();
   const tone = toneForEvent(event, palette);
   const padding = compact ? "px-2.5 py-2" : "px-3 py-2.5";
   const minHeight = fill || compact ? "" : "min-h-[7.5rem]";
   const live = dayId && !isBandKind(event.kind) ? (
-    <LiveNowBadge dayId={dayId} startMin={event.startMin} endMin={event.endMin} />
+    <LiveNowBadge
+      dayId={dayId}
+      startMin={event.startMin}
+      endMin={event.endMin}
+      weekStart={weekStart}
+    />
   ) : null;
 
   if (isBandKind(event.kind)) {
@@ -88,7 +95,9 @@ export function EventCard({
           : event.level
         : event.block
           ? `Block ${event.block}`
-          : null;
+          : event.cohorts && event.cohorts.length === 1
+            ? event.cohorts[0]
+            : null;
 
   const interactive = event.kind === "class" && Boolean(onOpen);
   const className = `relative flex h-full flex-col justify-start overflow-hidden rounded-[10px] shadow-[0_4px_12px_rgba(4,22,39,0.05)] transition-[filter,box-shadow,transform] duration-200 ${tone.bg} ${tone.text} ${padding} ${minHeight} ${

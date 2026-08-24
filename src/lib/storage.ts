@@ -4,7 +4,7 @@ import type { SelectedPerson } from "../types";
 const STORAGE_KEY = "uwccr-selected-student";
 const PERSON_KEY = "uwccr-selected-person";
 const PALETTE_KEY = "uwccr-color-palette";
-const COMMUNITY_KEY = "uwccr-community-meeting";
+const WEEK_KEY = "uwccr-week-start";
 
 function parsePerson(value: string | null): SelectedPerson | null {
   if (!value) return null;
@@ -77,17 +77,19 @@ export function storePalette(id: PaletteId): void {
   }
 }
 
-export function readStoredCommunityMeeting(): boolean {
+export function readStoredWeekStart(): string | null {
   try {
-    return localStorage.getItem(COMMUNITY_KEY) === "1";
+    const value = localStorage.getItem(WEEK_KEY);
+    if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
   } catch {
-    return false;
+    /* ignore */
   }
+  return null;
 }
 
-export function storeCommunityMeeting(on: boolean): void {
+export function storeWeekStart(weekStart: string): void {
   try {
-    localStorage.setItem(COMMUNITY_KEY, on ? "1" : "0");
+    localStorage.setItem(WEEK_KEY, weekStart);
   } catch {
     /* ignore quota / private mode */
   }

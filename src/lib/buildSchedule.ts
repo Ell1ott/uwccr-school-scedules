@@ -1,11 +1,19 @@
 import {
   academicRowsFor,
   DAYS,
-  fixedByDayFor,
   SHARED_BREAKS,
 } from "../data/weekTemplate";
+import {
+  dateForDay,
+  dayHasCommunityMeeting,
+  dayHasNoClasses,
+  eventsForDate,
+} from "./calendar";
 import type {
+  CalendarEvent,
+  CohortId,
   DayId,
+  PersonKind,
   ScheduleEvent,
   Student,
   Teacher,
@@ -31,12 +39,25 @@ export function todayDayId(now = new Date()): DayId | null {
   return match?.id ?? null;
 }
 
-function appendSharedSlots(
-  events: ScheduleEvent[],
+function calendarToSchedule(
   dayId: DayId,
-  communityMeeting: boolean,
-): void {
-  const fixedByDay = fixedByDayFor(communityMeeting);
+  event: CalendarEvent,
+  index: number,
+): ScheduleEvent {
+  return {
+    id: `${dayId}-${event.title}-${event.start}-${index}`,
+    start: event.start,
+    end: event.end,
+    startMin: parseTime(event.start),
+    endMin: parseTime(event.end),
+    kind: event.kind,
+    title: event.title,
+    icon: event.icon,
+    cohorts: event.cohorts,
+  };
+}
+
+function appendSharedSlots(events: ScheduleEvent[], dayId: DayId): void {
   for (const slot of SHARED_BREAKS) {
     events.push({
       id: `${dayId}-${slot.title}-${slot.start}`,
@@ -49,19 +70,6 @@ function appendSharedSlots(
       icon: slot.icon,
     });
   }
-  for (const slot of fixedByDay[dayId]) {
-    events.push({
-      id: `${dayId}-${slot.title}-${slot.start}`,
-      start: slot.start,
-      end: slot.end,
-      startMin: parseTime(slot.start),
-      endMin: parseTime(slot.end),
-      kind: slot.kind,
-      title: slot.title,
-      subtitle: slot.subtitle,
-      icon: slot.icon,
-    });
-  }
 }
 
 function sortDay(events: ScheduleEvent[]): ScheduleEvent[] {
@@ -69,53 +77,79 @@ function sortDay(events: ScheduleEvent[]): ScheduleEvent[] {
   return events;
 }
 
+function buildDayShell(
+  dayId: DayId,
+  weekStart: string,
+  kind: PersonKind,
+  cohort: CohortId | undefined,
+  fillAcademic: (events: ScheduleEvent[], communityMeeting: boolean) => void,
+): ScheduleEvent[] {
+  const date = dateForDay(weekStart, dayId);
+  const events: ScheduleEvent[] = [];
+  const noClasses = dayHasNoClasses(date, kind, cohort);
+  const communityMeeting = dayHasCommunityMeeting(date);
+
+  if (!noClasses) {
+    fillAcademic(events, communityMeeting);
+  }
+
+  appendSharedSlots(events, dayId);
+  eventsForDate(date, kind, cohort).forEach((event, index) => {
+    events.push(calendarToSchedule(dayId, event, index));
+  });
+  return sortDay(events);
+}
+
 export function buildSchedule(
   student: Student,
-  communityMeeting = false,
+  weekStart: string,
 ): Record<DayId, ScheduleEvent[]> {
   const week = {} as Record<DayId, ScheduleEvent[]>;
-  const academicRows = academicRowsFor(communityMeeting);
 
   for (const day of DAYS) {
-    const events: ScheduleEvent[] = [];
-
-    for (const row of academicRows) {
-      const block = row.blocks[day.id];
-      if (!block) continue;
-      const entry = student.blocks[block];
-      if (entry) {
-        events.push({
-          id: `${day.id}-${block}-${row.start}`,
-          start: row.start,
-          end: row.end,
-          startMin: parseTime(row.start),
-          endMin: parseTime(row.end),
-          kind: "class",
-          title: entry.subject,
-          teacher: entry.teacher,
-          room: entry.room,
-          level: entry.level,
-          block,
-          extras: entry.extras,
-        });
-      } else {
-        events.push({
-          id: `${day.id}-study-${row.start}`,
-          start: row.start,
-          end: row.end,
-          startMin: parseTime(row.start),
-          endMin: parseTime(row.end),
-          kind: "study",
-          title: "Study Period",
-          subtitle: "Self-directed",
-          block,
-          icon: "book-open",
-        });
-      }
-    }
-
-    appendSharedSlots(events, day.id, communityMeeting);
-    week[day.id] = sortDay(events);
+    week[day.id] = buildDayShell(
+      day.id,
+      weekStart,
+      "student",
+      student.cohort,
+      (events, communityMeeting) => {
+        const academicRows = academicRowsFor(communityMeeting);
+        for (const row of academicRows) {
+          const block = row.blocks[day.id];
+          if (!block) continue;
+          const entry = student.blocks[block];
+          if (entry) {
+            events.push({
+              id: `${day.id}-${block}-${row.start}`,
+              start: row.start,
+              end: row.end,
+              startMin: parseTime(row.start),
+              endMin: parseTime(row.end),
+              kind: "class",
+              title: entry.subject,
+              teacher: entry.teacher,
+              room: entry.room,
+              level: entry.level,
+              block,
+              extras: entry.extras,
+            });
+          } else {
+            events.push({
+              id: `${day.id}-study-${row.start}`,
+              start: row.start,
+              end: row.end,
+              startMin: parseTime(row.start),
+              endMin: parseTime(row.end),
+              kind: "study",
+              title: "Study Period",
+              subtitle: "Self-directed",
+              block,
+              icon: "book-open",
+            });
+          }
+        }
+      },
+    );
   }
 
   return week;
@@ -123,62 +157,65 @@ export function buildSchedule(
 
 export function buildTeacherSchedule(
   teacher: Teacher,
-  communityMeeting = false,
+  weekStart: string,
 ): Record<DayId, ScheduleEvent[]> {
   const week = {} as Record<DayId, ScheduleEvent[]>;
-  const academicRows = academicRowsFor(communityMeeting);
 
   for (const day of DAYS) {
-    const events: ScheduleEvent[] = [];
-
-    for (const row of academicRows) {
-      const block = row.blocks[day.id];
-      if (!block) continue;
-      const classes = teacher.blocks[block] ?? [];
-      const [primary, ...rest] = classes;
-      if (primary) {
-        events.push({
-          id: `${day.id}-${block}-${row.start}`,
-          start: row.start,
-          end: row.end,
-          startMin: parseTime(row.start),
-          endMin: parseTime(row.end),
-          kind: "class",
-          title: primary.subject,
-          teacher: teacher.name,
-          room: primary.room,
-          level: primary.level,
-          block,
-          studentCount: primary.studentCount,
-          cohorts: primary.cohorts,
-          extras:
-            rest.length > 0
-              ? rest.map((item) => ({
-                  subject: item.subject,
-                  level: item.level,
-                  teacher: teacher.name,
-                  room: item.room,
-                }))
-              : undefined,
-        });
-      } else {
-        events.push({
-          id: `${day.id}-prep-${row.start}`,
-          start: row.start,
-          end: row.end,
-          startMin: parseTime(row.start),
-          endMin: parseTime(row.end),
-          kind: "study",
-          title: "Prep",
-          subtitle: "No class this block",
-          block,
-          icon: "book-open",
-        });
-      }
-    }
-
-    appendSharedSlots(events, day.id, communityMeeting);
-    week[day.id] = sortDay(events);
+    week[day.id] = buildDayShell(
+      day.id,
+      weekStart,
+      "teacher",
+      undefined,
+      (events, communityMeeting) => {
+        const academicRows = academicRowsFor(communityMeeting);
+        for (const row of academicRows) {
+          const block = row.blocks[day.id];
+          if (!block) continue;
+          const classes = teacher.blocks[block] ?? [];
+          const [primary, ...rest] = classes;
+          if (primary) {
+            events.push({
+              id: `${day.id}-${block}-${row.start}`,
+              start: row.start,
+              end: row.end,
+              startMin: parseTime(row.start),
+              endMin: parseTime(row.end),
+              kind: "class",
+              title: primary.subject,
+              teacher: teacher.name,
+              room: primary.room,
+              level: primary.level,
+              block,
+              studentCount: primary.studentCount,
+              cohorts: primary.cohorts,
+              extras:
+                rest.length > 0
+                  ? rest.map((item) => ({
+                      subject: item.subject,
+                      level: item.level,
+                      teacher: teacher.name,
+                      room: item.room,
+                    }))
+                  : undefined,
+            });
+          } else {
+            events.push({
+              id: `${day.id}-prep-${row.start}`,
+              start: row.start,
+              end: row.end,
+              startMin: parseTime(row.start),
+              endMin: parseTime(row.end),
+              kind: "study",
+              title: "Prep",
+              subtitle: "No class this block",
+              block,
+              icon: "book-open",
+            });
+          }
+        }
+      },
+    );
   }
 
   return week;

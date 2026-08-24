@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { DAYS } from "../data/weekTemplate";
+import { mondayOf } from "./calendar";
 import type { DayId } from "../types";
 
 let current = Date.now();
@@ -46,7 +47,9 @@ export function isHappeningNow(
   startMin: number,
   endMin: number,
   now: Date,
+  weekStart?: string,
 ) {
+  if (weekStart && mondayOf(now) !== weekStart) return false;
   const today = DAYS.find((day) => day.jsDay === now.getDay());
   if (!today || today.id !== dayId) return false;
   const nowMin = minutesOfDay(now);

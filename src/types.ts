@@ -56,7 +56,24 @@ export type EventKind =
   | "activity"
   | "office"
   | "residential"
-  | "community";
+  | "community"
+  | "holiday";
+
+export type CalendarAudience = "both" | "staff";
+
+export type CalendarEvent = {
+  date: string;
+  start: string;
+  end: string;
+  title: string;
+  kind: EventKind;
+  cohorts: CohortId[];
+  audience: CalendarAudience;
+  icon?: string;
+  noClasses: boolean;
+  communityMeeting: boolean;
+  allDay: boolean;
+};
 
 export type ScheduleEvent = {
   id: string;

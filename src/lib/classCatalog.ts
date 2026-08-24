@@ -173,21 +173,75 @@ export function validateChooser(
     );
   }
 
-  const seen = new Map<string, { name: string; count: number }>();
-  for (const entry of Object.values(blocks)) {
+  for (const { name } of duplicateSubjects(blocks).values()) {
+    issues.push(`${name} is selected in more than one block.`);
+  }
+
+  return issues;
+}
+
+function duplicateSubjects(
+  blocks: Partial<Record<BlockLetter, ClassEntry>>,
+): Map<string, { name: string; blocks: BlockLetter[] }> {
+  const seen = new Map<string, { name: string; blocks: BlockLetter[] }>();
+  for (const block of BLOCK_LETTERS) {
+    const entry = blocks[block];
     if (!entry) continue;
     const name = entry.subject.trim();
     if (!name) continue;
     const key = name.toLowerCase();
     const prev = seen.get(key);
-    if (prev) prev.count += 1;
-    else seen.set(key, { name, count: 1 });
+    if (prev) prev.blocks.push(block);
+    else seen.set(key, { name, blocks: [block] });
   }
-  for (const { name, count } of seen.values()) {
-    if (count > 1) {
-      issues.push(`${name} is selected in more than one block.`);
+  for (const [key, value] of seen) {
+    if (value.blocks.length < 2) seen.delete(key);
+  }
+  return seen;
+}
+
+export function issuesByBlock(
+  blocks: Partial<Record<BlockLetter, ClassEntry>>,
+): Partial<Record<BlockLetter, string>> {
+  const reasons: Partial<Record<BlockLetter, string[]>> = {};
+  const counts = countLevels(blocks);
+
+  function flag(block: BlockLetter, reason: string) {
+    const list = reasons[block] ?? [];
+    if (!list.includes(reason)) list.push(reason);
+    reasons[block] = list;
+  }
+
+  for (const block of BLOCK_LETTERS) {
+    const entry = blocks[block];
+    if (!entry) continue;
+    const level = entry.level.trim().toUpperCase();
+    if (counts.HL !== 3 && level === "HL") {
+      flag(block, `Need 3 HL courses (currently ${counts.HL}).`);
+    }
+    if (counts.SL !== 3 && level === "SL") {
+      flag(block, `Need 3 SL courses (currently ${counts.SL}).`);
+    }
+    if (counts.TOK !== 1 && level === "TOK") {
+      flag(
+        block,
+        counts.TOK === 0
+          ? "TOK is missing."
+          : `Need exactly 1 TOK (currently ${counts.TOK}).`,
+      );
     }
   }
 
-  return issues;
+  for (const { name, blocks: conflicted } of duplicateSubjects(blocks).values()) {
+    for (const block of conflicted) {
+      flag(block, `${name} is selected in more than one block.`);
+    }
+  }
+
+  const next: Partial<Record<BlockLetter, string>> = {};
+  for (const block of BLOCK_LETTERS) {
+    const list = reasons[block];
+    if (list && list.length > 0) next[block] = list.join(" ");
+  }
+  return next;
 }

@@ -3,25 +3,25 @@ import { useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
 import type { SelectedPerson, Student, Teacher } from "../types";
 import { cohortCaption, teacherCaption } from "../lib/cohort";
-import { CommunityToggle } from "./CommunityToggle";
 import { PalettePicker } from "./PalettePicker";
 import { StudentPicker } from "./StudentPicker";
+import { WeekNav } from "./WeekNav";
 
 export function ScheduleMenu({
   students,
   teachers,
   selected,
-  communityMeeting,
+  weekStart,
   onSelect,
-  onCommunityChange,
+  onWeekChange,
   onClose,
 }: {
   students: Student[];
   teachers: Teacher[];
   selected: SelectedPerson | null;
-  communityMeeting: boolean;
+  weekStart: string;
   onSelect: (person: SelectedPerson) => void;
-  onCommunityChange: (on: boolean) => void;
+  onWeekChange: (weekStart: string) => void;
   onClose: () => void;
 }) {
   const titleId = useId();
@@ -55,9 +55,9 @@ export function ScheduleMenu({
 
   const caption =
     selected?.kind === "teacher"
-      ? teacherCaption(communityMeeting)
+      ? teacherCaption(weekStart)
       : selectedStudent
-        ? cohortCaption(selectedStudent.cohort, communityMeeting)
+        ? cohortCaption(selectedStudent.cohort, weekStart)
         : "IB1 & IB2 2026–2027";
 
   return createPortal(
@@ -118,11 +118,11 @@ export function ScheduleMenu({
             <h3 className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
               Week
             </h3>
-            <CommunityToggle
-              on={communityMeeting}
-              onChange={onCommunityChange}
+            <WeekNav
+              weekStart={weekStart}
+              onChange={onWeekChange}
               showLabel
-              className="h-12 w-full justify-between px-4"
+              className="h-12 w-full justify-between px-2"
             />
           </section>
 

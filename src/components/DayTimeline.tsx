@@ -2,6 +2,7 @@ import { EllipsisVertical } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { DAYS } from "../data/weekTemplate";
 import { formatTime } from "../lib/buildSchedule";
+import { formatDayDate, mondayOf } from "../lib/calendar";
 import type { DayId, ScheduleEvent, SelectedPerson, Student, Teacher } from "../types";
 import { EventCard } from "./EventCard";
 import { ScheduleMenu } from "./ScheduleMenu";
@@ -16,9 +17,9 @@ export function DayTimeline({
   students,
   teachers,
   selected,
-  communityMeeting,
+  weekStart,
   onSelect,
-  onCommunityChange,
+  onWeekChange,
   paused = false,
 }: {
   dayId: DayId;
@@ -28,9 +29,9 @@ export function DayTimeline({
   students: Student[];
   teachers: Teacher[];
   selected: SelectedPerson | null;
-  communityMeeting: boolean;
+  weekStart: string;
   onSelect: (person: SelectedPerson) => void;
-  onCommunityChange: (on: boolean) => void;
+  onWeekChange: (weekStart: string) => void;
   paused?: boolean;
 }) {
   const index = DAYS.findIndex((d) => d.id === dayId);
@@ -48,7 +49,7 @@ export function DayTimeline({
     let cancelled = false;
     const tick = () => {
       if (cancelled) return;
-      placeNowLine(list, line, dayId);
+      placeNowLine(list, line, dayId, weekStart);
       frame = requestAnimationFrame(tick);
     };
     tick();
@@ -56,7 +57,7 @@ export function DayTimeline({
       cancelled = true;
       cancelAnimationFrame(frame);
     };
-  }, [dayId, events, paused, menuOpen]);
+  }, [dayId, events, paused, menuOpen, weekStart]);
 
   return (
     <div className="flex flex-col">
@@ -77,6 +78,9 @@ export function DayTimeline({
                 onClick={() => onDayChange(day.id)}
               >
                 {day.short}
+                <span className="mt-0.5 block text-[10px] font-medium tracking-normal normal-case opacity-70">
+                  {formatDayDate(weekStart, day.id)}
+                </span>
               </button>
             ))}
           </div>
@@ -97,9 +101,9 @@ export function DayTimeline({
           students={students}
           teachers={teachers}
           selected={selected}
-          communityMeeting={communityMeeting}
+          weekStart={weekStart}
           onSelect={onSelect}
-          onCommunityChange={onCommunityChange}
+          onWeekChange={onWeekChange}
           onClose={() => setMenuOpen(false)}
         />
       ) : null}
@@ -128,7 +132,7 @@ export function DayTimeline({
                 </div>
               </div>
               <div className="min-w-0 flex-1">
-                <EventCard event={event} onOpen={onClassClick} />
+                <EventCard event={event} dayId={dayId} weekStart={weekStart} onOpen={onClassClick} />
               </div>
             </div>
           ))}
@@ -190,8 +194,17 @@ function nowLineOffset(
   return last.bottom;
 }
 
-function placeNowLine(list: HTMLElement, line: HTMLElement, dayId: DayId) {
+function placeNowLine(
+  list: HTMLElement,
+  line: HTMLElement,
+  dayId: DayId,
+  weekStart: string,
+) {
   const now = new Date();
+  if (mondayOf(now) !== weekStart) {
+    line.style.opacity = "0";
+    return;
+  }
   const today = DAYS.find((day) => day.jsDay === now.getDay());
   if (!today || today.id !== dayId) {
     line.style.opacity = "0";

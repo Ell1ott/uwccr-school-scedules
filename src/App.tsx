@@ -4,21 +4,26 @@ import studentsFile from "./data/students.json" with { type: "json" };
 import { DAYS } from "./data/weekTemplate";
 import { ClassChooser } from "./components/ClassChooser";
 import { ClassDetailSheet } from "./components/ClassDetailSheet";
-import { CommunityToggle } from "./components/CommunityToggle";
 import { PalettePicker } from "./components/PalettePicker";
 import { StudentPicker } from "./components/StudentPicker";
 import { StudentRoster } from "./components/StudentRoster";
 import { DayTimeline } from "./components/DayTimeline";
 import { WeekGrid } from "./components/WeekGrid";
+import { WeekNav } from "./components/WeekNav";
 import { buildSchedule, buildTeacherSchedule, todayDayId } from "./lib/buildSchedule";
+import {
+  clampWeekStart,
+  mondayOf,
+  weekHasCommunityMeeting,
+} from "./lib/calendar";
 import { PaletteProvider } from "./lib/palette";
 import {
-  readStoredCommunityMeeting,
   readStoredPalette,
   readStoredPerson,
-  storeCommunityMeeting,
+  readStoredWeekStart,
   storePalette,
   storePerson,
+  storeWeekStart,
 } from "./lib/storage";
 import { cohortCaption, teacherCaption } from "./lib/cohort";
 import { deriveTeachers } from "./lib/teachers";
@@ -42,20 +47,22 @@ export default function App() {
     () => todayDayId() ?? DAYS[0].id,
   );
   const [palette, setPalette] = useState<PaletteId>(() => readStoredPalette());
-  const [communityMeeting, setCommunityMeeting] = useState(
-    () => readStoredCommunityMeeting(),
+  const [weekStart, setWeekStart] = useState(() =>
+    clampWeekStart(readStoredWeekStart() ?? mondayOf(new Date())),
   );
   const [openEvent, setOpenEvent] = useState<ScheduleEvent | null>(null);
   const [chooserOpen, setChooserOpen] = useState(false);
+  const communityMeeting = weekHasCommunityMeeting(weekStart);
 
   function choosePalette(id: PaletteId) {
     setPalette(id);
     storePalette(id);
   }
 
-  function chooseCommunityMeeting(on: boolean) {
-    setCommunityMeeting(on);
-    storeCommunityMeeting(on);
+  function chooseWeek(next: string) {
+    const clamped = clampWeekStart(next);
+    setWeekStart(clamped);
+    storeWeekStart(clamped);
     setOpenEvent(null);
   }
 
@@ -80,10 +87,10 @@ export default function App() {
       : undefined;
   const week = useMemo(() => {
     if (chooserOpen) return null;
-    if (student) return buildSchedule(student, communityMeeting);
-    if (teacher) return buildTeacherSchedule(teacher, communityMeeting);
+    if (student) return buildSchedule(student, weekStart);
+    if (teacher) return buildTeacherSchedule(teacher, weekStart);
     return null;
-  }, [chooserOpen, student, teacher, communityMeeting]);
+  }, [chooserOpen, student, teacher, weekStart]);
 
   useLayoutEffect(() => {
     if (!selected) return;
@@ -94,9 +101,9 @@ export default function App() {
   }, [selected]);
 
   const caption = teacher
-    ? teacherCaption(communityMeeting)
+    ? teacherCaption(weekStart)
     : student
-      ? cohortCaption(student.cohort, communityMeeting)
+      ? cohortCaption(student.cohort, weekStart)
       : "IB1 & IB2 2026–2027";
 
   return (
@@ -136,10 +143,7 @@ export default function App() {
                 </span>
               </button>
               <PalettePicker />
-              <CommunityToggle
-                on={communityMeeting}
-                onChange={chooseCommunityMeeting}
-              />
+              <WeekNav weekStart={weekStart} onChange={chooseWeek} />
               <StudentPicker
                 students={students}
                 teachers={teachers}
@@ -160,7 +164,11 @@ export default function App() {
           ) : (
             <>
               <div className="hidden md:block pt-6">
-                <WeekGrid week={week} onClassClick={setOpenEvent} />
+                <WeekGrid
+                  week={week}
+                  weekStart={weekStart}
+                  onClassClick={setOpenEvent}
+                />
               </div>
               <div className="md:hidden">
                 <DayTimeline
@@ -171,9 +179,9 @@ export default function App() {
                   students={students}
                   teachers={teachers}
                   selected={selected}
-                  communityMeeting={communityMeeting}
+                  weekStart={weekStart}
                   onSelect={choosePerson}
-                  onCommunityChange={chooseCommunityMeeting}
+                  onWeekChange={chooseWeek}
                   paused={Boolean(openEvent)}
                 />
               </div>
