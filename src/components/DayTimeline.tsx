@@ -19,6 +19,7 @@ export function DayTimeline({
   communityMeeting,
   onSelect,
   onCommunityChange,
+  paused = false,
 }: {
   dayId: DayId;
   onDayChange: (id: DayId) => void;
@@ -30,6 +31,7 @@ export function DayTimeline({
   communityMeeting: boolean;
   onSelect: (person: SelectedPerson) => void;
   onCommunityChange: (on: boolean) => void;
+  paused?: boolean;
 }) {
   const index = DAYS.findIndex((d) => d.id === dayId);
   const [menuOpen, setMenuOpen] = useState(false);
@@ -37,6 +39,7 @@ export function DayTimeline({
   const lineRef = useRef<HTMLDivElement>(null);
 
   useLayoutEffect(() => {
+    if (paused || menuOpen) return;
     const list = listRef.current;
     const line = lineRef.current;
     if (!list || !line) return;
@@ -53,7 +56,7 @@ export function DayTimeline({
       cancelled = true;
       cancelAnimationFrame(frame);
     };
-  }, [dayId, events]);
+  }, [dayId, events, paused, menuOpen]);
 
   return (
     <div className="flex flex-col">

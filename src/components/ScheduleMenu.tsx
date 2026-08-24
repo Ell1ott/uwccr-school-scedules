@@ -64,7 +64,7 @@ export function ScheduleMenu({
     <div className="fixed inset-0 z-[80] flex items-end justify-center">
       <button
         type="button"
-        className="sheet-overlay absolute inset-0 bg-primary/40 backdrop-blur-[2px]"
+        className="sheet-overlay absolute inset-0 bg-primary/45"
         aria-label="Close menu"
         onClick={onClose}
       />
@@ -97,7 +97,7 @@ export function ScheduleMenu({
           </div>
         </div>
 
-        <div className="flex flex-col gap-3 overflow-y-auto px-5 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))]">
+        <div className="sheet-scroll flex flex-col gap-3 px-5 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))]">
           <section className="flex flex-col gap-2">
             <h3 className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
               Search

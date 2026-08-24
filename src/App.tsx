@@ -174,6 +174,7 @@ export default function App() {
                   communityMeeting={communityMeeting}
                   onSelect={choosePerson}
                   onCommunityChange={chooseCommunityMeeting}
+                  paused={Boolean(openEvent)}
                 />
               </div>
             </>

@@ -134,7 +134,15 @@
 }
 
 .sheet-panel {
+  transform: translateZ(0);
+  contain: layout paint;
   animation: sheet-panel-in 320ms cubic-bezier(0.32, 0.72, 0, 1);
+}
+
+.sheet-scroll {
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
 }
 
 @media (min-width: 768px) {

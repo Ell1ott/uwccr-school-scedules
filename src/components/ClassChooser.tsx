@@ -132,7 +132,7 @@ export function ClassChooser({
 
   return (
     <div className="flex h-dvh flex-col overflow-hidden bg-surface text-on-surface">
-      <header className="shrink-0 border-b border-outline-variant/60 bg-surface/80 pt-safe backdrop-blur-xl">
+      <header className="shrink-0 border-b border-outline-variant/60 bg-surface pt-safe">
         <div className="px-container-padding-desktop py-4">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0">
@@ -222,8 +222,8 @@ export function ClassChooser({
             blocks={blocks}
             palette={palette}
           />
-          <div className="min-h-0 flex-1 overflow-x-auto overflow-y-hidden px-container-padding-desktop pb-6">
-            <div className="flex h-full min-w-[72rem] gap-2.5 pt-4">
+          <div className="min-h-0 flex-1 overflow-auto px-container-padding-desktop pb-6">
+            <div className="flex min-w-[72rem] items-start gap-2.5 pt-4">
               {BLOCK_LETTERS.map((block) => (
                 <BlockColumn
                   key={block}
@@ -351,51 +351,53 @@ function BlockColumn({
     : undefined;
 
   return (
-    <section className="flex min-h-0 min-w-0 flex-1 flex-col">
-      <div className="mb-2 flex items-baseline justify-between gap-2 px-0.5">
-        <h3 className="text-label-sm tracking-[0.12em] text-on-surface uppercase">
-          Block {block}
-        </h3>
-        <span className="text-[10px] font-medium tracking-wide text-on-surface-variant tabular-nums">
-          {meetingLabel(block, communityMeeting)}
-        </span>
-      </div>
-      {selected && selectedTone ? (
-        <button
-          type="button"
-          className={`mb-2 rounded-[12px] px-3 py-2.5 text-left ${selectedTone.bg} ${selectedTone.text} hover:brightness-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30`}
-          style={
-            selectedTone.bgColor
-              ? { backgroundColor: selectedTone.bgColor }
-              : undefined
-          }
-          aria-label={`Clear ${selected.subject} from block ${block}`}
-          onClick={onClear}
-        >
-          <div className="flex items-start justify-between gap-2">
-            <p className="text-[13px] leading-4 font-semibold">{selected.subject}</p>
-            <span
-              className={`shrink-0 rounded-full px-1.5 py-px text-[10px] font-medium ${selectedTone.chip}`}
-            >
-              {selected.level}
-            </span>
-          </div>
-          <p className="mt-1 text-[11px] leading-4 opacity-80">
-            {selected.teacher}
-            {selected.room ? ` · Rm ${selected.room}` : ""}
-          </p>
-        </button>
-      ) : (
-        <div className="mb-2 rounded-[12px] border border-dashed border-outline-variant px-3 py-2.5">
-          <p className="text-[13px] leading-4 font-medium text-on-surface-variant">
-            Study period
-          </p>
-          <p className="mt-0.5 text-[11px] text-on-surface-variant/70">
-            Pick a class below
-          </p>
+    <section className="flex min-w-0 flex-1 flex-col">
+      <div className="sticky top-0 z-10 bg-surface pb-2">
+        <div className="mb-2 flex items-baseline justify-between gap-2 px-0.5">
+          <h3 className="text-label-sm tracking-[0.12em] text-on-surface uppercase">
+            Block {block}
+          </h3>
+          <span className="text-[10px] font-medium tracking-wide text-on-surface-variant tabular-nums">
+            {meetingLabel(block, communityMeeting)}
+          </span>
         </div>
-      )}
-      <ul className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain pr-0.5">
+        {selected && selectedTone ? (
+          <button
+            type="button"
+            className={`w-full rounded-[12px] px-3 py-2.5 text-left ${selectedTone.bg} ${selectedTone.text} hover:brightness-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30`}
+            style={
+              selectedTone.bgColor
+                ? { backgroundColor: selectedTone.bgColor }
+                : undefined
+            }
+            aria-label={`Clear ${selected.subject} from block ${block}`}
+            onClick={onClear}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <p className="text-[13px] leading-4 font-semibold">{selected.subject}</p>
+              <span
+                className={`shrink-0 rounded-full px-1.5 py-px text-[10px] font-medium ${selectedTone.chip}`}
+              >
+                {selected.level}
+              </span>
+            </div>
+            <p className="mt-1 text-[11px] leading-4 opacity-80">
+              {selected.teacher}
+              {selected.room ? ` · Rm ${selected.room}` : ""}
+            </p>
+          </button>
+        ) : (
+          <div className="rounded-[12px] border border-dashed border-outline-variant px-3 py-2.5">
+            <p className="text-[13px] leading-4 font-medium text-on-surface-variant">
+              Study period
+            </p>
+            <p className="mt-0.5 text-[11px] text-on-surface-variant/70">
+              Pick a class below
+            </p>
+          </div>
+        )}
+      </div>
+      <ul className="space-y-1 pr-0.5">
         {offerings.map((offering) => (
           <OfferingButton
             key={offeringKey(offering)}
