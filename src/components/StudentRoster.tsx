@@ -1,7 +1,8 @@
 import { Search } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { initials } from "../lib/classDetail";
-import type { Student } from "../types";
+import { subjectSummary } from "../lib/teachers";
+import type { PersonKind, SelectedPerson, Student, Teacher } from "../types";
 
 function compareNames(a: string, b: string): number {
   return a.localeCompare(b, undefined, { sensitivity: "base", numeric: true });
@@ -12,32 +13,55 @@ function letterFor(name: string): string {
   return /[A-Z]/.test(char) ? char : "#";
 }
 
-function groupedStudents(students: Student[]): [string, Student[]][] {
-  const sorted = [...students].sort((a, b) => compareNames(a.name, b.name));
-  const groups = new Map<string, Student[]>();
-  for (const student of sorted) {
-    const letter = letterFor(student.name);
+type RosterCard = {
+  id: string;
+  name: string;
+  subtitle: string;
+};
+
+function groupedPeople(people: RosterCard[]): [string, RosterCard[]][] {
+  const sorted = [...people].sort((a, b) => compareNames(a.name, b.name));
+  const groups = new Map<string, RosterCard[]>();
+  for (const person of sorted) {
+    const letter = letterFor(person.name);
     const list = groups.get(letter);
-    if (list) list.push(student);
-    else groups.set(letter, [student]);
+    if (list) list.push(person);
+    else groups.set(letter, [person]);
   }
   return [...groups.entries()];
 }
 
 export function StudentRoster({
   students,
+  teachers,
   onSelect,
 }: {
   students: Student[];
-  onSelect: (id: string) => void;
+  teachers: Teacher[];
+  onSelect: (person: SelectedPerson) => void;
 }) {
+  const [tab, setTab] = useState<PersonKind>("student");
   const [query, setQuery] = useState("");
+  const people = useMemo((): RosterCard[] => {
+    if (tab === "teacher") {
+      return teachers.map((teacher) => ({
+        id: teacher.id,
+        name: teacher.name,
+        subtitle: subjectSummary(teacher),
+      }));
+    }
+    return students.map((student) => ({
+      id: student.id,
+      name: student.name,
+      subtitle: student.cohort,
+    }));
+  }, [tab, students, teachers]);
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return students;
-    return students.filter((student) => student.name.toLowerCase().includes(q));
-  }, [students, query]);
-  const groups = useMemo(() => groupedStudents(filtered), [filtered]);
+    if (!q) return people;
+    return people.filter((person) => person.name.toLowerCase().includes(q));
+  }, [people, query]);
+  const groups = useMemo(() => groupedPeople(filtered), [filtered]);
   const letters = groups.map(([letter]) => letter);
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
 
@@ -48,11 +72,16 @@ export function StudentRoster({
     });
   }
 
+  const countLabel =
+    tab === "teacher"
+      ? `${teachers.length} teachers`
+      : `${students.length} students`;
+
   return (
     <div className="mx-auto max-w-6xl px-container-padding-mobile pt-safe pb-16 md:px-container-padding-desktop">
       <div className="pt-8 pb-6 md:pt-10">
         <p className="text-label-sm tracking-[0.14em] text-on-surface-variant uppercase">
-          IB1 & IB2 · {students.length} students
+          IB1 & IB2 · {countLabel}
         </p>
         <h2 className="mt-1 text-headline-lg-mobile tracking-tight md:text-headline-lg">
           Find yourself
@@ -65,6 +94,23 @@ export function StudentRoster({
           </span>
           .
         </p>
+        <div className="mt-4 flex w-fit rounded-full bg-surface-container p-1">
+          {(["student", "teacher"] as const).map((kind) => (
+            <button
+              key={kind}
+              type="button"
+              className={`rounded-full px-4 py-1.5 text-label-sm ${
+                tab === kind
+                  ? "bg-surface-container-lowest text-on-surface shadow-sm"
+                  : "text-on-surface-variant hover:text-on-surface"
+              }`}
+              aria-pressed={tab === kind}
+              onClick={() => setTab(kind)}
+            >
+              {kind === "student" ? "Students" : "Teachers"}
+            </button>
+          ))}
+        </div>
         <label className="mt-4 flex items-center gap-2 rounded-full bg-surface-container px-3 py-2.5 focus-within:ring-2 focus-within:ring-primary/20 md:hidden">
           <span className="sr-only">Search names</span>
           <Search
@@ -129,22 +175,22 @@ export function StudentRoster({
                   </span>
                 </h3>
                 <ul className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                  {group.map((student) => (
-                    <li key={student.id}>
+                  {group.map((person) => (
+                    <li key={person.id}>
                       <button
                         type="button"
                         className="flex w-full items-center gap-3 rounded-[14px] bg-surface-container-lowest px-3 py-2.5 text-left shadow-[0_4px_12px_rgba(4,22,39,0.05)] transition-[filter,box-shadow,transform] duration-200 hover:shadow-[0_6px_16px_rgba(4,22,39,0.1)] hover:brightness-[0.99] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
-                        onClick={() => onSelect(student.id)}
+                        onClick={() => onSelect({ kind: tab, id: person.id })}
                       >
                         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-secondary-container text-[12px] font-semibold tracking-wide text-on-secondary-container">
-                          {initials(student.name)}
+                          {initials(person.name)}
                         </span>
                         <span className="min-w-0 flex-1">
                           <span className="block truncate text-body-md font-medium text-on-surface">
-                            {student.name}
+                            {person.name}
                           </span>
-                          <span className="text-[11px] font-medium tracking-wide text-on-surface-variant">
-                            {student.cohort}
+                          <span className="block truncate text-[11px] font-medium tracking-wide text-on-surface-variant">
+                            {person.subtitle}
                           </span>
                         </span>
                       </button>
@@ -157,7 +203,9 @@ export function StudentRoster({
         </>
       ) : (
         <p className="mt-2 text-body-md text-on-surface-variant">
-          No students match that name
+          {tab === "teacher"
+            ? "No teachers match that name"
+            : "No students match that name"}
         </p>
       )}
     </div>

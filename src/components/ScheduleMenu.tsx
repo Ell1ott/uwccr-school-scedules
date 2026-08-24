@@ -1,31 +1,36 @@
 import { X } from "lucide-react";
 import { useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
-import type { Student } from "../types";
-import { cohortCaption } from "../lib/cohort";
+import type { SelectedPerson, Student, Teacher } from "../types";
+import { cohortCaption, teacherCaption } from "../lib/cohort";
 import { CommunityToggle } from "./CommunityToggle";
 import { PalettePicker } from "./PalettePicker";
 import { StudentPicker } from "./StudentPicker";
 
 export function ScheduleMenu({
   students,
-  selectedId,
+  teachers,
+  selected,
   communityMeeting,
-  onSelectStudent,
+  onSelect,
   onCommunityChange,
   onClose,
 }: {
   students: Student[];
-  selectedId: string | null;
+  teachers: Teacher[];
+  selected: SelectedPerson | null;
   communityMeeting: boolean;
-  onSelectStudent: (id: string) => void;
+  onSelect: (person: SelectedPerson) => void;
   onCommunityChange: (on: boolean) => void;
   onClose: () => void;
 }) {
   const titleId = useId();
   const closeRef = useRef<HTMLButtonElement>(null);
   const onCloseRef = useRef(onClose);
-  const selected = students.find((item) => item.id === selectedId);
+  const selectedStudent =
+    selected?.kind === "student"
+      ? students.find((item) => item.id === selected.id)
+      : undefined;
 
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -47,6 +52,13 @@ export function ScheduleMenu({
       previous?.focus();
     };
   }, []);
+
+  const caption =
+    selected?.kind === "teacher"
+      ? teacherCaption(communityMeeting)
+      : selectedStudent
+        ? cohortCaption(selectedStudent.cohort, communityMeeting)
+        : "IB1 & IB2 2026–2027";
 
   return createPortal(
     <div className="fixed inset-0 z-[80] flex items-end justify-center">
@@ -70,9 +82,7 @@ export function ScheduleMenu({
                 Week View
               </h2>
               <p className="mt-0.5 text-label-sm text-on-surface-variant">
-                {selected
-                  ? cohortCaption(selected.cohort, communityMeeting)
-                  : "IB1 & IB2 2026–2027"}
+                {caption}
               </p>
             </div>
             <button
@@ -90,14 +100,15 @@ export function ScheduleMenu({
         <div className="flex flex-col gap-3 overflow-y-auto px-5 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))]">
           <section className="flex flex-col gap-2">
             <h3 className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
-              Student
+              Search
             </h3>
             <StudentPicker
               students={students}
-              selectedId={selectedId}
+              teachers={teachers}
+              selected={selected}
               inlineList
-              onSelect={(id) => {
-                onSelectStudent(id);
+              onSelect={(person) => {
+                onSelect(person);
                 onClose();
               }}
             />

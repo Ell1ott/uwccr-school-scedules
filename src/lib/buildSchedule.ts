@@ -8,6 +8,7 @@ import type {
   DayId,
   ScheduleEvent,
   Student,
+  Teacher,
 } from "../types";
 
 export function parseTime(value: string): number {
@@ -30,13 +31,50 @@ export function todayDayId(now = new Date()): DayId | null {
   return match?.id ?? null;
 }
 
+function appendSharedSlots(
+  events: ScheduleEvent[],
+  dayId: DayId,
+  communityMeeting: boolean,
+): void {
+  const fixedByDay = fixedByDayFor(communityMeeting);
+  for (const slot of SHARED_BREAKS) {
+    events.push({
+      id: `${dayId}-${slot.title}-${slot.start}`,
+      start: slot.start,
+      end: slot.end,
+      startMin: parseTime(slot.start),
+      endMin: parseTime(slot.end),
+      kind: slot.kind,
+      title: slot.title,
+      icon: slot.icon,
+    });
+  }
+  for (const slot of fixedByDay[dayId]) {
+    events.push({
+      id: `${dayId}-${slot.title}-${slot.start}`,
+      start: slot.start,
+      end: slot.end,
+      startMin: parseTime(slot.start),
+      endMin: parseTime(slot.end),
+      kind: slot.kind,
+      title: slot.title,
+      subtitle: slot.subtitle,
+      icon: slot.icon,
+    });
+  }
+}
+
+function sortDay(events: ScheduleEvent[]): ScheduleEvent[] {
+  events.sort((a, b) => a.startMin - b.startMin || a.endMin - b.endMin);
+  return events;
+}
+
 export function buildSchedule(
   student: Student,
   communityMeeting = false,
 ): Record<DayId, ScheduleEvent[]> {
   const week = {} as Record<DayId, ScheduleEvent[]>;
   const academicRows = academicRowsFor(communityMeeting);
-  const fixedByDay = fixedByDayFor(communityMeeting);
 
   for (const day of DAYS) {
     const events: ScheduleEvent[] = [];
@@ -76,35 +114,71 @@ export function buildSchedule(
       }
     }
 
-    for (const slot of SHARED_BREAKS) {
-      events.push({
-        id: `${day.id}-${slot.title}-${slot.start}`,
-        start: slot.start,
-        end: slot.end,
-        startMin: parseTime(slot.start),
-        endMin: parseTime(slot.end),
-        kind: slot.kind,
-        title: slot.title,
-        icon: slot.icon,
-      });
+    appendSharedSlots(events, day.id, communityMeeting);
+    week[day.id] = sortDay(events);
+  }
+
+  return week;
+}
+
+export function buildTeacherSchedule(
+  teacher: Teacher,
+  communityMeeting = false,
+): Record<DayId, ScheduleEvent[]> {
+  const week = {} as Record<DayId, ScheduleEvent[]>;
+  const academicRows = academicRowsFor(communityMeeting);
+
+  for (const day of DAYS) {
+    const events: ScheduleEvent[] = [];
+
+    for (const row of academicRows) {
+      const block = row.blocks[day.id];
+      if (!block) continue;
+      const classes = teacher.blocks[block] ?? [];
+      const [primary, ...rest] = classes;
+      if (primary) {
+        events.push({
+          id: `${day.id}-${block}-${row.start}`,
+          start: row.start,
+          end: row.end,
+          startMin: parseTime(row.start),
+          endMin: parseTime(row.end),
+          kind: "class",
+          title: primary.subject,
+          teacher: teacher.name,
+          room: primary.room,
+          level: primary.level,
+          block,
+          studentCount: primary.studentCount,
+          cohorts: primary.cohorts,
+          extras:
+            rest.length > 0
+              ? rest.map((item) => ({
+                  subject: item.subject,
+                  level: item.level,
+                  teacher: teacher.name,
+                  room: item.room,
+                }))
+              : undefined,
+        });
+      } else {
+        events.push({
+          id: `${day.id}-prep-${row.start}`,
+          start: row.start,
+          end: row.end,
+          startMin: parseTime(row.start),
+          endMin: parseTime(row.end),
+          kind: "study",
+          title: "Prep",
+          subtitle: "No class this block",
+          block,
+          icon: "book-open",
+        });
+      }
     }
 
-    for (const slot of fixedByDay[day.id]) {
-      events.push({
-        id: `${day.id}-${slot.title}-${slot.start}`,
-        start: slot.start,
-        end: slot.end,
-        startMin: parseTime(slot.start),
-        endMin: parseTime(slot.end),
-        kind: slot.kind,
-        title: slot.title,
-        subtitle: slot.subtitle,
-        icon: slot.icon,
-      });
-    }
-
-    events.sort((a, b) => a.startMin - b.startMin || a.endMin - b.endMin);
-    week[day.id] = events;
+    appendSharedSlots(events, day.id, communityMeeting);
+    week[day.id] = sortDay(events);
   }
 
   return week;

@@ -1,7 +1,8 @@
 import { academicRowsFor, DAYS } from "../data/weekTemplate";
+import { canonicalTeacherName } from "../data/teacherAliases";
+import { entriesInBlock, normalizeRoom } from "./teachers";
 import type {
   BlockLetter,
-  ClassEntry,
   CohortId,
   ScheduleEvent,
   Student,
@@ -10,6 +11,7 @@ import type {
 export type Classmate = {
   id: string;
   name: string;
+  cohort: CohortId;
 };
 
 export type BlockMeeting = {
@@ -31,32 +33,58 @@ function classKey(entry: {
   );
 }
 
-function entriesInBlock(student: Student, block: BlockLetter): ClassEntry[] {
-  const entry = student.blocks[block];
-  if (!entry) return [];
-  return entry.extras ? [entry, ...entry.extras] : [entry];
+function teacherClassKey(entry: {
+  subject: string;
+  teacher?: string;
+  room?: string;
+}): string {
+  return [
+    entry.subject,
+    canonicalTeacherName(entry.teacher ?? ""),
+    normalizeRoom(entry.room ?? ""),
+  ].join("\0");
 }
 
 export function classmatesFor(
   students: Student[],
   event: ScheduleEvent,
-  cohort: CohortId,
+  options?: {
+    cohort?: CohortId;
+    ignoreLevel?: boolean;
+  },
 ): Classmate[] {
   if (!event.block || event.kind !== "class") return [];
   const block = event.block;
-  const key = classKey({
+  const exactKey = classKey({
     subject: event.title,
     level: event.level,
     teacher: event.teacher,
     room: event.room,
   });
+  const groupedKey = teacherClassKey({
+    subject: event.title,
+    teacher: event.teacher,
+    room: event.room,
+  });
   return students
-    .filter((student) => student.cohort === cohort)
     .filter((student) =>
-      entriesInBlock(student, block).some((entry) => classKey(entry) === key),
+      options?.cohort ? student.cohort === options.cohort : true,
     )
-    .map((student) => ({ id: student.id, name: student.name }))
-    .sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
+    .filter((student) =>
+      entriesInBlock(student, block).some((entry) =>
+        options?.ignoreLevel
+          ? teacherClassKey(entry) === groupedKey
+          : classKey(entry) === exactKey,
+      ),
+    )
+    .map((student) => ({
+      id: student.id,
+      name: student.name,
+      cohort: student.cohort,
+    }))
+    .sort((a, b) =>
+      a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
+    );
 }
 
 export function meetingsForBlock(

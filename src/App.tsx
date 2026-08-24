@@ -8,26 +8,33 @@ import { StudentPicker } from "./components/StudentPicker";
 import { StudentRoster } from "./components/StudentRoster";
 import { DayTimeline } from "./components/DayTimeline";
 import { WeekGrid } from "./components/WeekGrid";
-import { buildSchedule, todayDayId } from "./lib/buildSchedule";
+import { buildSchedule, buildTeacherSchedule, todayDayId } from "./lib/buildSchedule";
 import { PaletteProvider } from "./lib/palette";
 import {
   readStoredCommunityMeeting,
   readStoredPalette,
-  readStoredStudentId,
+  readStoredPerson,
   storeCommunityMeeting,
   storePalette,
-  storeStudentId,
+  storePerson,
 } from "./lib/storage";
-import { cohortCaption } from "./lib/cohort";
+import { cohortCaption, teacherCaption } from "./lib/cohort";
+import { deriveTeachers } from "./lib/teachers";
 import type { PaletteId } from "./lib/tones";
-import type { DayId, ScheduleEvent, Student, StudentsFile } from "./types";
+import type {
+  DayId,
+  ScheduleEvent,
+  SelectedPerson,
+  StudentsFile,
+} from "./types";
 
 const data = studentsFile as StudentsFile;
 
 export default function App() {
   const students = data.students;
-  const [selectedId, setSelectedId] = useState<string | null>(
-    () => readStoredStudentId(),
+  const teachers = useMemo(() => deriveTeachers(students), [students]);
+  const [selected, setSelected] = useState<SelectedPerson | null>(
+    () => readStoredPerson(),
   );
   const [dayId, setDayId] = useState<DayId>(
     () => todayDayId() ?? DAYS[0].id,
@@ -49,25 +56,39 @@ export default function App() {
     setOpenEvent(null);
   }
 
-  function chooseStudent(id: string) {
-    setSelectedId(id);
-    storeStudentId(id);
+  function choosePerson(person: SelectedPerson) {
+    setSelected(person);
+    storePerson(person);
     setOpenEvent(null);
   }
 
-  const student: Student | undefined = students.find((s) => s.id === selectedId);
-  const week = useMemo(
-    () => (student ? buildSchedule(student, communityMeeting) : null),
-    [student, communityMeeting],
-  );
+  const student =
+    selected?.kind === "student"
+      ? students.find((item) => item.id === selected.id)
+      : undefined;
+  const teacher =
+    selected?.kind === "teacher"
+      ? teachers.find((item) => item.id === selected.id)
+      : undefined;
+  const week = useMemo(() => {
+    if (student) return buildSchedule(student, communityMeeting);
+    if (teacher) return buildTeacherSchedule(teacher, communityMeeting);
+    return null;
+  }, [student, teacher, communityMeeting]);
 
   useLayoutEffect(() => {
-    if (!selectedId) return;
+    if (!selected) return;
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
     window.scrollTo(0, 0);
-  }, [selectedId]);
+  }, [selected]);
+
+  const caption = teacher
+    ? teacherCaption(communityMeeting)
+    : student
+      ? cohortCaption(student.cohort, communityMeeting)
+      : "IB1 & IB2 2026–2027";
 
   return (
     <PaletteProvider palette={palette} setPalette={choosePalette}>
@@ -77,9 +98,7 @@ export default function App() {
             <div className="min-w-0">
               <h1 className="truncate text-title-md tracking-tight">Week View</h1>
               <p className="hidden text-label-sm text-on-surface-variant md:block">
-                {student
-                  ? cohortCaption(student.cohort, communityMeeting)
-                  : "IB1 & IB2 2026–2027"}
+                {caption}
               </p>
             </div>
             <div className="flex min-w-0 items-center gap-2">
@@ -90,16 +109,21 @@ export default function App() {
               />
               <StudentPicker
                 students={students}
-                selectedId={selectedId}
-                onSelect={chooseStudent}
+                teachers={teachers}
+                selected={selected}
+                onSelect={choosePerson}
               />
             </div>
           </div>
         </header>
 
         <main className="md:pt-16">
-          {!student || !week ? (
-            <StudentRoster students={students} onSelect={chooseStudent} />
+          {!week ? (
+            <StudentRoster
+              students={students}
+              teachers={teachers}
+              onSelect={choosePerson}
+            />
           ) : (
             <>
               <div className="hidden md:block pt-6">
@@ -112,9 +136,10 @@ export default function App() {
                   events={week[dayId]}
                   onClassClick={setOpenEvent}
                   students={students}
-                  selectedId={selectedId}
+                  teachers={teachers}
+                  selected={selected}
                   communityMeeting={communityMeeting}
-                  onSelectStudent={chooseStudent}
+                  onSelect={choosePerson}
                   onCommunityChange={chooseCommunityMeeting}
                 />
               </div>
@@ -125,10 +150,12 @@ export default function App() {
           <ClassDetailSheet
             event={openEvent}
             students={students}
-            currentStudentId={selectedId}
+            currentStudentId={student?.id ?? null}
+            viewerKind={selected?.kind ?? "student"}
             communityMeeting={communityMeeting}
             onClose={() => setOpenEvent(null)}
-            onSelectStudent={chooseStudent}
+            onSelectStudent={(id) => choosePerson({ kind: "student", id })}
+            onSelectTeacher={(id) => choosePerson({ kind: "teacher", id })}
           />
         ) : null}
       </div>

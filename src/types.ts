@@ -17,6 +17,29 @@ export type Student = {
   blocks: Partial<Record<BlockLetter, ClassEntry>>;
 };
 
+export type PersonKind = "student" | "teacher";
+
+export type SelectedPerson = {
+  kind: PersonKind;
+  id: string;
+};
+
+export type TeacherClass = {
+  subject: string;
+  level: string;
+  room: string;
+  teacher: string;
+  cohorts: CohortId[];
+  studentCount: number;
+};
+
+export type Teacher = {
+  id: string;
+  name: string;
+  subjects: string[];
+  blocks: Partial<Record<BlockLetter, TeacherClass[]>>;
+};
+
 export type StudentsFile = {
   generatedAt: string;
   source: string;
@@ -50,4 +73,6 @@ export type ScheduleEvent = {
   block?: BlockLetter;
   extras?: ClassEntry[];
   icon?: string;
+  studentCount?: number;
+  cohorts?: CohortId[];
 };

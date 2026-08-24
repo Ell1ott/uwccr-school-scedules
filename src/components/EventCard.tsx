@@ -1,5 +1,6 @@
 import { EventIcon } from "../lib/icons";
 import { usePalette } from "../lib/palette";
+import { formatCohorts } from "../lib/teachers";
 import { isBandKind, toneForEvent } from "../lib/tones";
 import type { DayId, ScheduleEvent } from "../types";
 import { LiveNowBadge } from "./LiveNowBadge";
@@ -48,7 +49,7 @@ export function EventCard({
         }`}
       >
         <span className="text-[13px] font-medium tracking-wide text-black/45">
-          Study Period
+          {event.title}
         </span>
         {event.block ? (
           <span className="rounded-full bg-black/[0.06] px-2 py-px text-[10px] font-medium tracking-wide text-black/50">
@@ -96,7 +97,16 @@ export function EventCard({
         ) : null}
       </div>
       <div className={`flex flex-col text-[12px] leading-4 ${compact ? "gap-0.5" : "gap-0.5"}`}>
-        {event.teacher ? (
+        {event.studentCount != null ? (
+          <p className="flex items-center gap-1">
+            <EventIcon name="users" />{" "}
+            {event.studentCount}{" "}
+            {event.studentCount === 1 ? "student" : "students"}
+            {event.cohorts && event.cohorts.length > 0
+              ? ` · ${formatCohorts(event.cohorts)}`
+              : ""}
+          </p>
+        ) : event.teacher ? (
           <p className="flex items-center gap-1">
             <EventIcon name="user" /> {event.teacher}
           </p>
@@ -106,17 +116,18 @@ export function EventCard({
             <EventIcon name="door-open" /> Rm {event.room}
           </p>
         ) : null}
-        {!compact && event.subtitle && !event.teacher ? (
+        {!compact && event.subtitle && event.studentCount == null && !event.teacher ? (
           <p className="flex items-center gap-1">
             <EventIcon name={event.icon ?? "info"} /> {event.subtitle}
           </p>
         ) : null}
-        {compact && event.subtitle && !event.teacher ? (
+        {compact && event.subtitle && event.studentCount == null && !event.teacher ? (
           <p>{event.subtitle}</p>
         ) : null}
         {event.extras?.map((extra) => (
           <p key={`${extra.subject}-${extra.teacher}`} className="flex items-center gap-1">
-            <EventIcon name="warning" /> {extra.subject} {extra.level} · {extra.teacher}
+            <EventIcon name="warning" /> {extra.subject} {extra.level}
+            {event.studentCount == null ? ` · ${extra.teacher}` : extra.room ? ` · Rm ${extra.room}` : ""}
           </p>
         ))}
       </div>

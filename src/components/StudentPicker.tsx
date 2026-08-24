@@ -1,23 +1,35 @@
 import { Check, Search, User } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
-import { storeStudentId } from "../lib/storage";
-import type { Student } from "../types";
+import type { SelectedPerson, Student, Teacher } from "../types";
 
-function matches(student: Student, query: string): boolean {
+type Hit = {
+  kind: SelectedPerson["kind"];
+  id: string;
+  name: string;
+  badge: string;
+};
+
+function matches(name: string, query: string): boolean {
   const q = query.trim().toLowerCase();
   if (!q) return true;
-  return student.name.toLowerCase().includes(q);
+  return name.toLowerCase().includes(q);
+}
+
+function isSelected(hit: Hit, selected: SelectedPerson | null): boolean {
+  return selected?.kind === hit.kind && selected.id === hit.id;
 }
 
 export function StudentPicker({
   students,
-  selectedId,
+  teachers,
+  selected,
   onSelect,
   inlineList,
 }: {
   students: Student[];
-  selectedId: string | null;
-  onSelect: (id: string) => void;
+  teachers: Teacher[];
+  selected: SelectedPerson | null;
+  onSelect: (person: SelectedPerson) => void;
   inlineList?: boolean;
 }) {
   const [open, setOpen] = useState(false);
@@ -25,20 +37,38 @@ export function StudentPicker({
   const [activeIndex, setActiveIndex] = useState(0);
   const wrapRef = useRef<HTMLDivElement>(null);
   const listId = useId();
-  const selected = students.find((s) => s.id === selectedId) ?? null;
+  const selectedName =
+    selected?.kind === "teacher"
+      ? teachers.find((item) => item.id === selected.id)?.name
+      : students.find((item) => item.id === selected?.id)?.name;
 
-  const results = useMemo(
-    () =>
-      students
-        .filter((s) => matches(s, query))
-        .sort((a, b) =>
-          a.name.localeCompare(b.name, undefined, {
-            sensitivity: "base",
-            numeric: true,
-          }),
-        ),
-    [students, query],
-  );
+  const results = useMemo(() => {
+    const hits: Hit[] = [
+      ...students
+        .filter((student) => matches(student.name, query))
+        .map((student) => ({
+          kind: "student" as const,
+          id: student.id,
+          name: student.name,
+          badge: student.cohort,
+        })),
+      ...teachers
+        .filter((teacher) => matches(teacher.name, query))
+        .map((teacher) => ({
+          kind: "teacher" as const,
+          id: teacher.id,
+          name: teacher.name,
+          badge: "Teacher",
+        })),
+    ];
+    hits.sort((a, b) =>
+      a.name.localeCompare(b.name, undefined, {
+        sensitivity: "base",
+        numeric: true,
+      }),
+    );
+    return hits;
+  }, [students, teachers, query]);
 
   useEffect(() => {
     function onPointer(event: MouseEvent) {
@@ -50,9 +80,8 @@ export function StudentPicker({
     return () => document.removeEventListener("mousedown", onPointer);
   }, []);
 
-  function choose(id: string) {
-    onSelect(id);
-    storeStudentId(id);
+  function choose(hit: Hit) {
+    onSelect({ kind: hit.kind, id: hit.id });
     setQuery("");
     setOpen(false);
   }
@@ -72,8 +101,8 @@ export function StudentPicker({
           aria-controls={listId}
           aria-autocomplete="list"
           className="w-full bg-transparent text-body-md text-on-surface outline-none placeholder:text-on-surface-variant/70"
-          placeholder={selected ? selected.name : "Search students"}
-          value={open ? query : selected && !open ? "" : query}
+          placeholder={selectedName ? selectedName : "Search students & teachers"}
+          value={open ? query : selectedName && !open ? "" : query}
           onChange={(e) => {
             setQuery(e.target.value);
             setActiveIndex(0);
@@ -94,17 +123,17 @@ export function StudentPicker({
               setActiveIndex((i) => Math.max(i - 1, 0));
             } else if (e.key === "Enter" && open && results[activeIndex]) {
               e.preventDefault();
-              choose(results[activeIndex].id);
+              choose(results[activeIndex]);
             } else if (e.key === "Escape") {
               setOpen(false);
             }
           }}
         />
-        {selected ? (
+        {selectedName ? (
           <button
             type="button"
             className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-on-primary"
-            aria-label="Selected student"
+            aria-label="Selected person"
             onClick={() => setOpen(true)}
           >
             <User size={12} strokeWidth={1.75} aria-hidden />
@@ -119,11 +148,15 @@ export function StudentPicker({
         >
           {results.length === 0 ? (
             <li className="px-4 py-3 text-body-md text-on-surface-variant">
-              No students match that name
+              No one matches that name
             </li>
           ) : (
-            results.map((student, index) => (
-              <li key={student.id} role="option" aria-selected={student.id === selectedId}>
+            results.map((hit, index) => (
+              <li
+                key={`${hit.kind}:${hit.id}`}
+                role="option"
+                aria-selected={isSelected(hit, selected)}
+              >
                 <button
                   type="button"
                   className={`flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left text-body-md ${
@@ -132,14 +165,14 @@ export function StudentPicker({
                       : "text-on-surface hover:bg-surface-container"
                   }`}
                   onMouseEnter={() => setActiveIndex(index)}
-                  onClick={() => choose(student.id)}
+                  onClick={() => choose(hit)}
                 >
-                  <span className="min-w-0 flex-1 truncate">{student.name}</span>
+                  <span className="min-w-0 flex-1 truncate">{hit.name}</span>
                   <span className="flex shrink-0 items-center gap-2">
                     <span className="text-[11px] font-medium tracking-wide text-on-surface-variant">
-                      {student.cohort}
+                      {hit.badge}
                     </span>
-                    {student.id === selectedId ? (
+                    {isSelected(hit, selected) ? (
                       <Check size={14} strokeWidth={1.75} aria-hidden />
                     ) : null}
                   </span>

@@ -2,7 +2,7 @@ import { EllipsisVertical } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { DAYS } from "../data/weekTemplate";
 import { formatTime } from "../lib/buildSchedule";
-import type { DayId, ScheduleEvent, Student } from "../types";
+import type { DayId, ScheduleEvent, SelectedPerson, Student, Teacher } from "../types";
 import { EventCard } from "./EventCard";
 import { ScheduleMenu } from "./ScheduleMenu";
 
@@ -14,9 +14,10 @@ export function DayTimeline({
   events,
   onClassClick,
   students,
-  selectedId,
+  teachers,
+  selected,
   communityMeeting,
-  onSelectStudent,
+  onSelect,
   onCommunityChange,
 }: {
   dayId: DayId;
@@ -24,9 +25,10 @@ export function DayTimeline({
   events: ScheduleEvent[];
   onClassClick?: (event: ScheduleEvent) => void;
   students: Student[];
-  selectedId: string | null;
+  teachers: Teacher[];
+  selected: SelectedPerson | null;
   communityMeeting: boolean;
-  onSelectStudent: (id: string) => void;
+  onSelect: (person: SelectedPerson) => void;
   onCommunityChange: (on: boolean) => void;
 }) {
   const index = DAYS.findIndex((d) => d.id === dayId);
@@ -90,9 +92,10 @@ export function DayTimeline({
       {menuOpen ? (
         <ScheduleMenu
           students={students}
-          selectedId={selectedId}
+          teachers={teachers}
+          selected={selected}
           communityMeeting={communityMeeting}
-          onSelectStudent={onSelectStudent}
+          onSelect={onSelect}
           onCommunityChange={onCommunityChange}
           onClose={() => setMenuOpen(false)}
         />

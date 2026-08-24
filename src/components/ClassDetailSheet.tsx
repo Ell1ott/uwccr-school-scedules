@@ -4,23 +4,28 @@ import { createPortal } from "react-dom";
 import { formatTime } from "../lib/buildSchedule";
 import { classmatesFor, initials, meetingsForBlock } from "../lib/classDetail";
 import { usePalette } from "../lib/palette";
+import { teacherIdForName, formatCohorts } from "../lib/teachers";
 import { toneForEvent } from "../lib/tones";
-import type { ScheduleEvent, Student } from "../types";
+import type { PersonKind, ScheduleEvent, Student } from "../types";
 
 export function ClassDetailSheet({
   event,
   students,
   currentStudentId,
+  viewerKind,
   communityMeeting = false,
   onClose,
   onSelectStudent,
+  onSelectTeacher,
 }: {
   event: ScheduleEvent;
   students: Student[];
   currentStudentId: string | null;
+  viewerKind: PersonKind;
   communityMeeting?: boolean;
   onClose: () => void;
   onSelectStudent: (id: string) => void;
+  onSelectTeacher: (id: string) => void;
 }) {
   const { palette } = usePalette();
   const tone = toneForEvent(event, palette);
@@ -28,16 +33,24 @@ export function ClassDetailSheet({
   const closeRef = useRef<HTMLButtonElement>(null);
   const onCloseRef = useRef(onClose);
   const currentStudent = students.find((item) => item.id === currentStudentId);
+  const teacherView = viewerKind === "teacher";
   const classmates = useMemo(
     () =>
-      currentStudent
-        ? classmatesFor(students, event, currentStudent.cohort)
-        : [],
-    [students, event, currentStudent],
+      classmatesFor(
+        students,
+        event,
+        teacherView
+          ? { ignoreLevel: true }
+          : currentStudent
+            ? { cohort: currentStudent.cohort }
+            : undefined,
+      ),
+    [students, event, currentStudent, teacherView],
   );
   const meetings = event.block
     ? meetingsForBlock(event.block, communityMeeting)
     : [];
+  const teacherId = event.teacher ? teacherIdForName(event.teacher) : null;
 
   useEffect(() => {
     onCloseRef.current = onClose;
@@ -61,11 +74,14 @@ export function ClassDetailSheet({
   }, []);
 
   const chipParts = [
-    currentStudent?.cohort,
+    event.cohorts && event.cohorts.length > 0
+      ? formatCohorts(event.cohorts)
+      : currentStudent?.cohort,
     event.level,
     event.block ? `Block ${event.block}` : null,
   ].filter(Boolean);
   const chip = chipParts.length > 0 ? chipParts.join(" · ") : null;
+  const rosterLabel = teacherView ? "Students" : "Classmates";
 
   return createPortal(
     <div className="fixed inset-0 z-[80] flex items-end justify-center md:items-center md:p-6">
@@ -117,7 +133,19 @@ export function ClassDetailSheet({
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-5 pt-5 pb-safe">
           <dl className="grid grid-cols-2 gap-3">
-            <Fact label="Teacher" value={event.teacher ?? "—"} icon={<User size={14} strokeWidth={1.75} />} />
+            <Fact
+              label="Teacher"
+              value={event.teacher ?? "—"}
+              icon={<User size={14} strokeWidth={1.75} />}
+              onClick={
+                !teacherView && teacherId
+                  ? () => {
+                      onSelectTeacher(teacherId);
+                      onClose();
+                    }
+                  : undefined
+              }
+            />
             <Fact
               label="Room"
               value={event.room ? `Rm ${event.room}` : "—"}
@@ -176,7 +204,7 @@ export function ClassDetailSheet({
             <div className="flex items-center justify-between gap-2">
               <h3 className="flex items-center gap-1.5 text-label-sm tracking-[0.12em] text-on-surface-variant uppercase">
                 <Users size={12} strokeWidth={1.75} aria-hidden />
-                Classmates
+                {rosterLabel}
               </h3>
               <span className="rounded-full bg-surface-container px-2 py-0.5 text-[11px] font-medium text-on-surface-variant">
                 {classmates.length}
@@ -184,7 +212,9 @@ export function ClassDetailSheet({
             </div>
             {classmates.length === 0 ? (
               <p className="mt-3 text-body-md text-on-surface-variant">
-                No one else is listed in this class.
+                {teacherView
+                  ? "No students are listed in this class."
+                  : "No one else is listed in this class."}
               </p>
             ) : (
               <ul className="mt-2 divide-y divide-outline-variant/60">
@@ -217,7 +247,11 @@ export function ClassDetailSheet({
                         <span className="min-w-0 flex-1 truncate text-body-md">
                           {mate.name}
                         </span>
-                        {isYou ? (
+                        {teacherView ? (
+                          <span className="text-[11px] font-medium tracking-wide text-on-surface-variant">
+                            {mate.cohort}
+                          </span>
+                        ) : isYou ? (
                           <span className="rounded-full bg-surface-container px-2 py-0.5 text-[10px] font-medium tracking-wide text-on-surface-variant uppercase">
                             You
                           </span>
@@ -240,18 +274,34 @@ function Fact({
   label,
   value,
   icon,
+  onClick,
 }: {
   label: string;
   value: string;
   icon: ReactNode;
+  onClick?: () => void;
 }) {
-  return (
-    <div className="rounded-2xl bg-surface-container px-3 py-3">
+  const inner = (
+    <>
       <dt className="flex items-center gap-1.5 text-label-sm tracking-wide text-on-surface-variant uppercase">
         {icon}
         {label}
       </dt>
       <dd className="mt-1 text-body-md font-medium text-on-surface">{value}</dd>
-    </div>
+    </>
+  );
+  if (onClick) {
+    return (
+      <button
+        type="button"
+        className="rounded-2xl bg-surface-container px-3 py-3 text-left hover:brightness-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+        onClick={onClick}
+      >
+        {inner}
+      </button>
+    );
+  }
+  return (
+    <div className="rounded-2xl bg-surface-container px-3 py-3">{inner}</div>
   );
 }
