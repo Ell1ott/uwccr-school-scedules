@@ -34,6 +34,20 @@ export function formatTime(value: string): string {
   return `${hours}:${mStr}${suffix}`;
 }
 
+export function formatTimeRange(start: string, end: string): string {
+  const from = formatTime(start);
+  const to = formatTime(end);
+  const fromSuffix = from.slice(-2);
+  const toSuffix = to.slice(-2);
+  if (
+    (fromSuffix === "am" || fromSuffix === "pm") &&
+    fromSuffix === toSuffix
+  ) {
+    return `${from.slice(0, -2)} – ${to}`;
+  }
+  return `${from} – ${to}`;
+}
+
 export function todayDayId(now = new Date()): DayId | null {
   const match = DAYS.find((day) => day.jsDay === now.getDay());
   return match?.id ?? null;

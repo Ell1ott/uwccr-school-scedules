@@ -1,3 +1,4 @@
+import { formatTimeRange } from "../lib/buildSchedule";
 import { EventIcon } from "../lib/icons";
 import { usePalette } from "../lib/palette";
 import { formatCohorts } from "../lib/teachers";
@@ -9,6 +10,7 @@ export function EventCard({
   event,
   compact = false,
   fill = false,
+  showTime = false,
   dayId,
   onOpen,
   weekStart,
@@ -16,6 +18,7 @@ export function EventCard({
   event: ScheduleEvent;
   compact?: boolean;
   fill?: boolean;
+  showTime?: boolean;
   dayId?: DayId;
   onOpen?: (event: ScheduleEvent) => void;
   weekStart?: string;
@@ -50,7 +53,11 @@ export function EventCard({
 
   if (event.kind === "study") {
     const interactive = Boolean(onOpen) && Boolean(event.block);
-    const className = `relative flex h-full w-full items-center justify-center gap-2 appearance-none ${
+    const className = `relative flex h-full w-full appearance-none ${
+      showTime
+        ? "flex-col items-start justify-center gap-0.5 px-3 py-2"
+        : "items-center justify-center gap-2"
+    } ${
       fill || compact ? "" : "min-h-[7.5rem]"
     } ${
       interactive
@@ -65,6 +72,11 @@ export function EventCard({
         {event.block ? (
           <span className="rounded-full bg-black/[0.06] px-2 py-px text-[10px] font-medium tracking-wide text-black/50">
             {event.block}
+          </span>
+        ) : null}
+        {showTime ? (
+          <span className="text-[11px] font-medium tabular-nums text-black/40">
+            {formatTimeRange(event.start, event.end)}
           </span>
         ) : null}
         {live}
@@ -124,6 +136,11 @@ export function EventCard({
         ) : null}
       </div>
       <div className={`flex flex-col text-[12px] leading-4 ${compact ? "gap-0.5" : "gap-0.5"}`}>
+        {showTime ? (
+          <p className="font-medium tabular-nums text-current/55">
+            {formatTimeRange(event.start, event.end)}
+          </p>
+        ) : null}
         {event.studentCount != null ? (
           <p className="flex items-center gap-1">
             <EventIcon name="users" />{" "}

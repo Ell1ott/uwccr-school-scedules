@@ -39,7 +39,7 @@ export function WeekNav({
         onClick={() => onChange(clampWeekStart(thisWeek))}
       >
         <span className="block truncate">
-          {showLabel && !isThisWeek ? "This week · " : null}
+          {showLabel && isThisWeek ? "This week · " : null}
           {formatWeekRange(weekStart)}
         </span>
       </button>

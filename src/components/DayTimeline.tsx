@@ -1,7 +1,7 @@
 import { EllipsisVertical } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { DAYS } from "../data/weekTemplate";
-import { formatTime } from "../lib/buildSchedule";
+import { formatTime, todayDayId } from "../lib/buildSchedule";
 import { formatDayDate, mondayOf } from "../lib/calendar";
 import type { DayId, ScheduleEvent, SelectedPerson, Student, Teacher } from "../types";
 import { EventCard } from "./EventCard";
@@ -34,10 +34,12 @@ export function DayTimeline({
   onWeekChange: (weekStart: string) => void;
   paused?: boolean;
 }) {
-  const index = DAYS.findIndex((d) => d.id === dayId);
   const [menuOpen, setMenuOpen] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const lineRef = useRef<HTMLDivElement>(null);
+  const now = new Date();
+  const isCurrentWeek = weekStart === mondayOf(now);
+  const todayId = todayDayId(now);
 
   useLayoutEffect(() => {
     if (paused || menuOpen) return;
@@ -62,37 +64,54 @@ export function DayTimeline({
   return (
     <div className="flex flex-col">
       <div className="sticky top-0 z-40 bg-surface/80 px-container-padding-mobile pt-[calc(env(safe-area-inset-top,0px)+1rem)] pb-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)] backdrop-blur-md">
-        <div className="flex items-center gap-2">
-          <div className="relative flex min-w-0 flex-1 items-center justify-between rounded-full bg-surface-container p-1">
-            <div
-              className="absolute top-1 bottom-1 w-[19%] rounded-full bg-surface-container-lowest shadow-sm transition-all duration-300 ease-in-out"
-              style={{ left: `${index * 20 + 1}%` }}
-            />
-            {DAYS.map((day) => (
-              <button
-                key={day.id}
-                type="button"
-                className={`relative z-10 flex-1 rounded-full py-1.5 text-center text-label-sm uppercase tracking-wide ${
-                  day.id === dayId ? "text-on-surface" : "text-on-surface-variant"
-                }`}
-                onClick={() => onDayChange(day.id)}
-              >
-                {day.short}
-                <span className="mt-0.5 block text-[10px] font-medium tracking-normal normal-case opacity-70">
-                  {formatDayDate(weekStart, day.id)}
-                </span>
-              </button>
-            ))}
+        <div className="flex items-end gap-0.5">
+          <div className="flex min-w-0 flex-1">
+            {DAYS.map((day) => {
+              const selected = day.id === dayId;
+              const isToday = isCurrentWeek && todayId === day.id;
+              const date = formatDayDate(weekStart, day.id);
+              return (
+                <button
+                  key={day.id}
+                  type="button"
+                  aria-label={`${day.label} ${date}`}
+                  aria-pressed={selected}
+                  className="flex flex-1 flex-col items-center gap-1.5 rounded-xl py-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+                  onClick={() => onDayChange(day.id)}
+                >
+                  <span
+                    className={`text-[11px] font-medium tracking-[0.08em] ${
+                      selected
+                        ? "text-on-surface"
+                        : "text-on-surface-variant/70"
+                    }`}
+                  >
+                    {day.short}
+                  </span>
+                  <span
+                    className={`flex size-9 items-center justify-center rounded-full text-[15px] font-semibold tabular-nums transition-colors ${
+                      selected
+                        ? "bg-primary text-on-primary"
+                        : isToday
+                          ? "text-primary ring-1 ring-primary/30"
+                          : "text-on-surface-variant"
+                    }`}
+                  >
+                    {date}
+                  </span>
+                </button>
+              );
+            })}
           </div>
           <button
             type="button"
-            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-container text-on-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+            className="-mr-1.5 flex size-9 shrink-0 items-center justify-center rounded-full text-on-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
             aria-label="Schedule options"
             aria-haspopup="dialog"
             aria-expanded={menuOpen}
             onClick={() => setMenuOpen(true)}
           >
-            <EllipsisVertical size={18} strokeWidth={1.75} aria-hidden />
+            <EllipsisVertical size={16} strokeWidth={1.75} aria-hidden />
           </button>
         </div>
       </div>
