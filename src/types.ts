@@ -36,6 +36,8 @@ export type TeacherClass = {
 export type Teacher = {
   id: string;
   name: string;
+  email: string | null;
+  emailUnknown: boolean;
   subjects: string[];
   blocks: Partial<Record<BlockLetter, TeacherClass[]>>;
 };
@@ -92,4 +94,8 @@ export type ScheduleEvent = {
   icon?: string;
   studentCount?: number;
   cohorts?: CohortId[];
+  date?: string;
+  cancelled?: boolean;
+  cancelReason?: string | null;
+  cancellationId?: string;
 };

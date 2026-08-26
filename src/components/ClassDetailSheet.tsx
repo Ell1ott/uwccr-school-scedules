@@ -2,6 +2,7 @@ import { DoorOpen, User, Users, X } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { formatTime } from "../lib/buildSchedule";
+import { formatLongDate } from "../lib/calendar";
 import {
   classmatesFor,
   initials,
@@ -21,18 +22,24 @@ export function ClassDetailSheet({
   currentStudentId,
   viewerKind,
   communityMeeting = false,
+  canManage = false,
   onClose,
   onSelectStudent,
   onSelectTeacher,
+  onCancelClass,
+  onRestoreClass,
 }: {
   event: ScheduleEvent;
   students: Student[];
   currentStudentId: string | null;
   viewerKind: PersonKind;
   communityMeeting?: boolean;
+  canManage?: boolean;
   onClose: () => void;
   onSelectStudent: (id: string) => void;
   onSelectTeacher: (id: string) => void;
+  onCancelClass?: (reason: string, studentIds: string[]) => Promise<void>;
+  onRestoreClass?: () => Promise<void>;
 }) {
   const { palette } = usePalette();
   const tone = toneForEvent(event, palette);
@@ -45,6 +52,9 @@ export function ClassDetailSheet({
   const [rosterCohort, setRosterCohort] = useState<CohortId>(
     () => currentStudent?.cohort ?? "IB1",
   );
+  const [reason, setReason] = useState("");
+  const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
   const classmates = useMemo(
     () =>
       isStudy
@@ -134,7 +144,7 @@ export function ClassDetailSheet({
           <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-current/25 md:hidden" />
           <div className="flex items-center justify-between gap-3">
             <p className="text-label-sm tracking-[0.14em] text-current/70 uppercase">
-              {kindLabel}
+              {event.cancelled ? `${kindLabel} · Cancelled` : kindLabel}
             </p>
             <button
               ref={closeRef}
@@ -152,6 +162,13 @@ export function ClassDetailSheet({
           >
             {event.title}
           </h2>
+          {event.cancelled ? (
+            <p className="mt-2 text-body-md text-current/80">
+              {event.cancelReason
+                ? event.cancelReason
+                : "This class is cancelled."}
+            </p>
+          ) : null}
           {chip ? (
             <span
               className={`mt-3 inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-medium tracking-wide ${tone.chip}`}
@@ -162,6 +179,83 @@ export function ClassDetailSheet({
         </div>
 
         <div className="sheet-scroll min-h-0 flex-1 px-5 pt-5 pb-safe">
+          {canManage && event.kind === "class" ? (
+            <section className="mb-6 rounded-2xl bg-surface-container px-3 py-3">
+              <p className="text-label-sm tracking-[0.12em] text-on-surface-variant uppercase">
+                This occurrence
+              </p>
+              <p className="mt-1 text-body-md font-medium">
+                {event.date ? formatLongDate(event.date) : "This class"}
+                {event.block ? ` · Block ${event.block}` : ""}
+              </p>
+              {event.cancelled ? (
+                <button
+                  type="button"
+                  disabled={busy}
+                  className="mt-3 h-11 w-full rounded-full bg-primary text-label-sm tracking-wide text-on-primary disabled:opacity-50"
+                  onClick={async () => {
+                    if (!onRestoreClass) return;
+                    setBusy(true);
+                    setActionError(null);
+                    try {
+                      await onRestoreClass();
+                    } catch (error) {
+                      setActionError(
+                        error instanceof Error
+                          ? error.message
+                          : "Could not restore this class.",
+                      );
+                    } finally {
+                      setBusy(false);
+                    }
+                  }}
+                >
+                  {busy ? "Restoring…" : "Restore class"}
+                </button>
+              ) : (
+                <>
+                  <label className="mt-3 block text-label-sm text-on-surface-variant">
+                    Optional note
+                    <textarea
+                      value={reason}
+                      onChange={(event) => setReason(event.target.value)}
+                      rows={2}
+                      className="mt-1 w-full rounded-xl bg-surface-container-lowest px-3 py-2 text-body-md outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+                    />
+                  </label>
+                  <button
+                    type="button"
+                    disabled={busy}
+                    className="mt-3 h-11 w-full rounded-full bg-error text-label-sm tracking-wide text-on-error disabled:opacity-50"
+                    onClick={async () => {
+                      if (!onCancelClass) return;
+                      setBusy(true);
+                      setActionError(null);
+                      try {
+                        await onCancelClass(
+                          reason.trim(),
+                          classmates.map((mate) => mate.id),
+                        );
+                      } catch (error) {
+                        setActionError(
+                          error instanceof Error
+                            ? error.message
+                            : "Could not cancel this class.",
+                        );
+                      } finally {
+                        setBusy(false);
+                      }
+                    }}
+                  >
+                    {busy ? "Cancelling…" : "Cancel this class"}
+                  </button>
+                </>
+              )}
+              {actionError ? (
+                <p className="mt-2 text-label-sm text-error">{actionError}</p>
+              ) : null}
+            </section>
+          ) : null}
           {!isStudy ? (
             <dl className="grid grid-cols-2 gap-3">
               <Fact

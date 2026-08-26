@@ -63,6 +63,15 @@ export function dateForDay(weekStart: string, dayId: DayId): string {
   return toISODate(date);
 }
 
+export function formatLongDate(value: string): string {
+  const date = parseISODate(value);
+  return date.toLocaleDateString("en-US", {
+    weekday: "long",
+    month: "short",
+    day: "numeric",
+  });
+}
+
 export function formatDayDate(weekStart: string, dayId: DayId): string {
   const date = parseISODate(dateForDay(weekStart, dayId));
   return String(date.getDate());

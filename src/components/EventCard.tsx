@@ -98,8 +98,9 @@ export function EventCard({
     return <div className={className}>{body}</div>;
   }
 
-  const chipLabel =
-    event.extras && event.extras.length > 0
+  const chipLabel = event.cancelled
+    ? "Cancelled"
+    : event.extras && event.extras.length > 0
       ? "Conflict"
       : event.level && event.level !== event.title
         ? event.block
@@ -113,6 +114,8 @@ export function EventCard({
 
   const interactive = event.kind === "class" && Boolean(onOpen);
   const className = `relative flex h-full flex-col justify-start overflow-hidden rounded-[10px] shadow-[0_4px_12px_rgba(4,22,39,0.05)] transition-[filter,box-shadow,transform] duration-200 ${tone.bg} ${tone.text} ${padding} ${minHeight} ${
+    event.cancelled ? "opacity-70" : ""
+  } ${
     interactive
       ? "w-full appearance-none cursor-pointer text-left hover:brightness-[0.97] hover:shadow-[0_6px_16px_rgba(4,22,39,0.1)] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
       : ""
@@ -122,13 +125,13 @@ export function EventCard({
     <>
       <div className="absolute top-0 bottom-0 left-0 w-1" />
       <div className={`flex items-start justify-between gap-2 ${compact ? "mb-0.5" : "mb-1.5"}`}>
-        <h3 className="text-[15px] font-semibold leading-5">
+        <h3 className={`text-[15px] font-semibold leading-5 ${event.cancelled ? "line-through" : ""}`}>
           {event.title}
         </h3>
         {chipLabel ? (
           <div
             className={`flex-shrink-0 rounded-full px-1.5 py-px text-[10px] font-medium tracking-wide ${tone.chip} ${
-              event.extras ? "bg-error-container text-black" : ""
+              event.cancelled || event.extras ? "bg-error-container text-black" : ""
             }`}
           >
             {chipLabel}

@@ -9,11 +9,12 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: [
-        'favicon.svg',
-        'favicon.ico',
-        'apple-touch-icon-180x180.png',
-      ],
+        includeAssets: [
+          'favicon.svg',
+          'favicon.ico',
+          'apple-touch-icon-180x180.png',
+          'push-sw.js',
+        ],
       manifest: {
         id: '/',
         name: 'IB Week View',
@@ -52,6 +53,7 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff,woff2,webmanifest}'],
+        importScripts: ['push-sw.js'],
         clientsClaim: true,
         skipWaiting: true,
       },

@@ -35,10 +35,12 @@ export function StudentRoster({
   students,
   teachers,
   onSelect,
+  onOpenLogin,
 }: {
   students: Student[];
   teachers: Teacher[];
   onSelect: (person: SelectedPerson) => void;
+  onOpenLogin?: () => void;
 }) {
   const [tab, setTab] = useState<PersonKind>("student");
   const [query, setQuery] = useState("");
@@ -92,7 +94,16 @@ export function StudentRoster({
           <span className="hidden md:inline">
             , or search up top if you already know yours
           </span>
-          .
+          .{" "}
+          {onOpenLogin ? (
+            <button
+              type="button"
+              className="font-medium text-on-surface underline-offset-2 hover:underline"
+              onClick={onOpenLogin}
+            >
+              Teachers, sign in to cancel a class
+            </button>
+          ) : null}
         </p>
         <div className="mt-4 flex w-fit rounded-full bg-surface-container p-1">
           {(["student", "teacher"] as const).map((kind) => (

@@ -1,5 +1,5 @@
 import { EllipsisVertical } from "lucide-react";
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { DAYS } from "../data/weekTemplate";
 import { formatTime, todayDayId } from "../lib/buildSchedule";
 import { formatDayDate, mondayOf } from "../lib/calendar";
@@ -21,6 +21,9 @@ export function DayTimeline({
   onSelect,
   onWeekChange,
   paused = false,
+  onOpenLogin,
+  onOpenAdmin,
+  banner,
 }: {
   dayId: DayId;
   onDayChange: (id: DayId) => void;
@@ -33,6 +36,9 @@ export function DayTimeline({
   onSelect: (person: SelectedPerson) => void;
   onWeekChange: (weekStart: string) => void;
   paused?: boolean;
+  onOpenLogin?: () => void;
+  onOpenAdmin?: () => void;
+  banner?: ReactNode;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
@@ -105,7 +111,7 @@ export function DayTimeline({
           </div>
           <button
             type="button"
-            className="-mr-1.5 flex size-9 shrink-0 items-center justify-center rounded-full text-on-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+            className="-mr-1.5 flex size-9 items-center justify-center rounded-full text-on-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
             aria-label="Schedule options"
             aria-haspopup="dialog"
             aria-expanded={menuOpen}
@@ -115,6 +121,7 @@ export function DayTimeline({
           </button>
         </div>
       </div>
+      {banner ? <div className="pt-3">{banner}</div> : null}
       {menuOpen ? (
         <ScheduleMenu
           students={students}
@@ -124,6 +131,8 @@ export function DayTimeline({
           onSelect={onSelect}
           onWeekChange={onWeekChange}
           onClose={() => setMenuOpen(false)}
+          onOpenLogin={onOpenLogin}
+          onOpenAdmin={onOpenAdmin}
         />
       ) : null}
 

@@ -96,7 +96,7 @@ function buildDayShell(
   weekStart: string,
   kind: PersonKind,
   cohort: CohortId | undefined,
-  fillAcademic: (events: ScheduleEvent[], communityMeeting: boolean) => void,
+  fillAcademic: (events: ScheduleEvent[], communityMeeting: boolean, date: string) => void,
 ): ScheduleEvent[] {
   const date = dateForDay(weekStart, dayId);
   const events: ScheduleEvent[] = [];
@@ -104,7 +104,7 @@ function buildDayShell(
   const communityMeeting = dayHasCommunityMeeting(date);
 
   if (!noClasses) {
-    fillAcademic(events, communityMeeting);
+    fillAcademic(events, communityMeeting, date);
   }
 
   appendSharedSlots(events, dayId);
@@ -126,7 +126,7 @@ export function buildSchedule(
       weekStart,
       "student",
       student.cohort,
-      (events, communityMeeting) => {
+      (events, communityMeeting, date) => {
         const academicRows = academicRowsFor(communityMeeting);
         for (const row of academicRows) {
           const block = row.blocks[day.id];
@@ -146,6 +146,7 @@ export function buildSchedule(
               level: entry.level,
               block,
               extras: entry.extras,
+              date,
             });
           } else {
             events.push({
@@ -159,6 +160,7 @@ export function buildSchedule(
               subtitle: "Self-directed",
               block,
               icon: "book-open",
+              date,
             });
           }
         }
@@ -181,7 +183,7 @@ export function buildTeacherSchedule(
       weekStart,
       "teacher",
       undefined,
-      (events, communityMeeting) => {
+      (events, communityMeeting, date) => {
         const academicRows = academicRowsFor(communityMeeting);
         for (const row of academicRows) {
           const block = row.blocks[day.id];
@@ -203,6 +205,7 @@ export function buildTeacherSchedule(
               block,
               studentCount: primary.studentCount,
               cohorts: primary.cohorts,
+              date,
               extras:
                 rest.length > 0
                   ? rest.map((item) => ({
@@ -225,6 +228,7 @@ export function buildTeacherSchedule(
               subtitle: "No class this block",
               block,
               icon: "book-open",
+              date,
             });
           }
         }

@@ -1,4 +1,5 @@
 import { canonicalTeacherName } from "../data/teacherAliases";
+import { emailForTeacherId, unknownTeacherEmail } from "../data/teacherEmails";
 import type {
   BlockLetter,
   ClassEntry,
@@ -168,9 +169,12 @@ export function deriveTeachers(students: Student[]): Teacher[] {
           b[1] - a[1] || a[0].localeCompare(b[0], undefined, { sensitivity: "base" }),
       )
       .map(([subject]) => subject);
+    const id = slugifyTeacher(name);
     teachers.push({
-      id: slugifyTeacher(name),
+      id,
       name,
+      email: emailForTeacherId(id),
+      emailUnknown: Boolean(unknownTeacherEmail(id)),
       subjects,
       blocks,
     });

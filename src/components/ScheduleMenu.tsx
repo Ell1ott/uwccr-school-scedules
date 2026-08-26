@@ -3,6 +3,7 @@ import { useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
 import type { SelectedPerson, Student, Teacher } from "../types";
 import { cohortCaption, teacherCaption } from "../lib/cohort";
+import { useAuth } from "../lib/auth";
 import { PalettePicker } from "./PalettePicker";
 import { StudentPicker } from "./StudentPicker";
 import { WeekNav } from "./WeekNav";
@@ -15,6 +16,8 @@ export function ScheduleMenu({
   onSelect,
   onWeekChange,
   onClose,
+  onOpenLogin,
+  onOpenAdmin,
 }: {
   students: Student[];
   teachers: Teacher[];
@@ -23,7 +26,10 @@ export function ScheduleMenu({
   onSelect: (person: SelectedPerson) => void;
   onWeekChange: (weekStart: string) => void;
   onClose: () => void;
+  onOpenLogin?: () => void;
+  onOpenAdmin?: () => void;
 }) {
+  const auth = useAuth();
   const titleId = useId();
   const closeRef = useRef<HTMLButtonElement>(null);
   const onCloseRef = useRef(onClose);
@@ -136,6 +142,45 @@ export function ScheduleMenu({
               className="w-full"
               buttonClassName="h-12 w-full justify-between px-4"
             />
+          </section>
+
+          <section className="flex flex-col gap-2 pb-2">
+            <h3 className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
+              Staff
+            </h3>
+            {auth.teacherName ? (
+              <button
+                type="button"
+                className="h-12 rounded-full bg-surface-container px-4 text-left text-label-sm tracking-wide text-on-surface"
+                onClick={() => {
+                  void auth.signOut();
+                  onClose();
+                }}
+              >
+                Sign out {auth.teacherName}
+              </button>
+            ) : (
+              <button
+                type="button"
+                className="h-12 rounded-full bg-surface-container px-4 text-left text-label-sm tracking-wide text-on-surface"
+                onClick={() => {
+                  onOpenLogin?.();
+                  onClose();
+                }}
+              >
+                Teacher login
+              </button>
+            )}
+            <button
+              type="button"
+              className="h-12 rounded-full px-4 text-left text-label-sm tracking-wide text-on-surface-variant"
+              onClick={() => {
+                onOpenAdmin?.();
+                onClose();
+              }}
+            >
+              Send teacher logins
+            </button>
           </section>
         </div>
       </div>

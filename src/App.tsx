@@ -1,22 +1,37 @@
 import { Shuffle } from "lucide-react";
-import { useLayoutEffect, useMemo, useState } from "react";
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from "react";
 import studentsFile from "./data/students.json" with { type: "json" };
 import { DAYS } from "./data/weekTemplate";
 import { ClassChooser } from "./components/ClassChooser";
 import { ClassDetailSheet } from "./components/ClassDetailSheet";
 import { PalettePicker } from "./components/PalettePicker";
+import { PushOptIn } from "./components/PushOptIn";
 import { StudentPicker } from "./components/StudentPicker";
 import { StudentRoster } from "./components/StudentRoster";
 import { DayTimeline } from "./components/DayTimeline";
+import { TeacherAdmin } from "./components/TeacherAdmin";
+import { TeacherLogin } from "./components/TeacherLogin";
 import { WeekGrid } from "./components/WeekGrid";
 import { WeekNav } from "./components/WeekNav";
+import { AuthProvider, useAuth } from "./lib/auth";
 import { buildSchedule, buildTeacherSchedule, todayDayId } from "./lib/buildSchedule";
+import {
+  applyCancellations,
+  useCancellations,
+} from "./lib/cancellations";
 import {
   clampWeekStart,
   mondayOf,
   weekHasCommunityMeeting,
 } from "./lib/calendar";
 import { PaletteProvider } from "./lib/palette";
+import { notifyCancellation } from "./lib/push";
 import {
   readStoredPalette,
   readStoredPerson,
@@ -26,7 +41,8 @@ import {
   storeWeekStart,
 } from "./lib/storage";
 import { cohortCaption, teacherCaption } from "./lib/cohort";
-import { deriveTeachers } from "./lib/teachers";
+import { supabase } from "./lib/supabase";
+import { deriveTeachers, teacherIdForName } from "./lib/teachers";
 import type { PaletteId } from "./lib/tones";
 import type {
   DayId,
@@ -37,9 +53,48 @@ import type {
 
 const data = studentsFile as StudentsFile;
 
+type AppView = "app" | "login" | "admin";
+
+function readView(): AppView {
+  const view = new URLSearchParams(window.location.search).get("view");
+  if (view === "login" || view === "admin") return view;
+  return "app";
+}
+
+function writeView(view: AppView) {
+  const url = new URL(window.location.href);
+  if (view === "app") url.searchParams.delete("view");
+  else url.searchParams.set("view", view);
+  window.history.replaceState(null, "", url);
+}
+
+function useDesktopLayout() {
+  const [desktop, setDesktop] = useState(
+    () => window.matchMedia("(min-width: 768px)").matches,
+  );
+  useEffect(() => {
+    const media = window.matchMedia("(min-width: 768px)");
+    const sync = () => setDesktop(media.matches);
+    media.addEventListener("change", sync);
+    return () => media.removeEventListener("change", sync);
+  }, []);
+  return desktop;
+}
+
 export default function App() {
+  return (
+    <AuthProvider>
+      <AppShell />
+    </AuthProvider>
+  );
+}
+
+function AppShell() {
   const students = data.students;
   const teachers = useMemo(() => deriveTeachers(students), [students]);
+  const auth = useAuth();
+  const cancellations = useCancellations();
+  const [view, setViewState] = useState<AppView>(() => readView());
   const [selected, setSelected] = useState<SelectedPerson | null>(
     () => readStoredPerson(),
   );
@@ -54,6 +109,11 @@ export default function App() {
   const [chooserOpen, setChooserOpen] = useState(false);
   const communityMeeting = weekHasCommunityMeeting(weekStart);
 
+  const setView = useCallback((next: AppView) => {
+    setViewState(next);
+    writeView(next);
+  }, []);
+
   function choosePalette(id: PaletteId) {
     setPalette(id);
     storePalette(id);
@@ -66,11 +126,19 @@ export default function App() {
     setOpenEvent(null);
   }
 
-  function choosePerson(person: SelectedPerson) {
+  const choosePerson = useCallback((person: SelectedPerson) => {
     setSelected(person);
     storePerson(person);
     setOpenEvent(null);
-  }
+  }, []);
+
+  const onSignedIn = useCallback(
+    (teacherId: string) => {
+      choosePerson({ kind: "teacher", id: teacherId });
+      setView("app");
+    },
+    [choosePerson, setView],
+  );
 
   function openChooser() {
     setOpenEvent(null);
@@ -87,10 +155,30 @@ export default function App() {
       : undefined;
   const week = useMemo(() => {
     if (chooserOpen) return null;
-    if (student) return buildSchedule(student, weekStart);
-    if (teacher) return buildTeacherSchedule(teacher, weekStart);
-    return null;
-  }, [chooserOpen, student, teacher, weekStart]);
+    const built = student
+      ? buildSchedule(student, weekStart)
+      : teacher
+        ? buildTeacherSchedule(teacher, weekStart)
+        : null;
+    if (!built) return null;
+    return applyCancellations(built, weekStart, cancellations);
+  }, [chooserOpen, student, teacher, weekStart, cancellations]);
+
+  useEffect(() => {
+    if (!openEvent || !week) return;
+    for (const day of DAYS) {
+      const match = week[day.id].find((item) => item.id === openEvent.id);
+      if (
+        match &&
+        (match.cancelled !== openEvent.cancelled ||
+          match.cancellationId !== openEvent.cancellationId ||
+          match.cancelReason !== openEvent.cancelReason)
+      ) {
+        setOpenEvent(match);
+        return;
+      }
+    }
+  }, [week, openEvent]);
 
   useLayoutEffect(() => {
     if (!selected) return;
@@ -100,11 +188,35 @@ export default function App() {
     window.scrollTo(0, 0);
   }, [selected]);
 
+  const desktop = useDesktopLayout();
   const caption = teacher
     ? teacherCaption(weekStart)
     : student
       ? cohortCaption(student.cohort, weekStart)
       : "IB1 & IB2 2026–2027";
+
+  const canManageEvent = Boolean(
+    openEvent &&
+      auth.teacherId &&
+      openEvent.kind === "class" &&
+      openEvent.teacher &&
+      teacherIdForName(openEvent.teacher) === auth.teacherId,
+  );
+  const pushOptIn = student ? <PushOptIn studentId={student.id} /> : null;
+
+  if (view === "login") {
+    return (
+      <TeacherLogin
+        onBack={() => setView("app")}
+        onSignedIn={onSignedIn}
+        onAdmin={() => setView("admin")}
+      />
+    );
+  }
+
+  if (view === "admin") {
+    return <TeacherAdmin teachers={teachers} onBack={() => setView("app")} />;
+  }
 
   return (
     <PaletteProvider palette={palette} setPalette={choosePalette}>
@@ -142,6 +254,23 @@ export default function App() {
                   Try classes
                 </span>
               </button>
+              {auth.teacherName ? (
+                <button
+                  type="button"
+                  className="hidden h-10 shrink-0 rounded-full bg-surface-container px-3 text-label-sm tracking-wide text-on-surface-variant lg:inline"
+                  onClick={() => void auth.signOut()}
+                >
+                  Sign out
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  className="hidden h-10 shrink-0 rounded-full bg-surface-container px-3 text-label-sm tracking-wide text-on-surface-variant lg:inline"
+                  onClick={() => setView("login")}
+                >
+                  Staff
+                </button>
+              )}
               <PalettePicker />
               <WeekNav weekStart={weekStart} onChange={chooseWeek} />
               <StudentPicker
@@ -160,10 +289,12 @@ export default function App() {
               students={students}
               teachers={teachers}
               onSelect={choosePerson}
+              onOpenLogin={() => setView("login")}
             />
           ) : (
             <>
-              <div className="hidden md:block pt-6">
+              <div className="hidden pt-6 md:block">
+                {desktop ? pushOptIn : null}
                 <WeekGrid
                   week={week}
                   weekStart={weekStart}
@@ -183,6 +314,9 @@ export default function App() {
                   onSelect={choosePerson}
                   onWeekChange={chooseWeek}
                   paused={Boolean(openEvent)}
+                  onOpenLogin={() => setView("login")}
+                  onOpenAdmin={() => setView("admin")}
+                  banner={desktop ? null : pushOptIn}
                 />
               </div>
             </>
@@ -195,9 +329,45 @@ export default function App() {
             currentStudentId={student?.id ?? null}
             viewerKind={selected?.kind ?? "student"}
             communityMeeting={communityMeeting}
+            canManage={canManageEvent}
             onClose={() => setOpenEvent(null)}
             onSelectStudent={(id) => choosePerson({ kind: "student", id })}
             onSelectTeacher={(id) => choosePerson({ kind: "teacher", id })}
+            onCancelClass={async (reason, studentIds) => {
+              if (!supabase || !auth.teacherId || !auth.session) {
+                throw new Error("Sign in to cancel a class.");
+              }
+              if (!openEvent.date || !openEvent.block) {
+                throw new Error("This class has no date to cancel.");
+              }
+              const { data, error } = await supabase
+                .from("cancellations")
+                .insert({
+                  teacher_id: auth.teacherId,
+                  on_date: openEvent.date,
+                  block: openEvent.block,
+                  subject: openEvent.title,
+                  reason: reason || null,
+                  start_time: openEvent.start,
+                  student_ids: studentIds,
+                })
+                .select("id")
+                .single();
+              if (error) throw new Error(error.message);
+              if (data) {
+                void notifyCancellation(auth.session.access_token, data.id);
+              }
+            }}
+            onRestoreClass={async () => {
+              if (!supabase || !openEvent.cancellationId) {
+                throw new Error("Nothing to restore.");
+              }
+              const { error } = await supabase
+                .from("cancellations")
+                .delete()
+                .eq("id", openEvent.cancellationId);
+              if (error) throw new Error(error.message);
+            }}
           />
         ) : null}
       </div>
