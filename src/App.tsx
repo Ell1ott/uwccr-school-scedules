@@ -12,7 +12,6 @@ import { DAYS } from "./data/weekTemplate";
 import { ClassChooser } from "./components/ClassChooser";
 import { ClassDetailSheet } from "./components/ClassDetailSheet";
 import { PalettePicker } from "./components/PalettePicker";
-import { PushOptIn } from "./components/PushOptIn";
 import { StudentPicker } from "./components/StudentPicker";
 import { StudentRoster } from "./components/StudentRoster";
 import { DayTimeline } from "./components/DayTimeline";
@@ -86,19 +85,6 @@ function classEventProps(event: ScheduleEvent) {
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : "unknown";
-}
-
-function useDesktopLayout() {
-  const [desktop, setDesktop] = useState(
-    () => window.matchMedia("(min-width: 768px)").matches,
-  );
-  useEffect(() => {
-    const media = window.matchMedia("(min-width: 768px)");
-    const sync = () => setDesktop(media.matches);
-    media.addEventListener("change", sync);
-    return () => media.removeEventListener("change", sync);
-  }, []);
-  return desktop;
 }
 
 export default function App() {
@@ -273,7 +259,6 @@ function AppShell() {
     window.scrollTo(0, 0);
   }, [selected]);
 
-  const desktop = useDesktopLayout();
   const caption = teacher
     ? teacherCaption(weekStart)
     : student
@@ -287,8 +272,6 @@ function AppShell() {
       openEvent.teacher &&
       teacherIdForName(openEvent.teacher) === auth.teacherId,
   );
-  const pushOptIn = student ? <PushOptIn studentId={student.id} /> : null;
-
   if (view === "login") {
     return (
       <TeacherLogin
@@ -382,7 +365,6 @@ function AppShell() {
           ) : (
             <>
               <div className="hidden pt-6 md:block">
-                {desktop ? pushOptIn : null}
                 <WeekGrid
                   week={week}
                   weekStart={weekStart}
@@ -412,7 +394,6 @@ function AppShell() {
                   paused={Boolean(openEvent)}
                   onOpenLogin={() => setView("login")}
                   onOpenAdmin={() => setView("admin")}
-                  banner={desktop ? null : pushOptIn}
                 />
               </div>
             </>

@@ -25,6 +25,41 @@ let client: PostHogClient | null = null;
 let started = false;
 const pending: Pending[] = [];
 
+function deviceContext(): Record<string, string> {
+  try {
+    const ua = navigator.userAgent;
+    const iPadOs =
+      /ipad/i.test(ua) ||
+      (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    const ios = /iphone|ipod/i.test(ua) || iPadOs;
+    const android = /android/i.test(ua);
+    const standalone =
+      window.matchMedia("(display-mode: standalone)").matches ||
+      Boolean(
+        "standalone" in navigator &&
+          (navigator as { standalone?: boolean }).standalone,
+      );
+
+    let os = "other";
+    if (ios) os = "ios";
+    else if (android) os = "android";
+    else if (/mac/i.test(ua)) os = "macos";
+    else if (/win/i.test(ua)) os = "windows";
+
+    let device = "desktop";
+    if (iPadOs || (android && !/mobile/i.test(ua))) device = "tablet";
+    else if (ios || (android && /mobile/i.test(ua))) device = "phone";
+
+    return {
+      os,
+      device,
+      surface: standalone ? "pwa" : "browser",
+    };
+  } catch {
+    return {};
+  }
+}
+
 function apply(ph: PostHogClient, item: Pending): void {
   if (item.kind === "capture") {
     ph.capture(item.event, item.properties);
@@ -81,6 +116,11 @@ export function initAnalytics(): void {
             disable_external_dependency_loading: true,
             person_profiles: "identified_only",
           });
+          try {
+            posthog.register(deviceContext());
+          } catch {
+            /* drop */
+          }
           client = posthog;
           flush(posthog);
         } catch {
@@ -101,7 +141,11 @@ export function track(
 ): void {
   try {
     queueMicrotask(() => {
-      enqueue({ kind: "capture", event, properties });
+      enqueue({
+        kind: "capture",
+        event,
+        properties: { ...deviceContext(), ...properties },
+      });
     });
   } catch {
     /* drop */
