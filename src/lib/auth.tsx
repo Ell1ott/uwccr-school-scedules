@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from "react";
 import type { Session } from "@supabase/supabase-js";
+import { setTeacherContext, track } from "./analytics";
 import { supabase } from "./supabase";
 
 export type AuthState = {
@@ -98,6 +99,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return error?.message ?? null;
       },
       async signOut() {
+        track("teacher_signed_out", { teacher_id: teacherId });
+        setTeacherContext(null);
         if (!supabase) return;
         await supabase.auth.signOut();
       },

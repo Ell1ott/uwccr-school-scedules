@@ -1,9 +1,33 @@
-import { defineConfig } from 'vite'
+import { defineConfig, type ProxyOptions } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import { VitePWA } from 'vite-plugin-pwa'
 
+function stripProxyPrefix(path: string): string {
+  return path.replace(/^\/wvq/, '')
+}
+
+const posthogProxy: Record<string, string | ProxyOptions> = {
+  '/wvq/static': {
+    target: 'https://us-assets.i.posthog.com',
+    changeOrigin: true,
+    rewrite: stripProxyPrefix,
+  },
+  '/wvq/array': {
+    target: 'https://us-assets.i.posthog.com',
+    changeOrigin: true,
+    rewrite: stripProxyPrefix,
+  },
+  '/wvq': {
+    target: 'https://us.i.posthog.com',
+    changeOrigin: true,
+    rewrite: stripProxyPrefix,
+  },
+}
+
 export default defineConfig({
+  server: { proxy: posthogProxy },
+  preview: { proxy: posthogProxy },
   plugins: [
     react(),
     tailwindcss(),
@@ -56,6 +80,13 @@ export default defineConfig({
         importScripts: ['push-sw.js'],
         clientsClaim: true,
         skipWaiting: true,
+        navigateFallbackDenylist: [/^\/wvq(?:\/|$)/],
+        runtimeCaching: [
+          {
+            urlPattern: ({ url }) => url.pathname.startsWith('/wvq'),
+            handler: 'NetworkOnly',
+          },
+        ],
       },
     }),
   ],

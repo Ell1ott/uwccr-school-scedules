@@ -1,5 +1,6 @@
 import { ArrowLeft } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { track } from "../lib/analytics";
 import { SUPABASE_ANON_KEY, functionsUrl, supabaseConfigured } from "../lib/supabase";
 import type { Teacher } from "../types";
 
@@ -59,6 +60,10 @@ export function TeacherAdmin({
   const [query, setQuery] = useState("");
 
   useEffect(() => {
+    track("admin_viewed");
+  }, []);
+
+  useEffect(() => {
     try {
       localStorage.setItem(DRAFT_KEY, JSON.stringify(emails));
     } catch {
@@ -87,10 +92,18 @@ export function TeacherAdmin({
     const email = (emails[teacher.id] ?? "").trim();
     if (!email) {
       setError(`Add an email for ${teacher.name} first.`);
+      track("teacher_provision_failed", {
+        teacher_id: teacher.id,
+        error: "missing_email",
+      });
       return;
     }
     if (!functionsUrl) {
       setError("Supabase is not configured.");
+      track("teacher_provision_failed", {
+        teacher_id: teacher.id,
+        error: "supabase_not_configured",
+      });
       return;
     }
     const loginUrl = `${window.location.origin}/?view=login`;
@@ -121,10 +134,19 @@ export function TeacherAdmin({
         email?: string;
       };
       if (!response.ok) {
-        setError(payload.error ?? `Could not provision ${teacher.name}.`);
+        const message = payload.error ?? `Could not provision ${teacher.name}.`;
+        track("teacher_provision_failed", {
+          teacher_id: teacher.id,
+          error: message,
+        });
+        setError(message);
         return;
       }
       if (payload.password && payload.email) {
+        track("teacher_provisioned", {
+          teacher_id: teacher.id,
+          send_email: sendEmail,
+        });
         setResults((current) => ({
           ...current,
           [teacher.id]: {
@@ -136,6 +158,10 @@ export function TeacherAdmin({
         }));
       }
     } catch {
+      track("teacher_provision_failed", {
+        teacher_id: teacher.id,
+        error: "Could not reach the provision function.",
+      });
       setError("Could not reach the provision function.");
     } finally {
       setBusyId(null);
@@ -160,6 +186,7 @@ export function TeacherAdmin({
   async function copyCredentials(teacher: Teacher, result: ProvisionResult) {
     try {
       await navigator.clipboard.writeText(credentialMessage(teacher, result));
+      track("teacher_credentials_copied", { teacher_id: teacher.id });
       setCopiedId(teacher.id);
       window.setTimeout(() => {
         setCopiedId((current) => (current === teacher.id ? null : current));

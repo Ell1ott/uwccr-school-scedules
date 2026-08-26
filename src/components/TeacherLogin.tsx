@@ -1,5 +1,6 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { ArrowLeft } from "lucide-react";
+import { track } from "../lib/analytics";
 import { useAuth } from "../lib/auth";
 import { supabaseConfigured } from "../lib/supabase";
 
@@ -20,19 +21,31 @@ export function TeacherLogin({
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
+    track("teacher_login_viewed");
+  }, []);
+
+  useEffect(() => {
     if (session && teacherId) onSignedIn(teacherId);
   }, [session, teacherId, onSignedIn]);
 
   const unlinked = Boolean(session && !loading && !teacherId);
+
+  useEffect(() => {
+    if (unlinked) track("teacher_login_unlinked");
+  }, [unlinked]);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
     setNotice(null);
     setBusy(true);
+    track("teacher_login_attempted");
     const message = await signIn(email, password);
     setBusy(false);
-    if (message) setError(message);
+    if (message) {
+      track("teacher_login_failed", { error: message });
+      setError(message);
+    }
   }
 
   async function onReset() {
@@ -43,6 +56,7 @@ export function TeacherLogin({
       return;
     }
     setBusy(true);
+    track("teacher_password_reset_requested");
     const message = await resetPassword(email);
     setBusy(false);
     if (message) setError(message);

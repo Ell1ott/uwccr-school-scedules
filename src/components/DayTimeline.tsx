@@ -1,6 +1,7 @@
 import { EllipsisVertical } from "lucide-react";
 import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { DAYS } from "../data/weekTemplate";
+import { track } from "../lib/analytics";
 import { formatTime, todayDayId } from "../lib/buildSchedule";
 import { formatDayDate, mondayOf } from "../lib/calendar";
 import type { DayId, ScheduleEvent, SelectedPerson, Student, Teacher } from "../types";
@@ -115,7 +116,10 @@ export function DayTimeline({
             aria-label="Schedule options"
             aria-haspopup="dialog"
             aria-expanded={menuOpen}
-            onClick={() => setMenuOpen(true)}
+            onClick={() => {
+              setMenuOpen(true);
+              track("schedule_menu_opened");
+            }}
           >
             <EllipsisVertical size={16} strokeWidth={1.75} aria-hidden />
           </button>

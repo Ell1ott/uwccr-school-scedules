@@ -1,5 +1,6 @@
 import { Search } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
+import { track } from "../lib/analytics";
 import { initials } from "../lib/classDetail";
 import { subjectSummary } from "../lib/teachers";
 import type { PersonKind, SelectedPerson, Student, Teacher } from "../types";
@@ -116,7 +117,10 @@ export function StudentRoster({
                   : "text-on-surface-variant hover:text-on-surface"
               }`}
               aria-pressed={tab === kind}
-              onClick={() => setTab(kind)}
+              onClick={() => {
+                if (kind !== tab) track("roster_tab_changed", { tab: kind });
+                setTab(kind);
+              }}
             >
               {kind === "student" ? "Students" : "Teachers"}
             </button>

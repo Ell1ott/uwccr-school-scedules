@@ -1,5 +1,6 @@
 import { Bell } from "lucide-react";
 import { useEffect, useState } from "react";
+import { track } from "../lib/analytics";
 import {
   isIos,
   isStandalone,
@@ -45,11 +46,15 @@ export function PushOptIn({ studentId }: { studentId: string }) {
     void subscribeToClassPush(studentId);
   }, [studentId]);
 
+  useEffect(() => {
+    if (visible) track("push_opt_in_shown", { student_id: studentId });
+  }, [visible, studentId]);
+
   if (!visible) return null;
 
   const iosHint = isIos() && !isStandalone();
 
-  function dismiss() {
+  function persistDismiss() {
     try {
       localStorage.setItem(`${DISMISS_KEY}:${studentId}`, "1");
     } catch {
@@ -58,11 +63,22 @@ export function PushOptIn({ studentId }: { studentId: string }) {
     setVisible(false);
   }
 
+  function dismiss() {
+    persistDismiss();
+    track("push_opt_in_dismissed", { student_id: studentId });
+  }
+
   async function enable() {
     if (isIos() && !isStandalone()) {
-      setError(
-        "On iPhone, add Week View to your Home Screen first, then enable notifications.",
-      );
+      const message =
+        "On iPhone, add Week View to your Home Screen first, then enable notifications.";
+      track("push_opt_in_failed", {
+        student_id: studentId,
+        error: message,
+        is_ios: true,
+        is_standalone: false,
+      });
+      setError(message);
       return;
     }
     setBusy(true);
@@ -70,26 +86,45 @@ export function PushOptIn({ studentId }: { studentId: string }) {
     try {
       const result = await Notification.requestPermission();
       if (result === "granted") {
-        dismiss();
+        persistDismiss();
+        track("push_opt_in_enabled", { student_id: studentId });
         void subscribeToClassPush(studentId);
         return;
       }
       if (result === "denied") {
-        dismiss();
+        persistDismiss();
+        track("push_opt_in_denied", {
+          student_id: studentId,
+          is_ios: isIos(),
+          is_standalone: isStandalone(),
+        });
         return;
       }
+      track("push_opt_in_failed", {
+        student_id: studentId,
+        error: "Notifications were not allowed.",
+        is_ios: isIos(),
+        is_standalone: isStandalone(),
+      });
       setError("Notifications were not allowed.");
     } catch (caught) {
       if (permission() === "granted") {
-        dismiss();
+        persistDismiss();
+        track("push_opt_in_enabled", { student_id: studentId });
         void subscribeToClassPush(studentId);
         return;
       }
-      setError(
+      const message =
         caught instanceof Error
           ? caught.message
-          : "Could not enable notifications.",
-      );
+          : "Could not enable notifications.";
+      track("push_opt_in_failed", {
+        student_id: studentId,
+        error: message,
+        is_ios: isIos(),
+        is_standalone: isStandalone(),
+      });
+      setError(message);
     } finally {
       setBusy(false);
     }

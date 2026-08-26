@@ -1,6 +1,7 @@
 import { ArrowLeft, CircleAlert, Shuffle } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { academicRowsFor, DAYS } from "../data/weekTemplate";
+import { track } from "../lib/analytics";
 import { formatTime } from "../lib/buildSchedule";
 import {
   BLOCK_LETTERS,
@@ -107,6 +108,7 @@ export function ClassChooser({
 
   function chooseCohort(next: CohortId) {
     setCohort(next);
+    track("class_chooser_cohort_picked", { cohort: next });
     if (currentStudent?.cohort === next) {
       setBlocks(seedBlocksFromStudent(currentStudent));
       return;
@@ -116,9 +118,17 @@ export function ClassChooser({
   }
 
   function selectOffering(block: BlockLetter, offering: ClassOffering) {
+    const current = blocks[block];
+    const cleared = Boolean(
+      current && offeringKey(current) === offeringKey(offering),
+    );
+    track("class_chooser_block_swapped", {
+      block,
+      subject: offering.subject,
+      cleared,
+    });
     setBlocks((prev) => {
-      const current = prev[block];
-      if (current && offeringKey(current) === offeringKey(offering)) {
+      if (cleared) {
         const next = { ...prev };
         delete next[block];
         return next;

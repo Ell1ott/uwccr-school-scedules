@@ -4,6 +4,7 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
 } from "react";
 import studentsFile from "./data/students.json" with { type: "json" };
@@ -19,6 +20,12 @@ import { TeacherAdmin } from "./components/TeacherAdmin";
 import { TeacherLogin } from "./components/TeacherLogin";
 import { WeekGrid } from "./components/WeekGrid";
 import { WeekNav } from "./components/WeekNav";
+import {
+  setSelectedPerson,
+  setTeacherContext,
+  track,
+  type ScheduleViewSource,
+} from "./lib/analytics";
 import { AuthProvider, useAuth } from "./lib/auth";
 import { buildSchedule, buildTeacherSchedule, todayDayId } from "./lib/buildSchedule";
 import {
@@ -68,6 +75,19 @@ function writeView(view: AppView) {
   window.history.replaceState(null, "", url);
 }
 
+function classEventProps(event: ScheduleEvent) {
+  return {
+    event_kind: event.kind,
+    subject: event.title,
+    block: event.block ?? null,
+    cancelled: Boolean(event.cancelled),
+  };
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : "unknown";
+}
+
 function useDesktopLayout() {
   const [desktop, setDesktop] = useState(
     () => window.matchMedia("(min-width: 768px)").matches,
@@ -108,6 +128,8 @@ function AppShell() {
   const [openEvent, setOpenEvent] = useState<ScheduleEvent | null>(null);
   const [chooserOpen, setChooserOpen] = useState(false);
   const communityMeeting = weekHasCommunityMeeting(weekStart);
+  const selectedRef = useRef(selected);
+  selectedRef.current = selected;
 
   const setView = useCallback((next: AppView) => {
     setViewState(next);
@@ -115,26 +137,55 @@ function AppShell() {
   }, []);
 
   function choosePalette(id: PaletteId) {
+    if (id !== palette) track("palette_changed", { palette_id: id });
     setPalette(id);
     storePalette(id);
   }
 
   function chooseWeek(next: string) {
     const clamped = clampWeekStart(next);
+    if (clamped !== weekStart) {
+      const thisWeek = mondayOf(new Date());
+      const direction =
+        clamped === thisWeek
+          ? "this_week"
+          : clamped < weekStart
+            ? "prev"
+            : "next";
+      track("week_changed", {
+        week_start: clamped,
+        previous_week_start: weekStart,
+        direction,
+      });
+    }
     setWeekStart(clamped);
     storeWeekStart(clamped);
     setOpenEvent(null);
   }
 
-  const choosePerson = useCallback((person: SelectedPerson) => {
-    setSelected(person);
-    storePerson(person);
-    setOpenEvent(null);
-  }, []);
+  const choosePerson = useCallback(
+    (person: SelectedPerson, source: ScheduleViewSource = "picker") => {
+      const previous = selectedRef.current;
+      setSelected(person);
+      storePerson(person);
+      setOpenEvent(null);
+      setSelectedPerson(person);
+      track("schedule_viewed", {
+        person_kind: person.kind,
+        person_id: person.id,
+        source,
+        previous_person_id: previous?.id ?? null,
+        previous_person_kind: previous?.kind ?? null,
+      });
+    },
+    [],
+  );
 
   const onSignedIn = useCallback(
     (teacherId: string) => {
-      choosePerson({ kind: "teacher", id: teacherId });
+      setTeacherContext(teacherId);
+      track("teacher_logged_in", { teacher_id: teacherId });
+      choosePerson({ kind: "teacher", id: teacherId }, "login");
       setView("app");
     },
     [choosePerson, setView],
@@ -143,6 +194,17 @@ function AppShell() {
   function openChooser() {
     setOpenEvent(null);
     setChooserOpen(true);
+    track("class_chooser_opened");
+  }
+
+  function openClass(event: ScheduleEvent) {
+    setOpenEvent(event);
+    track("class_detail_opened", classEventProps(event));
+  }
+
+  function closeClass() {
+    if (openEvent) track("class_detail_closed", classEventProps(openEvent));
+    setOpenEvent(null);
   }
 
   const student =
@@ -163,6 +225,29 @@ function AppShell() {
     if (!built) return null;
     return applyCancellations(built, weekStart, cancellations);
   }, [chooserOpen, student, teacher, weekStart, cancellations]);
+
+  useEffect(() => {
+    setTeacherContext(auth.teacherId);
+  }, [auth.teacherId]);
+
+  useEffect(() => {
+    const person = selected;
+    const exists = Boolean(student || teacher);
+    if (person && exists) {
+      setSelectedPerson(person);
+      track("schedule_viewed", {
+        person_kind: person.kind,
+        person_id: person.id,
+        source: "load",
+        previous_person_id: null,
+        previous_person_kind: null,
+      });
+    } else if (view === "app") {
+      track("roster_viewed");
+    }
+    // First paint only: load vs roster, not later switches.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!openEvent || !week) return;
@@ -225,7 +310,10 @@ function AppShell() {
           students={students}
           currentStudent={student}
           communityMeeting={communityMeeting}
-          onClose={() => setChooserOpen(false)}
+          onClose={() => {
+            track("class_chooser_closed");
+            setChooserOpen(false);
+          }}
         />
       ) : (
       <div className="min-h-dvh bg-surface text-on-surface">
@@ -288,7 +376,7 @@ function AppShell() {
             <StudentRoster
               students={students}
               teachers={teachers}
-              onSelect={choosePerson}
+              onSelect={(person) => choosePerson(person, "roster")}
               onOpenLogin={() => setView("login")}
             />
           ) : (
@@ -298,15 +386,23 @@ function AppShell() {
                 <WeekGrid
                   week={week}
                   weekStart={weekStart}
-                  onClassClick={setOpenEvent}
+                  onClassClick={openClass}
                 />
               </div>
               <div className="md:hidden">
                 <DayTimeline
                   dayId={dayId}
-                  onDayChange={setDayId}
+                  onDayChange={(id) => {
+                    if (id !== dayId) {
+                      track("day_changed", {
+                        day_id: id,
+                        previous_day_id: dayId,
+                      });
+                    }
+                    setDayId(id);
+                  }}
                   events={week[dayId]}
-                  onClassClick={setOpenEvent}
+                  onClassClick={openClass}
                   students={students}
                   teachers={teachers}
                   selected={selected}
@@ -330,43 +426,76 @@ function AppShell() {
             viewerKind={selected?.kind ?? "student"}
             communityMeeting={communityMeeting}
             canManage={canManageEvent}
-            onClose={() => setOpenEvent(null)}
-            onSelectStudent={(id) => choosePerson({ kind: "student", id })}
-            onSelectTeacher={(id) => choosePerson({ kind: "teacher", id })}
+            onClose={closeClass}
+            onSelectStudent={(id) =>
+              choosePerson({ kind: "student", id }, "class_detail")
+            }
+            onSelectTeacher={(id) =>
+              choosePerson({ kind: "teacher", id }, "class_detail")
+            }
             onCancelClass={async (reason, studentIds) => {
-              if (!supabase || !auth.teacherId || !auth.session) {
-                throw new Error("Sign in to cancel a class.");
-              }
-              if (!openEvent.date || !openEvent.block) {
-                throw new Error("This class has no date to cancel.");
-              }
-              const { data, error } = await supabase
-                .from("cancellations")
-                .insert({
+              try {
+                if (!supabase || !auth.teacherId || !auth.session) {
+                  throw new Error("Sign in to cancel a class.");
+                }
+                if (!openEvent.date || !openEvent.block) {
+                  throw new Error("This class has no date to cancel.");
+                }
+                const { data, error } = await supabase
+                  .from("cancellations")
+                  .insert({
+                    teacher_id: auth.teacherId,
+                    on_date: openEvent.date,
+                    block: openEvent.block,
+                    subject: openEvent.title,
+                    reason: reason || null,
+                    start_time: openEvent.start,
+                    student_ids: studentIds,
+                  })
+                  .select("id")
+                  .single();
+                if (error) throw new Error(error.message);
+                track("lesson_cancelled", {
                   teacher_id: auth.teacherId,
-                  on_date: openEvent.date,
+                  date: openEvent.date,
                   block: openEvent.block,
                   subject: openEvent.title,
-                  reason: reason || null,
-                  start_time: openEvent.start,
-                  student_ids: studentIds,
-                })
-                .select("id")
-                .single();
-              if (error) throw new Error(error.message);
-              if (data) {
-                void notifyCancellation(auth.session.access_token, data.id);
+                  student_count: studentIds.length,
+                  has_reason: Boolean(reason),
+                  cancellation_id: data?.id ?? null,
+                });
+                if (data) {
+                  void notifyCancellation(auth.session.access_token, data.id);
+                }
+              } catch (error) {
+                track("lesson_cancel_failed", {
+                  error: errorMessage(error),
+                });
+                throw error;
               }
             }}
             onRestoreClass={async () => {
-              if (!supabase || !openEvent.cancellationId) {
-                throw new Error("Nothing to restore.");
+              try {
+                if (!supabase || !openEvent.cancellationId) {
+                  throw new Error("Nothing to restore.");
+                }
+                const { error } = await supabase
+                  .from("cancellations")
+                  .delete()
+                  .eq("id", openEvent.cancellationId);
+                if (error) throw new Error(error.message);
+                track("lesson_restored", {
+                  cancellation_id: openEvent.cancellationId,
+                  date: openEvent.date ?? null,
+                  block: openEvent.block ?? null,
+                  subject: openEvent.title,
+                });
+              } catch (error) {
+                track("lesson_restore_failed", {
+                  error: errorMessage(error),
+                });
+                throw error;
               }
-              const { error } = await supabase
-                .from("cancellations")
-                .delete()
-                .eq("id", openEvent.cancellationId);
-              if (error) throw new Error(error.message);
             }}
           />
         ) : null}
