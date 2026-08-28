@@ -1,5 +1,6 @@
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
-import { useEffect, useId, useRef, useState } from "react";
+import { useId, useRef, useState } from "react";
+import { useDismissible } from "../hooks/useDismissible";
 import { LESSON_ICON_PREVIEWS, LessonIcon } from "../lib/icons";
 import { usePalette } from "../lib/palette";
 import { PALETTE_OPTIONS } from "../lib/tones";
@@ -103,22 +104,7 @@ export function PalettePicker({
   const listId = useId();
   const current = PALETTE_OPTIONS.find((option) => option.id === palette);
 
-  useEffect(() => {
-    function onPointer(event: MouseEvent) {
-      if (!wrapRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    }
-    function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape") setOpen(false);
-    }
-    document.addEventListener("mousedown", onPointer);
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("mousedown", onPointer);
-      document.removeEventListener("keydown", onKey);
-    };
-  }, []);
+  useDismissible(wrapRef, () => setOpen(false), { escape: true });
 
   const paletteList = (
     <ul
@@ -126,7 +112,7 @@ export function PalettePicker({
       role="listbox"
       className={
         inlineList
-          ? `relative mt-2 max-h-[min(28rem,70vh)] w-full overflow-auto rounded-2xl bg-surface-container-lowest py-2 shadow-[0_12px_32px_rgba(4,22,39,0.12)] ring-1 ring-outline-variant ${listClassName ?? ""}`
+          ? `menu-panel relative mt-2 max-h-[min(28rem,70vh)] w-full overflow-auto py-2 ${listClassName ?? ""}`
           : `max-h-[min(28rem,70vh)] overflow-auto py-2 ${listClassName ?? ""}`
       }
     >
@@ -216,7 +202,7 @@ export function PalettePicker({
       </button>
       {open && inlineList ? paletteList : null}
       {open && !inlineList ? (
-        <div className="absolute right-0 z-50 mt-2 w-64 overflow-hidden rounded-2xl bg-surface-container-lowest shadow-[0_12px_32px_rgba(4,22,39,0.12)] ring-1 ring-outline-variant">
+        <div className="menu-panel absolute right-0 z-50 mt-2 w-64 overflow-hidden">
           {paletteList}
           <LessonIconsToggle variant="popover" />
         </div>

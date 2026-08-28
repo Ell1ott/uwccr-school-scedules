@@ -4,6 +4,7 @@ import { DAYS } from "../data/weekTemplate";
 import { track } from "../lib/analytics";
 import { formatTime, todayDayId } from "../lib/buildSchedule";
 import { formatDayDate, mondayOf } from "../lib/calendar";
+import { minutesOfDay } from "../lib/now";
 import type {
   DayId,
   ScheduleEvent,
@@ -191,15 +192,6 @@ export function DayTimeline({
         </div>
       </div>
     </div>
-  );
-}
-
-function minutesOfDay(date: Date) {
-  return (
-    date.getHours() * 60 +
-    date.getMinutes() +
-    date.getSeconds() / 60 +
-    date.getMilliseconds() / 60_000
   );
 }
 

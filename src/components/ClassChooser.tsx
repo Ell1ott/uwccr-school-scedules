@@ -1,6 +1,7 @@
 import { CircleAlert, Users, X } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { academicRowsFor, DAYS } from "../data/weekTemplate";
+import { useEscape } from "../hooks/useEscape";
 import { track } from "../lib/analytics";
 import { formatTime } from "../lib/buildSchedule";
 import {
@@ -18,6 +19,7 @@ import {
 import { meetingsForBlock } from "../lib/classDetail";
 import { LessonMark } from "../lib/icons";
 import { usePalette } from "../lib/palette";
+import { COHORT_TABS } from "../lib/school";
 import { toneForEvent, type Tone } from "../lib/tones";
 import type {
   BlockLetter,
@@ -27,9 +29,6 @@ import type {
   Student,
 } from "../types";
 import { FloatingTabs } from "./FloatingTabs";
-
-const COHORTS: CohortId[] = ["IB1", "IB2"];
-const COHORT_TABS = COHORTS.map((id) => ({ id, label: id }));
 
 function toneEvent(kind: "class" | "study", title: string): ScheduleEvent {
   return {
@@ -85,7 +84,6 @@ export function ClassChooser({
   onClose: () => void;
 }) {
   const { palette } = usePalette();
-  const onCloseRef = useRef(onClose);
   const [cohort, setCohort] = useState<CohortId | null>(
     () => currentStudent?.cohort ?? null,
   );
@@ -111,20 +109,9 @@ export function ClassChooser({
     [communityMeeting],
   );
 
-  useEffect(() => {
-    onCloseRef.current = onClose;
-  }, [onClose]);
-
+  useEscape(onClose);
   useEffect(() => {
     window.scrollTo(0, 0);
-
-    function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape") onCloseRef.current();
-    }
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("keydown", onKey);
-    };
   }, []);
 
   function chooseCohort(next: CohortId) {

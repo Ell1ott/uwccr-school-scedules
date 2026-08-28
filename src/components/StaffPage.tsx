@@ -33,7 +33,7 @@ export function StaffPage({
       <main
         className={
           mainClassName ??
-          "mx-auto w-full max-w-md flex-1 px-container-padding-mobile pb-safe md:px-0"
+          "mx-auto flex w-full max-w-md flex-1 flex-col px-container-padding-mobile pb-safe md:px-0"
         }
       >
         {children}

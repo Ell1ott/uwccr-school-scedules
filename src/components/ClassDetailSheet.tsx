@@ -83,10 +83,6 @@ export function ClassDetailSheet({
   const teacherId = event.teacher ? teacherIdForName(event.teacher) : null;
 
   useEffect(() => {
-    onCloseRef.current = onClose;
-  }, [onClose]);
-
-  useEffect(() => {
     setRosterCohort(currentStudent?.cohort ?? "IB1");
   }, [event.id, currentStudent?.cohort]);
 
@@ -286,9 +282,7 @@ export function ClassDetailSheet({
                         );
                       } catch (error) {
                         setActionError(
-                          error instanceof Error
-                            ? error.message
-                            : "Could not cancel this class.",
+                          errorMessage(error, "Could not cancel this class."),
                         );
                       } finally {
                         setBusy(false);

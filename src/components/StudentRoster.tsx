@@ -2,6 +2,7 @@ import { Search } from "lucide-react";
 import { useMemo, useRef, useState } from "react";
 import { track } from "../lib/analytics";
 import { initials } from "../lib/classDetail";
+import { compareNames, matchesQuery } from "../lib/people";
 import { subjectSummary } from "../lib/teachers";
 import type { PersonKind, SelectedPerson, Student, Teacher } from "../types";
 import { FloatingTabs } from "./FloatingTabs";
@@ -10,10 +11,6 @@ const ROSTER_TABS = [
   { id: "student", label: "Students" },
   { id: "teacher", label: "Teachers" },
 ] as const;
-
-function compareNames(a: string, b: string): number {
-  return a.localeCompare(b, undefined, { sensitivity: "base", numeric: true });
-}
 
 function letterFor(name: string): string {
   const char = name.trim().charAt(0).toLocaleUpperCase();
@@ -65,11 +62,10 @@ export function StudentRoster({
       subtitle: student.cohort,
     }));
   }, [tab, students, teachers]);
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return people;
-    return people.filter((person) => person.name.toLowerCase().includes(q));
-  }, [people, query]);
+  const filtered = useMemo(
+    () => people.filter((person) => matchesQuery(person.name, query)),
+    [people, query],
+  );
   const groups = useMemo(() => groupedPeople(filtered), [filtered]);
   const letters = groups.map(([letter]) => letter);
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});

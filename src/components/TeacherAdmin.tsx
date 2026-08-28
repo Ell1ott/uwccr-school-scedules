@@ -1,8 +1,9 @@
-import { ArrowLeft } from "lucide-react";
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { track } from "../lib/analytics";
+import { matchesQuery } from "../lib/people";
 import { SUPABASE_ANON_KEY, functionsUrl, supabaseConfigured } from "../lib/supabase";
 import type { Teacher } from "../types";
+import { StaffPage } from "./StaffPage";
 
 const DRAFT_KEY = "uwccr-teacher-emails";
 const SECRET_KEY = "uwccr-admin-secret";
@@ -71,11 +72,10 @@ export function TeacherAdmin({
     }
   }, [emails]);
 
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return teachers;
-    return teachers.filter((teacher) => teacher.name.toLowerCase().includes(q));
-  }, [teachers, query]);
+  const filtered = useMemo(
+    () => teachers.filter((teacher) => matchesQuery(teacher.name, query)),
+    [teachers, query],
+  );
 
   function unlock(event: FormEvent) {
     event.preventDefault();
@@ -197,25 +197,11 @@ export function TeacherAdmin({
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-surface text-on-surface">
-      <header className="flex items-center gap-3 px-container-padding-mobile pt-[calc(env(safe-area-inset-top,0px)+1rem)] pb-4 md:px-container-padding-desktop">
-        <button
-          type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container text-on-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-          aria-label="Back to schedules"
-          onClick={onBack}
-        >
-          <ArrowLeft size={18} strokeWidth={1.75} aria-hidden />
-        </button>
-        <div>
-          <p className="text-label-sm tracking-[0.14em] text-on-surface-variant uppercase">
-            Staff
-          </p>
-          <h1 className="text-title-md tracking-tight">Send teacher logins</h1>
-        </div>
-      </header>
-
-      <main className="mx-auto w-full max-w-2xl flex-1 px-container-padding-mobile pb-safe md:px-container-padding-desktop">
+    <StaffPage
+      title="Send teacher logins"
+      onBack={onBack}
+      mainClassName="mx-auto w-full max-w-2xl flex-1 px-container-padding-mobile pb-safe md:px-container-padding-desktop"
+    >
         {!unlocked ? (
           <form
             className="rounded-[28px] bg-surface-container-lowest p-6 shadow-[0_8px_32px_rgba(4,22,39,0.06)]"
@@ -354,7 +340,6 @@ export function TeacherAdmin({
             </ul>
           </div>
         )}
-      </main>
-    </div>
+    </StaffPage>
   );
 }

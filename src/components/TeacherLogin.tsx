@@ -1,8 +1,8 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { ArrowLeft } from "lucide-react";
 import { track } from "../lib/analytics";
 import { useAuth } from "../lib/auth";
 import { supabaseConfigured } from "../lib/supabase";
+import { StaffPage } from "./StaffPage";
 
 export function TeacherLogin({
   onBack,
@@ -64,25 +64,7 @@ export function TeacherLogin({
   }
 
   return (
-    <div className="flex min-h-dvh flex-col bg-surface text-on-surface">
-      <header className="flex items-center gap-3 px-container-padding-mobile pt-[calc(env(safe-area-inset-top,0px)+1rem)] pb-4 md:px-container-padding-desktop">
-        <button
-          type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container text-on-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-          aria-label="Back to schedules"
-          onClick={onBack}
-        >
-          <ArrowLeft size={18} strokeWidth={1.75} aria-hidden />
-        </button>
-        <div>
-          <p className="text-label-sm tracking-[0.14em] text-on-surface-variant uppercase">
-            Staff
-          </p>
-          <h1 className="text-title-md tracking-tight">Teacher login</h1>
-        </div>
-      </header>
-
-      <main className="mx-auto flex w-full max-w-md flex-1 flex-col px-container-padding-mobile pb-safe md:px-0">
+    <StaffPage title="Teacher login" onBack={onBack}>
         <form
           className="rounded-[28px] bg-surface-container-lowest p-6 shadow-[0_8px_32px_rgba(4,22,39,0.06)]"
           onSubmit={onSubmit}
@@ -161,7 +143,6 @@ export function TeacherLogin({
             </button>
           ) : null}
         </form>
-      </main>
-    </div>
+    </StaffPage>
   );
 }

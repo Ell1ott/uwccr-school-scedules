@@ -1,4 +1,5 @@
 import type { SelectedPerson } from "../types";
+import { isIos, isStandalone } from "./device";
 
 export type ScheduleViewSource =
   | "load"
@@ -28,17 +29,12 @@ const pending: Pending[] = [];
 function deviceContext(): Record<string, string> {
   try {
     const ua = navigator.userAgent;
+    const ios = isIos();
+    const android = /android/i.test(ua);
+    const standalone = isStandalone();
     const iPadOs =
       /ipad/i.test(ua) ||
       (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
-    const ios = /iphone|ipod/i.test(ua) || iPadOs;
-    const android = /android/i.test(ua);
-    const standalone =
-      window.matchMedia("(display-mode: standalone)").matches ||
-      Boolean(
-        "standalone" in navigator &&
-          (navigator as { standalone?: boolean }).standalone,
-      );
 
     let os = "other";
     if (ios) os = "ios";

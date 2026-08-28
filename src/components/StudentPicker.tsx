@@ -1,7 +1,12 @@
-import { UserIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Check, Search } from "lucide-react";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { Check, Search, User } from "lucide-react";
+import { useId, useMemo, useRef, useState } from "react";
+import { useDismissible } from "../hooks/useDismissible";
+import {
+  compareNames,
+  matchesQuery,
+  selectedStudent,
+  selectedTeacher,
+} from "../lib/people";
 import type { SelectedPerson, Student, Teacher } from "../types";
 
 type Hit = {
@@ -10,12 +15,6 @@ type Hit = {
   name: string;
   badge: string;
 };
-
-function matches(name: string, query: string): boolean {
-  const q = query.trim().toLowerCase();
-  if (!q) return true;
-  return name.toLowerCase().includes(q);
-}
 
 function isSelected(hit: Hit, selected: SelectedPerson | null): boolean {
   return selected?.kind === hit.kind && selected.id === hit.id;
@@ -42,14 +41,13 @@ export function StudentPicker({
   const wrapRef = useRef<HTMLDivElement>(null);
   const listId = useId();
   const selectedName =
-    selected?.kind === "teacher"
-      ? teachers.find((item) => item.id === selected.id)?.name
-      : students.find((item) => item.id === selected?.id)?.name;
+    selectedTeacher(teachers, selected)?.name ??
+    selectedStudent(students, selected)?.name;
 
   const results = useMemo(() => {
     const hits: Hit[] = [
       ...students
-        .filter((student) => matches(student.name, query))
+        .filter((student) => matchesQuery(student.name, query))
         .map((student) => ({
           kind: "student" as const,
           id: student.id,
@@ -57,7 +55,7 @@ export function StudentPicker({
           badge: student.cohort,
         })),
       ...teachers
-        .filter((teacher) => matches(teacher.name, query))
+        .filter((teacher) => matchesQuery(teacher.name, query))
         .map((teacher) => ({
           kind: "teacher" as const,
           id: teacher.id,
@@ -65,24 +63,11 @@ export function StudentPicker({
           badge: "Teacher",
         })),
     ];
-    hits.sort((a, b) =>
-      a.name.localeCompare(b.name, undefined, {
-        sensitivity: "base",
-        numeric: true,
-      }),
-    );
+    hits.sort((a, b) => compareNames(a.name, b.name));
     return hits;
   }, [students, teachers, query]);
 
-  useEffect(() => {
-    function onPointer(event: MouseEvent) {
-      if (!wrapRef.current?.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", onPointer);
-    return () => document.removeEventListener("mousedown", onPointer);
-  }, []);
+  useDismissible(wrapRef, () => setOpen(false));
 
   function choose(hit: Hit) {
     onSelect({ kind: hit.kind, id: hit.id });
@@ -142,12 +127,10 @@ export function StudentPicker({
             aria-label="Selected person"
             onClick={() => setOpen(true)}
           >
-            <HugeiconsIcon
-              className="opacity-50"
-              icon={UserIcon}
+            <User
               size={15}
-              color="currentColor"
               strokeWidth={1.75}
+              className="opacity-50"
               aria-hidden
             />
           </button>
@@ -157,7 +140,7 @@ export function StudentPicker({
         <ul
           id={listId}
           role="listbox"
-          className={`${inlineList ? "relative" : "absolute z-50"} mt-2 max-h-72 w-full overflow-auto rounded-2xl bg-surface-container-lowest py-2 shadow-[0_12px_32px_rgba(4,22,39,0.12)] ring-1 ring-outline-variant`}
+          className={`${inlineList ? "relative" : "absolute z-50"} menu-panel mt-2 max-h-72 w-full overflow-auto py-2`}
         >
           {results.length === 0 ? (
             <li className="px-4 py-3 text-body-md text-on-surface-variant">

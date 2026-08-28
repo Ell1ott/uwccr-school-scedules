@@ -1,6 +1,4 @@
-import { Calendar03Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { Shuffle } from "lucide-react";
+import { Calendar, Shuffle } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { useAuth } from "../lib/auth";
 import type { SelectedPerson, Student, Teacher } from "../types";
@@ -102,14 +100,7 @@ function TabIcon({ id }: { id: AppTabId }) {
   }
 
   return (
-    <HugeiconsIcon
-      icon={Calendar03Icon}
-      size={16}
-      color="currentColor"
-      strokeWidth={1.75}
-      className="shrink-0"
-      aria-hidden
-    />
+    <Calendar size={16} strokeWidth={1.75} className="shrink-0" aria-hidden />
   );
 }
 

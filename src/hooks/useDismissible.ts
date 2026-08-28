@@ -6,9 +6,9 @@ export function useDismissible(
   { escape = false } = {},
 ) {
   const onDismissRef = useRef(onDismiss);
-  onDismissRef.current = onDismiss;
 
   useEffect(() => {
+    onDismissRef.current = onDismiss;
     function onPointer(event: MouseEvent) {
       if (!ref.current?.contains(event.target as Node)) onDismissRef.current();
     }
@@ -21,5 +21,5 @@ export function useDismissible(
       document.removeEventListener("mousedown", onPointer);
       document.removeEventListener("keydown", onKey);
     };
-  }, [escape, ref]);
+  }, [escape, onDismiss, ref]);
 }

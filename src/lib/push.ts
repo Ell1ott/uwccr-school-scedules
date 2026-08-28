@@ -1,3 +1,4 @@
+import { isIos, isStandalone } from "./device";
 import { SUPABASE_ANON_KEY, functionsUrl, supabase, VAPID_PUBLIC_KEY } from "./supabase";
 
 function urlBase64ToUint8Array(base64: string): Uint8Array {
@@ -19,18 +20,7 @@ export function pushSupported(): boolean {
   );
 }
 
-export function isStandalone(): boolean {
-  if (typeof window === "undefined") return false;
-  return (
-    window.matchMedia("(display-mode: standalone)").matches ||
-    ("standalone" in navigator && Boolean((navigator as { standalone?: boolean }).standalone))
-  );
-}
-
-export function isIos(): boolean {
-  if (typeof navigator === "undefined") return false;
-  return /iphone|ipad|ipod/i.test(navigator.userAgent);
-}
+export { isIos, isStandalone } from "./device";
 
 async function pushRegistration(): Promise<ServiceWorkerRegistration> {
   const existing = await navigator.serviceWorker.getRegistration();

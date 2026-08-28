@@ -126,7 +126,13 @@ export function EventCard({
       <div className="absolute top-0 bottom-0 left-0 w-1" />
       <div className={`flex items-start justify-between gap-2 ${compact ? "mb-0.5" : "mb-1.5"}`}>
         <h3 className="flex min-w-0 items-start gap-1.5 text-[15px] font-semibold leading-5">
-          <LessonMark subject={event.title} size={compact ? 14 : 16} className="mt-px" />
+          {event.kind === "class" ? (
+            <LessonMark
+              subject={event.title}
+              size={compact ? 14 : 16}
+              className="mt-0.5"
+            />
+          ) : null}
           <span className={event.cancelled ? "line-through" : ""}>{event.title}</span>
         </h3>
         {chipLabel ? (

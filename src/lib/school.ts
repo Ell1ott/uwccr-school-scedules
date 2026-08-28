@@ -11,7 +11,7 @@ export const BLOCK_LETTERS: BlockLetter[] = [
   "H",
 ];
 
-export const LEVEL_ORDER = ["HL", "SL", "TOK"] as const;
+export const LEVEL_ORDER: readonly string[] = ["HL", "SL", "TOK"];
 
 export const COHORTS: CohortId[] = ["IB1", "IB2"];
 

@@ -104,6 +104,10 @@
   padding-top: env(safe-area-inset-top, 0px);
 }
 
+@utility menu-panel {
+  @apply rounded-2xl bg-surface-container-lowest shadow-[0_12px_32px_rgba(4,22,39,0.12)] ring-1 ring-outline-variant;
+}
+
 @keyframes sheet-overlay-in {
   from {
     opacity: 0;
