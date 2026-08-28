@@ -104,7 +104,7 @@ export function StudentRoster({
               className="font-medium text-on-surface underline-offset-2 hover:underline"
               onClick={onOpenLogin}
             >
-              Teachers, sign in to cancel a class
+              Log in for events, or to cancel a class if you teach
             </button>
           ) : null}
         </p>

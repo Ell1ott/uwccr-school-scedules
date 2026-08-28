@@ -1,5 +1,7 @@
-import { DoorOpen, StickyNote, User, Users, X } from "lucide-react";
-import { useEffect, useId, useMemo, useState, type ReactNode } from "react";
+import { DoorOpen, Mail, StickyNote, User, Users } from "lucide-react";
+import { useEffect, useId, useMemo, useState } from "react";
+import { mailtoBcc } from "../data/studentEmails";
+import { track } from "../lib/analytics";
 import { errorMessage } from "../lib/errors";
 import { formatTime } from "../lib/buildSchedule";
 import { formatLongDate } from "../lib/calendar";
@@ -16,7 +18,7 @@ import { COHORT_TABS } from "../lib/school";
 import { teacherIdForName, formatCohorts } from "../lib/teachers";
 import { toneForEvent } from "../lib/tones";
 import type { CohortId, PersonKind, ScheduleEvent, Student } from "../types";
-import { BottomSheet, SheetHandle } from "./BottomSheet";
+import { DetailSheet, SheetFact } from "./BottomSheet";
 import { FloatingTabs } from "./FloatingTabs";
 
 export function ClassDetailSheet({
@@ -77,6 +79,29 @@ export function ClassDetailSheet({
           ),
     [students, event, currentStudent, teacherView, isStudy, rosterCohort],
   );
+  const classMailto = useMemo(() => {
+    if (!canManage || isStudy) return null;
+    const emails = classmates
+      .map((mate) => mate.email)
+      .filter((email): email is string => Boolean(email));
+    const block = event.block ? `Block ${event.block}` : null;
+    const when = event.date ? formatLongDate(event.date) : null;
+    const subject = [event.title, block, event.cancelled ? "cancelled" : null]
+      .filter(Boolean)
+      .join(" · ");
+    const body = [
+      [event.title, block].filter(Boolean).join(" · "),
+      when,
+      event.cancelled
+        ? event.cancelReason
+          ? `This class is cancelled. ${event.cancelReason}`
+          : "This class is cancelled."
+        : null,
+    ]
+      .filter(Boolean)
+      .join("\n");
+    return mailtoBcc(emails, subject, body || undefined);
+  }, [canManage, isStudy, classmates, event]);
   const meetings = event.block
     ? meetingsForBlock(event.block, communityMeeting)
     : [];
@@ -114,60 +139,31 @@ export function ClassDetailSheet({
       : "No one else is listed in this class.";
 
   return (
-    <BottomSheet
+    <DetailSheet
       labelledBy={titleId}
       overlayLabel="Close class details"
       onClose={onClose}
-      className="md:items-center md:p-6"
-      panelClassName="max-w-lg md:max-h-[min(40rem,85vh)] md:rounded-[28px]"
-    >
-      {(closeRef) => (
+      tone={tone}
+      kicker={event.cancelled ? `${kindLabel} · Cancelled` : kindLabel}
+      title={
         <>
-        <div
-          className={`relative ${tone.bg} ${tone.text} px-5 pt-2 pb-5 md:pt-5`}
-          style={tone.bgColor ? { backgroundColor: tone.bgColor } : undefined}
-        >
-          <SheetHandle className="bg-current/25" />
-          <div className="flex items-center justify-between gap-3">
-            <p className="text-label-sm tracking-[0.14em] text-current/70 uppercase">
-              {event.cancelled ? `${kindLabel} · Cancelled` : kindLabel}
-            </p>
-            <button
-              ref={closeRef}
-              type="button"
-              className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black/10 text-current hover:bg-black/16"
-              aria-label="Close"
-              onClick={onClose}
-            >
-              <X size={16} strokeWidth={1.75} aria-hidden />
-            </button>
-          </div>
-          <h2
-            id={titleId}
-            className="mt-1 flex items-start gap-2.5 text-headline-lg-mobile tracking-tight md:text-[28px]"
-          >
-            {!isStudy ? (
-              <LessonMark subject={event.title} size={26} className="mt-1" />
-            ) : null}
-            <span>{event.title}</span>
-          </h2>
-          {event.cancelled ? (
-            <p className="mt-2 text-body-md text-current/80">
-              {event.cancelReason
-                ? event.cancelReason
-                : "This class is cancelled."}
-            </p>
+          {!isStudy ? (
+            <LessonMark subject={event.title} size={26} className="mt-1" />
           ) : null}
-          {chip ? (
-            <span
-              className={`mt-3 inline-flex rounded-full px-2.5 py-0.5 text-[11px] font-medium tracking-wide ${tone.chip}`}
-            >
-              {chip}
-            </span>
-          ) : null}
-        </div>
-
-        <div className="sheet-scroll min-h-0 flex-1 px-5 pt-5 pb-safe">
+          <span>{event.title}</span>
+        </>
+      }
+      chip={chip}
+      banner={
+        event.cancelled ? (
+          <p className="mt-2 text-body-md text-current/80">
+            {event.cancelReason
+              ? event.cancelReason
+              : "This class is cancelled."}
+          </p>
+        ) : null
+      }
+    >
           {canManage && event.kind === "class" ? (
             <section className="mb-6 rounded-2xl bg-surface-container px-3 py-3">
               <p className="text-label-sm tracking-[0.12em] text-on-surface-variant uppercase">
@@ -300,7 +296,7 @@ export function ClassDetailSheet({
           ) : null}
           {!isStudy ? (
             <dl className="grid grid-cols-2 gap-3">
-              <Fact
+              <SheetFact
                 label="Teacher"
                 value={event.teacher ?? "—"}
                 icon={<User size={14} strokeWidth={1.75} />}
@@ -313,7 +309,7 @@ export function ClassDetailSheet({
                     : undefined
                 }
               />
-              <Fact
+              <SheetFact
                 label="Room"
                 value={event.room ? `Rm ${event.room}` : "—"}
                 icon={<DoorOpen size={14} strokeWidth={1.75} />}
@@ -380,7 +376,7 @@ export function ClassDetailSheet({
             </section>
           ) : null}
 
-          <section className="mt-6 pb-6">
+          <section className="mt-6">
             <div className="flex flex-wrap items-center justify-between gap-2">
               <h3 className="flex items-center gap-1.5 text-label-sm tracking-[0.12em] text-on-surface-variant uppercase">
                 <Users size={12} strokeWidth={1.75} aria-hidden />
@@ -398,6 +394,23 @@ export function ClassDetailSheet({
                     onChange={setRosterCohort}
                   />
                 </div>
+              ) : classMailto ? (
+                <a
+                  href={classMailto}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-surface-container px-3 py-1.5 text-label-sm font-medium tracking-wide text-on-surface hover:brightness-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                  onClick={() =>
+                    track("class_email_opened", {
+                      subject: event.title,
+                      block: event.block ?? null,
+                      cancelled: Boolean(event.cancelled),
+                      student_count: classmates.length,
+                      email_count: classmates.filter((mate) => mate.email).length,
+                    })
+                  }
+                >
+                  <Mail size={12} strokeWidth={1.75} aria-hidden />
+                  Email class
+                </a>
               ) : null}
             </div>
             {classmates.length === 0 ? (
@@ -451,45 +464,6 @@ export function ClassDetailSheet({
               </ul>
             )}
           </section>
-        </div>
-        </>
-      )}
-    </BottomSheet>
-  );
-}
-
-function Fact({
-  label,
-  value,
-  icon,
-  onClick,
-}: {
-  label: string;
-  value: string;
-  icon: ReactNode;
-  onClick?: () => void;
-}) {
-  const inner = (
-    <>
-      <dt className="flex items-center gap-1.5 text-label-sm tracking-wide text-on-surface-variant uppercase">
-        {icon}
-        {label}
-      </dt>
-      <dd className="mt-1 text-body-md font-medium text-on-surface">{value}</dd>
-    </>
-  );
-  if (onClick) {
-    return (
-      <button
-        type="button"
-        className="rounded-2xl bg-surface-container px-3 py-3 text-left hover:brightness-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
-        onClick={onClick}
-      >
-        {inner}
-      </button>
-    );
-  }
-  return (
-    <div className="rounded-2xl bg-surface-container px-3 py-3">{inner}</div>
+    </DetailSheet>
   );
 }

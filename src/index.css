@@ -257,8 +257,13 @@
 .floating-tabs {
   display: flex;
   width: fit-content;
-  align-items: flex-end;
+  align-items: stretch;
   gap: 0.2rem;
+}
+
+.event-filters .floating-tab {
+  padding-left: 0.55rem;
+  padding-right: 0.55rem;
 }
 
 .floating-tab {
@@ -266,9 +271,9 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 0.4rem 0.9rem 0.35rem;
+  padding: 0.45rem 0.9rem 0.4rem;
   border: 0;
-  border-radius: 11px 11px 7px 7px;
+  border-radius: 10px;
   background: transparent;
   color: var(--color-on-surface-variant);
   cursor: pointer;
@@ -307,4 +312,129 @@
   .floating-tab {
     transition: none;
   }
+}
+
+.luma-timeline {
+  --luma-line-pad: 0.25rem;
+  --luma-gutter: 1.5rem;
+  --luma-section-gap: 1.5rem;
+  margin-top: 1.25rem;
+}
+
+@media (max-width: 450px) {
+  .luma-timeline {
+    --luma-section-gap: 1rem;
+    margin-top: 1rem;
+  }
+}
+
+.luma-day {
+  position: relative;
+  padding-bottom: var(--luma-section-gap);
+  padding-left: var(--luma-gutter);
+}
+
+.luma-day.is-last {
+  padding-bottom: 0;
+}
+
+.luma-day-line {
+  position: absolute;
+  top: 1rem;
+  bottom: 0;
+  left: var(--luma-line-pad);
+  pointer-events: none;
+  border-left: 0.125rem dashed rgba(21, 21, 21, 0.12);
+}
+
+.luma-day:not(.is-first) .luma-day-line {
+  top: 0.125rem;
+}
+
+.luma-day.is-last .luma-day-line {
+  mask-image: linear-gradient(#000 0% calc(100% - 120px), #0000 100%);
+}
+
+.luma-day-head {
+  position: sticky;
+  top: calc(env(safe-area-inset-top, 0px) + 6.75rem);
+  z-index: 5;
+}
+
+@media (min-width: 768px) {
+  .luma-day-head {
+    top: calc(3rem + 0.75rem);
+  }
+
+  .luma-day-title {
+    font-size: 1.125rem;
+  }
+
+  .luma-day-cards > li:not(:last-child) {
+    margin-bottom: 1.125rem;
+  }
+}
+
+.luma-day-title {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.375rem;
+  margin: -0.25rem -0.75rem 0.625rem -2.25rem;
+  padding: 0.25rem 0.75rem 0.25rem 2.25rem;
+  transform: translateY(-0.125rem);
+  border: 1px solid transparent;
+  border-radius: 100px;
+  background: color-mix(
+    in srgb,
+    var(--color-surface-container-lowest) 88%,
+    transparent
+  );
+  font-weight: 400;
+  font-size: 1rem;
+  line-height: 1.5;
+  backdrop-filter: blur(16px);
+}
+
+@media (max-width: 450px) {
+  .luma-day-title {
+    margin-bottom: 0.375rem;
+  }
+}
+
+.luma-day-date {
+  font-weight: 500;
+  color: #151515;
+}
+
+.luma-day-weekday {
+  font-weight: 400;
+  color: rgba(21, 21, 21, 0.36);
+}
+
+.luma-day-dot {
+  position: absolute;
+  top: 0.4375rem;
+  left: calc(-1 * var(--luma-gutter) + var(--luma-line-pad) - 0.1875rem);
+  width: 0.5rem;
+  height: 0.5rem;
+  pointer-events: none;
+  border-radius: 100%;
+  background: rgba(21, 21, 21, 0.2);
+}
+
+.luma-day-cards > li:not(:last-child) {
+  margin-bottom: 1rem;
+}
+
+.month-cal-cell {
+  box-shadow: 0 1px 0 #e8e8e8, 1px 0 0 #e8e8e8;
+}
+
+.month-cal-cell:focus {
+  outline: none;
+}
+
+.month-cal-cell:focus-visible {
+  z-index: 1;
+  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-primary) 28%, transparent);
 }

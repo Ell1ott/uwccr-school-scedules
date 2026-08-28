@@ -1,0 +1,320 @@
+import { useMemo, useState, type FormEvent } from "react";
+import type { EventMode, Student } from "../types";
+import {
+  createSchoolEvent,
+  crDate,
+  crTime,
+  expandAudience,
+  localToIso,
+  occurrenceStamps,
+  type EventTarget,
+  type SchoolEvent,
+  updateSchoolEvent,
+} from "../lib/schoolEvents";
+import { toISODate } from "../lib/calendar";
+import { AudiencePicker } from "./AudiencePicker";
+
+const MODES: { id: EventMode; label: string; hint: string }[] = [
+  { id: "mandatory", label: "Mandatory", hint: "Assigned. They cannot decline." },
+  { id: "invite", label: "Invite", hint: "They accept or decline." },
+  { id: "open", label: "Open signup", hint: "Eligible people join. Optional cap." },
+  { id: "info", label: "Announcement", hint: "On the calendar. No RSVP." },
+];
+
+function todayStamp() {
+  return toISODate(new Date());
+}
+
+export function EventForm({
+  students,
+  editing,
+  onDone,
+  onCancel,
+}: {
+  students: Student[];
+  editing?: SchoolEvent | null;
+  onDone: () => void;
+  onCancel: () => void;
+}) {
+  const [title, setTitle] = useState(editing?.title ?? "");
+  const [description, setDescription] = useState(editing?.description ?? "");
+  const [location, setLocation] = useState(editing?.location ?? "");
+  const [date, setDate] = useState(() =>
+    editing ? crDate(editing.startsAt) : todayStamp(),
+  );
+  const [startTime, setStartTime] = useState(
+    editing && !editing.allDay ? crTime(editing.startsAt) : "18:30",
+  );
+  const [endTime, setEndTime] = useState(
+    editing && !editing.allDay ? crTime(editing.endsAt) : "19:30",
+  );
+  const [allDay, setAllDay] = useState(editing?.allDay ?? false);
+  const [mode, setMode] = useState<EventMode>(editing?.mode ?? "invite");
+  const [capacity, setCapacity] = useState(
+    editing?.capacity != null ? String(editing.capacity) : "",
+  );
+  const [freq, setFreq] = useState<"none" | "daily" | "weekly">("none");
+  const [untilDate, setUntilDate] = useState(todayStamp());
+  const [targets, setTargets] = useState<EventTarget[]>([]);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const audienceCount = useMemo(
+    () => expandAudience(students, targets).length,
+    [students, targets],
+  );
+
+  async function onSubmit(event: FormEvent) {
+    event.preventDefault();
+    setError(null);
+    const trimmed = title.trim();
+    if (!trimmed) {
+      setError("Give the event a title.");
+      return;
+    }
+    if (!allDay && endTime <= startTime) {
+      setError("End time needs to be after the start.");
+      return;
+    }
+    setBusy(true);
+    if (editing) {
+      const message = await updateSchoolEvent(editing.id, {
+        title: trimmed,
+        description: description.trim(),
+        location: location.trim(),
+        startsAt: localToIso(date, allDay ? "00:00" : startTime),
+        endsAt: localToIso(date, allDay ? "23:59" : endTime),
+        allDay,
+      });
+      setBusy(false);
+      if (message) setError(message);
+      else onDone();
+      return;
+    }
+    if (audienceCount === 0) {
+      setBusy(false);
+      setError("Pick who this is for.");
+      return;
+    }
+    const stamps = occurrenceStamps(
+      date,
+      startTime,
+      endTime,
+      allDay,
+      freq,
+      untilDate,
+    );
+    if (stamps.starts.length === 0) {
+      setBusy(false);
+      setError("No dates in that range.");
+      return;
+    }
+    const cap =
+      mode === "open" && capacity.trim()
+        ? Number.parseInt(capacity, 10)
+        : null;
+    const message = await createSchoolEvent({
+      title: trimmed,
+      description: description.trim(),
+      location: location.trim(),
+      starts: stamps.starts,
+      ends: stamps.ends,
+      allDay,
+      mode,
+      capacity: cap && cap > 0 ? cap : null,
+      targets,
+      audience: expandAudience(students, targets),
+      freq: freq === "none" ? null : freq,
+      untilDate: freq === "none" ? null : untilDate,
+    });
+    setBusy(false);
+    if (message) setError(message);
+    else onDone();
+  }
+
+  return (
+    <form className="flex flex-col gap-5" onSubmit={(event) => void onSubmit(event)}>
+      <label className="block text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
+        Title
+        <input
+          required
+          value={title}
+          onChange={(event) => setTitle(event.target.value)}
+          className="mt-2 h-12 w-full rounded-2xl bg-surface-container px-4 text-body-md outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+        />
+      </label>
+      <label className="block text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
+        Where
+        <input
+          value={location}
+          placeholder="Room, house, lawn…"
+          onChange={(event) => setLocation(event.target.value)}
+          className="mt-2 h-12 w-full rounded-2xl bg-surface-container px-4 text-body-md outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+        />
+      </label>
+      <label className="block text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
+        Details
+        <textarea
+          value={description}
+          rows={3}
+          onChange={(event) => setDescription(event.target.value)}
+          className="mt-2 w-full rounded-2xl bg-surface-container px-4 py-3 text-body-md outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+        />
+      </label>
+
+      <label className="flex items-center gap-3 text-body-md">
+        <input
+          type="checkbox"
+          checked={allDay}
+          onChange={(event) => setAllDay(event.target.checked)}
+        />
+        All day
+      </label>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+        <label className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
+          Date
+          <input
+            type="date"
+            value={date}
+            onChange={(event) => setDate(event.target.value)}
+            className="mt-2 h-12 w-full rounded-2xl bg-surface-container px-3 text-body-md outline-none"
+          />
+        </label>
+        {allDay ? null : (
+          <>
+            <label className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
+              Starts
+              <input
+                type="time"
+                value={startTime}
+                onChange={(event) => setStartTime(event.target.value)}
+                className="mt-2 h-12 w-full rounded-2xl bg-surface-container px-3 text-body-md outline-none"
+              />
+            </label>
+            <label className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
+              Ends
+              <input
+                type="time"
+                value={endTime}
+                onChange={(event) => setEndTime(event.target.value)}
+                className="mt-2 h-12 w-full rounded-2xl bg-surface-container px-3 text-body-md outline-none"
+              />
+            </label>
+          </>
+        )}
+      </div>
+
+      {editing ? null : (
+        <>
+          <div>
+            <p className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
+              Repeat
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {(["none", "weekly", "daily"] as const).map((id) => (
+                <button
+                  key={id}
+                  type="button"
+                  className={`h-9 rounded-full px-3 text-label-sm tracking-wide ${
+                    freq === id
+                      ? "bg-primary text-on-primary"
+                      : "bg-surface-container text-on-surface"
+                  }`}
+                  onClick={() => setFreq(id)}
+                >
+                  {id === "none" ? "Once" : id === "weekly" ? "Weekly" : "Daily"}
+                </button>
+              ))}
+            </div>
+            {freq !== "none" ? (
+              <label className="mt-3 block text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
+                Until
+                <input
+                  type="date"
+                  value={untilDate}
+                  onChange={(event) => setUntilDate(event.target.value)}
+                  className="mt-2 h-12 w-full rounded-2xl bg-surface-container px-3 text-body-md outline-none sm:max-w-xs"
+                />
+              </label>
+            ) : null}
+          </div>
+
+          <div>
+            <p className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
+              How people take part
+            </p>
+            <div className="mt-2 grid gap-2">
+              {MODES.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`rounded-2xl px-4 py-3 text-left ${
+                    mode === item.id
+                      ? "bg-primary text-on-primary"
+                      : "bg-surface-container text-on-surface"
+                  }`}
+                  onClick={() => setMode(item.id)}
+                >
+                  <span className="block text-label-sm tracking-wide">{item.label}</span>
+                  <span
+                    className={`block text-label-sm ${
+                      mode === item.id ? "text-on-primary/80" : "text-on-surface-variant"
+                    }`}
+                  >
+                    {item.hint}
+                  </span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {mode === "open" ? (
+            <label className="block text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
+              Capacity (optional)
+              <input
+                type="number"
+                min={1}
+                inputMode="numeric"
+                value={capacity}
+                onChange={(event) => setCapacity(event.target.value)}
+                className="mt-2 h-12 w-full rounded-2xl bg-surface-container px-4 text-body-md outline-none sm:max-w-xs"
+              />
+            </label>
+          ) : null}
+
+          <div>
+            <p className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
+              Who
+            </p>
+            <div className="mt-3">
+              <AudiencePicker
+                students={students}
+                targets={targets}
+                onChange={setTargets}
+              />
+            </div>
+          </div>
+        </>
+      )}
+
+      {error ? <p className="text-body-md text-error">{error}</p> : null}
+
+      <div className="flex flex-col gap-2 pb-8 sm:flex-row">
+        <button
+          type="button"
+          className="h-12 flex-1 rounded-full bg-surface-container text-label-sm tracking-wide"
+          onClick={onCancel}
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={busy}
+          className="h-12 flex-1 rounded-full bg-primary text-label-sm tracking-wide text-on-primary disabled:opacity-50"
+        >
+          {busy ? "Saving…" : editing ? "Save changes" : "Post event"}
+        </button>
+      </div>
+    </form>
+  );
+}

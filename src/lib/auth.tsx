@@ -6,27 +6,54 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { Session } from "@supabase/supabase-js";
+import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { setTeacherContext, track } from "./analytics";
 import { supabase } from "./supabase";
+
+export type AuthRole = "student" | "staff";
 
 export type AuthState = {
   loading: boolean;
   session: Session | null;
+  recovery: boolean;
+  role: AuthRole | null;
+  profileId: string | null;
+  displayName: string | null;
   teacherId: string | null;
   teacherName: string | null;
+  studentId: string | null;
   signIn: (email: string, password: string) => Promise<string | null>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<string | null>;
+  updatePassword: (password: string) => Promise<string | null>;
+};
+
+type ProfileRow = {
+  id: string;
+  role: AuthRole;
+  display_name: string;
+  student_id: string | null;
+  teacher_id: string | null;
 };
 
 const AuthContext = createContext<AuthState | null>(null);
 
+function emptyIdentity() {
+  return {
+    role: null as AuthRole | null,
+    profileId: null as string | null,
+    displayName: null as string | null,
+    teacherId: null as string | null,
+    teacherName: null as string | null,
+    studentId: null as string | null,
+  };
+}
+
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
   const [session, setSession] = useState<Session | null>(null);
-  const [teacherId, setTeacherId] = useState<string | null>(null);
-  const [teacherName, setTeacherName] = useState<string | null>(null);
+  const [recovery, setRecovery] = useState(false);
+  const [identity, setIdentity] = useState(emptyIdentity);
 
   useEffect(() => {
     if (!supabase) {
@@ -43,7 +70,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, next) => {
+    } = supabase.auth.onAuthStateChange((event: AuthChangeEvent, next) => {
+      if (event === "PASSWORD_RECOVERY") setRecovery(true);
+      if (event === "SIGNED_OUT") setRecovery(false);
       setSession(next);
     });
 
@@ -59,8 +88,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       return;
     }
     if (!session) {
-      setTeacherId(null);
-      setTeacherName(null);
+      setIdentity(emptyIdentity());
       setLoading(false);
       return;
     }
@@ -68,14 +96,26 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     let active = true;
     setLoading(true);
     supabase
-      .from("teachers")
-      .select("id, name")
+      .from("profiles")
+      .select("id, role, display_name, student_id, teacher_id")
       .eq("auth_user_id", session.user.id)
       .maybeSingle()
       .then(({ data }) => {
         if (!active) return;
-        setTeacherId(data?.id ?? null);
-        setTeacherName(data?.name ?? null);
+        const row = data as ProfileRow | null;
+        if (!row) {
+          setIdentity(emptyIdentity());
+          setLoading(false);
+          return;
+        }
+        setIdentity({
+          role: row.role,
+          profileId: row.id,
+          displayName: row.display_name,
+          teacherId: row.teacher_id,
+          teacherName: row.teacher_id ? row.display_name : null,
+          studentId: row.student_id,
+        });
         setLoading(false);
       });
 
@@ -88,10 +128,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     () => ({
       loading,
       session,
-      teacherId,
-      teacherName,
+      recovery,
+      ...identity,
       async signIn(email, password) {
-        if (!supabase) return "Teacher login is not configured yet.";
+        if (!supabase) return "Login is not configured yet.";
         const { error } = await supabase.auth.signInWithPassword({
           email: email.trim(),
           password,
@@ -99,21 +139,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return error?.message ?? null;
       },
       async signOut() {
-        track("teacher_signed_out", { teacher_id: teacherId });
+        track("signed_out", {
+          role: identity.role,
+          teacher_id: identity.teacherId,
+          student_id: identity.studentId,
+        });
         setTeacherContext(null);
         if (!supabase) return;
         await supabase.auth.signOut();
       },
       async resetPassword(email) {
-        if (!supabase) return "Teacher login is not configured yet.";
+        if (!supabase) return "Login is not configured yet.";
+        const origin = window.location.origin;
         const { error } = await supabase.auth.resetPasswordForEmail(
           email.trim(),
-          { redirectTo: window.location.origin },
+          { redirectTo: `${origin}/?view=login` },
         );
         return error?.message ?? null;
       },
+      async updatePassword(password) {
+        if (!supabase) return "Login is not configured yet.";
+        const { error } = await supabase.auth.updateUser({ password });
+        if (error) return error.message;
+        setRecovery(false);
+        return null;
+      },
     }),
-    [loading, session, teacherId, teacherName],
+    [loading, session, recovery, identity],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

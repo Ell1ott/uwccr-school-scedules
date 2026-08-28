@@ -505,6 +505,12 @@ const KIND_TONES_CHROME: Record<string, Tone> = {
     bar: "bg-emerald-800",
     chip: "bg-black/10",
   },
+  school_event: {
+    bg: "bg-amber-100",
+    text: "text-black",
+    bar: "bg-amber-900",
+    chip: "bg-black/10",
+  },
   holiday: {
     bg: "bg-zinc-200",
     text: "text-black",
@@ -558,6 +564,12 @@ const KIND_TONES: Record<PaletteId, Record<string, Tone>> = {
       text: "text-black",
       bar: "bg-emerald-800",
       chip: "bg-black/10",
+    },
+    school_event: {
+      bg: "bg-tertiary-fixed",
+      text: "text-black",
+      bar: "bg-tertiary",
+      chip: "bg-tertiary/15",
     },
     holiday: {
       bg: "bg-surface-container-high",
@@ -628,6 +640,7 @@ export function toneForEvent(
   if (event.kind === "office") return KIND_TONES[palette].office;
   if (event.kind === "residential") return KIND_TONES[palette].residential;
   if (event.kind === "community") return KIND_TONES[palette].community;
+  if (event.kind === "school_event") return KIND_TONES[palette].school_event;
   if (event.kind === "holiday") return KIND_TONES[palette].holiday;
   return KIND_TONES[palette].activity;
 }

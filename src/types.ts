@@ -14,8 +14,15 @@ export type Student = {
   id: string;
   name: string;
   cohort: CohortId;
+  email: string | null;
   blocks: Partial<Record<BlockLetter, ClassEntry>>;
 };
+
+export type EventMode = "mandatory" | "invite" | "open" | "info";
+
+export type RsvpStatus = "pending" | "going" | "declined" | "waitlisted";
+
+export type EventStatus = "published" | "cancelled";
 
 export type PersonKind = "student" | "teacher";
 
@@ -45,7 +52,7 @@ export type Teacher = {
 export type StudentsFile = {
   generatedAt: string;
   source: string;
-  students: Student[];
+  students: Omit<Student, "email">[];
 };
 
 export type DayId = "mon" | "tue" | "wed" | "thu" | "fri";
@@ -59,7 +66,8 @@ export type EventKind =
   | "office"
   | "residential"
   | "community"
-  | "holiday";
+  | "holiday"
+  | "school_event";
 
 export type CalendarAudience = "both" | "staff";
 
@@ -100,4 +108,9 @@ export type ScheduleEvent = {
   cancellationId?: string;
   note?: string | null;
   noteId?: string;
+  schoolEventId?: string;
+  eventMode?: EventMode;
+  rsvpStatus?: RsvpStatus | null;
+  goingCount?: number;
+  capacity?: number | null;
 };

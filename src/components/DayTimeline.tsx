@@ -32,6 +32,7 @@ export function DayTimeline({
   onOpenLogin,
   onOpenAdmin,
   onOpenChooser,
+  onOpenEvents,
   banner,
 }: {
   dayId: DayId;
@@ -48,6 +49,7 @@ export function DayTimeline({
   onOpenLogin?: () => void;
   onOpenAdmin?: () => void;
   onOpenChooser?: () => void;
+  onOpenEvents?: () => void;
   banner?: ReactNode;
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -147,6 +149,7 @@ export function DayTimeline({
           onOpenLogin={onOpenLogin}
           onOpenAdmin={onOpenAdmin}
           onOpenChooser={onOpenChooser}
+          onOpenEvents={onOpenEvents}
         />
       ) : null}
 

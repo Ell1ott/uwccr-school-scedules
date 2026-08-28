@@ -1,4 +1,4 @@
-import { Shuffle, X } from "lucide-react";
+import { Shuffle, Sparkles, X } from "lucide-react";
 import { useId } from "react";
 import type { SelectedPerson, Student, Teacher } from "../types";
 import { useAuth } from "../lib/auth";
@@ -20,6 +20,7 @@ export function ScheduleMenu({
   onOpenLogin,
   onOpenAdmin,
   onOpenChooser,
+  onOpenEvents,
 }: {
   students: Student[];
   teachers: Teacher[];
@@ -31,6 +32,7 @@ export function ScheduleMenu({
   onOpenLogin?: () => void;
   onOpenAdmin?: () => void;
   onOpenChooser?: () => void;
+  onOpenEvents?: () => void;
 }) {
   const auth = useAuth();
   const titleId = useId();
@@ -104,6 +106,25 @@ export function ScheduleMenu({
               />
             </section>
 
+            {onOpenEvents ? (
+              <section className="flex flex-col gap-2">
+                <h3 className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
+                  After classes
+                </h3>
+                <button
+                  type="button"
+                  className="flex h-12 items-center gap-2 rounded-full bg-surface-container px-4 text-left text-label-sm tracking-wide text-on-surface"
+                  onClick={() => {
+                    onOpenEvents();
+                    onClose();
+                  }}
+                >
+                  <Sparkles size={16} strokeWidth={1.75} aria-hidden />
+                  Events
+                </button>
+              </section>
+            ) : null}
+
             {onOpenChooser ? (
               <section className="flex flex-col gap-2">
                 <h3 className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
@@ -137,9 +158,9 @@ export function ScheduleMenu({
 
             <section className="flex flex-col gap-2 pb-2">
               <h3 className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
-                Staff
+                Account
               </h3>
-              {auth.teacherName ? (
+              {auth.displayName ? (
                 <button
                   type="button"
                   className="h-12 rounded-full bg-surface-container px-4 text-left text-label-sm tracking-wide text-on-surface"
@@ -148,7 +169,7 @@ export function ScheduleMenu({
                     onClose();
                   }}
                 >
-                  Sign out {auth.teacherName}
+                  Sign out {auth.displayName}
                 </button>
               ) : (
                 <button
@@ -159,7 +180,7 @@ export function ScheduleMenu({
                     onClose();
                   }}
                 >
-                  Teacher login
+                  Log in
                 </button>
               )}
               <button
@@ -170,7 +191,7 @@ export function ScheduleMenu({
                   onClose();
                 }}
               >
-                Send teacher logins
+                Send logins
               </button>
             </section>
           </div>

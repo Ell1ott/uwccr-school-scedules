@@ -112,7 +112,8 @@ export function EventCard({
             ? event.cohorts[0]
             : null;
 
-  const interactive = event.kind === "class" && Boolean(onOpen);
+  const interactive =
+    (event.kind === "class" || event.kind === "school_event") && Boolean(onOpen);
   const className = `relative flex h-full flex-col justify-start overflow-hidden rounded-[10px] shadow-[0_4px_12px_rgba(4,22,39,0.05)] transition-[filter,box-shadow,transform] duration-200 ${tone.bg} ${tone.text} ${padding} ${minHeight} ${
     event.cancelled ? "opacity-70" : ""
   } ${
@@ -132,6 +133,8 @@ export function EventCard({
               size={compact ? 14 : 16}
               className="mt-0.5"
             />
+          ) : event.kind === "school_event" ? (
+            <EventIcon name="sparkles" className="mt-0.5" size={compact ? 14 : 16} />
           ) : null}
           <span className={event.cancelled ? "line-through" : ""}>{event.title}</span>
         </h3>
@@ -165,9 +168,13 @@ export function EventCard({
             <EventIcon name="user" /> {event.teacher}
           </p>
         ) : null}
-        {event.room ? (
+        {event.room && event.kind !== "school_event" ? (
           <p className="flex items-center gap-1">
             <EventIcon name="door-open" /> Rm {event.room}
+          </p>
+        ) : event.room ? (
+          <p className="flex items-center gap-1">
+            <EventIcon name="door-open" /> {event.room}
           </p>
         ) : null}
         {!compact && event.subtitle && event.studentCount == null && !event.teacher ? (
@@ -204,7 +211,7 @@ export function EventCard({
         className={className}
         style={style}
         aria-haspopup="dialog"
-        aria-label={`${event.title} class details`}
+        aria-label={`${event.title} details`}
         onClick={() => onOpen?.(event)}
       >
         {body}

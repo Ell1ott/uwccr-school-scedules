@@ -6,11 +6,13 @@ export function StaffPage({
   onBack,
   children,
   mainClassName,
+  eyebrow = "Account",
 }: {
   title: string;
   onBack: () => void;
   children: ReactNode;
   mainClassName?: string;
+  eyebrow?: string;
 }) {
   return (
     <div className="flex min-h-dvh flex-col bg-surface text-on-surface">
@@ -25,7 +27,7 @@ export function StaffPage({
         </button>
         <div>
           <p className="text-label-sm tracking-[0.14em] text-on-surface-variant uppercase">
-            Staff
+            {eyebrow}
           </p>
           <h1 className="text-title-md tracking-tight">{title}</h1>
         </div>

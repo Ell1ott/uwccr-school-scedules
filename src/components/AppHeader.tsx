@@ -1,4 +1,4 @@
-import { Calendar, Shuffle } from "lucide-react";
+import { Calendar, Shuffle, Sparkles } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { useAuth } from "../lib/auth";
 import type { SelectedPerson, Student, Teacher } from "../types";
@@ -6,10 +6,11 @@ import { PalettePicker } from "./PalettePicker";
 import { StudentPicker } from "./StudentPicker";
 import { WeekNav } from "./WeekNav";
 
-export type AppTabId = "week" | "classes";
+export type AppTabId = "week" | "classes" | "events";
 
 const APP_TABS = [
   { id: "week", label: "Week" },
+  { id: "events", label: "Events" },
   { id: "classes", label: "Try classes" },
 ] as const;
 
@@ -98,6 +99,11 @@ function TabIcon({ id }: { id: AppTabId }) {
       <Shuffle size={16} strokeWidth={1.75} className="shrink-0" aria-hidden />
     );
   }
+  if (id === "events") {
+    return (
+      <Sparkles size={16} strokeWidth={1.75} className="shrink-0" aria-hidden />
+    );
+  }
 
   return (
     <Calendar size={16} strokeWidth={1.75} className="shrink-0" aria-hidden />
@@ -174,7 +180,7 @@ export function AppHeader({
           <AppTabs tab={tab} onTabChange={onTabChange} />
         </div>
         <div className="ml-auto flex min-w-0 items-center gap-2">
-          {auth.teacherName ? (
+          {auth.displayName ? (
             <button
               type="button"
               className="flex h-8.5 shrink-0 items-center rounded-full bg-surface-container-lowest px-2.5 text-label-sm tracking-wide text-on-surface-variant"
@@ -188,7 +194,7 @@ export function AppHeader({
               className="flex h-8.5 shrink-0 items-center rounded-full bg-surface-container-lowest px-2.5 text-label-sm tracking-wide text-on-surface-variant"
               onClick={() => onOpenLogin?.()}
             >
-              Staff
+              Log in
             </button>
           )}
           <PalettePicker />

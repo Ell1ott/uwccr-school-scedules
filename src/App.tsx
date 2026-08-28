@@ -7,10 +7,13 @@ import {
   useState,
 } from "react";
 import studentsFile from "./data/students.json" with { type: "json" };
+import { withStudentEmails } from "./data/studentEmails";
 import { DAYS } from "./data/weekTemplate";
 import { AppHeader, type AppTabId } from "./components/AppHeader";
 import { ClassChooser } from "./components/ClassChooser";
 import { ClassDetailSheet } from "./components/ClassDetailSheet";
+import { EventDetailSheet } from "./components/EventDetailSheet";
+import { EventsPage } from "./components/EventsPage";
 import { StudentRoster } from "./components/StudentRoster";
 import { DayTimeline } from "./components/DayTimeline";
 import { TeacherAdmin } from "./components/TeacherAdmin";
@@ -45,6 +48,11 @@ import {
 } from "./lib/calendar";
 import { PaletteProvider } from "./lib/palette";
 import { selectedStudent, selectedTeacher } from "./lib/people";
+import {
+  applySchoolEvents,
+  useSchoolEvents,
+  type SchoolEvent,
+} from "./lib/schoolEvents";
 import {
   readStoredLessonIcons,
   readStoredPalette,
@@ -99,11 +107,12 @@ export default function App() {
 }
 
 function AppShell() {
-  const students = data.students;
+  const students = useMemo(() => withStudentEmails(data.students), []);
   const teachers = useMemo(() => deriveTeachers(students), [students]);
   const auth = useAuth();
   const cancellations = useCancellations();
   const lessonNotes = useLessonNotes();
+  const schoolEvents = useSchoolEvents(auth.studentId);
   const [view, setViewState] = useState<AppView>(() => readView());
   const [selected, setSelected] = useState<SelectedPerson | null>(
     () => readStoredPerson(),
@@ -119,6 +128,12 @@ function AppShell() {
     clampWeekStart(readStoredWeekStart() ?? mondayOf(new Date())),
   );
   const [openEvent, setOpenEvent] = useState<ScheduleEvent | null>(null);
+  const [openSchoolEvent, setOpenSchoolEvent] = useState<SchoolEvent | null>(
+    null,
+  );
+  const [eventDraft, setEventDraft] = useState<"create" | SchoolEvent | null>(
+    null,
+  );
   const [tab, setTab] = useState<AppTabId>("week");
   const communityMeeting = weekHasCommunityMeeting(weekStart);
   const selectedRef = useRef(selected);
@@ -162,6 +177,7 @@ function AppShell() {
     setWeekStart(clamped);
     storeWeekStart(clamped);
     setOpenEvent(null);
+    setOpenSchoolEvent(null);
   }
 
   const choosePerson = useCallback(
@@ -170,6 +186,7 @@ function AppShell() {
       setSelected(person);
       storePerson(person);
       setOpenEvent(null);
+      setOpenSchoolEvent(null);
       setSelectedPerson(person);
       track("schedule_viewed", {
         person_kind: person.kind,
@@ -182,25 +199,40 @@ function AppShell() {
     [],
   );
 
-  const onSignedIn = useCallback(
-    (teacherId: string) => {
-      setTeacherContext(teacherId);
-      track("teacher_logged_in", { teacher_id: teacherId });
-      choosePerson({ kind: "teacher", id: teacherId }, "login");
-      setView("app");
-    },
-    [choosePerson, setView],
-  );
+  const onSignedIn = useCallback(() => {
+    if (auth.teacherId) {
+      setTeacherContext(auth.teacherId);
+      track("teacher_logged_in", { teacher_id: auth.teacherId });
+      choosePerson({ kind: "teacher", id: auth.teacherId }, "login");
+    } else if (auth.studentId) {
+      track("student_logged_in", { student_id: auth.studentId });
+      choosePerson({ kind: "student", id: auth.studentId }, "login");
+    }
+    setTab("events");
+    setView("app");
+  }, [auth.teacherId, auth.studentId, choosePerson, setView]);
 
   function chooseTab(next: AppTabId) {
     if (next === tab) return;
     setOpenEvent(null);
+    setOpenSchoolEvent(null);
     if (next === "classes") track("class_chooser_opened");
     else if (tab === "classes") track("class_chooser_closed");
+    if (next === "events") track("events_opened");
     setTab(next);
   }
 
   function openClass(event: ScheduleEvent) {
+    if (event.kind === "school_event" && event.schoolEventId) {
+      const match = schoolEvents.find((item) => item.id === event.schoolEventId);
+      if (match) {
+        setOpenEvent(null);
+        setOpenSchoolEvent(match);
+        track("school_event_opened", { event_id: match.id, source: "week" });
+      }
+      return;
+    }
+    setOpenSchoolEvent(null);
     setOpenEvent(event);
     track("class_detail_opened", classEventProps(event));
   }
@@ -219,12 +251,24 @@ function AppShell() {
         ? buildTeacherSchedule(teacher, weekStart)
         : null;
     if (!built) return null;
-    return applyLessonNotes(
+    const withLive = applyLessonNotes(
       applyCancellations(built, weekStart, cancellations),
       weekStart,
       lessonNotes,
     );
-  }, [student, teacher, weekStart, cancellations, lessonNotes]);
+    if (student && auth.studentId === student.id) {
+      return applySchoolEvents(withLive, weekStart, schoolEvents);
+    }
+    return withLive;
+  }, [
+    student,
+    teacher,
+    weekStart,
+    cancellations,
+    lessonNotes,
+    auth.studentId,
+    schoolEvents,
+  ]);
 
   useEffect(() => {
     setTeacherContext(auth.teacherId);
@@ -248,6 +292,12 @@ function AppShell() {
     // First paint only: load vs roster, not later switches.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!openSchoolEvent) return;
+    const match = schoolEvents.find((item) => item.id === openSchoolEvent.id);
+    if (match && match !== openSchoolEvent) setOpenSchoolEvent(match);
+  }, [schoolEvents, openSchoolEvent]);
 
   useEffect(() => {
     if (!openEvent || !week) return;
@@ -293,7 +343,7 @@ function AppShell() {
   }
 
   if (view === "admin") {
-    return <TeacherAdmin teachers={teachers} onBack={() => setView("app")} />;
+    return <TeacherAdmin teachers={teachers} students={students} onBack={() => setView("app")} />;
   }
 
   return (
@@ -326,6 +376,24 @@ function AppShell() {
                 currentStudent={student}
                 communityMeeting={communityMeeting}
                 onClose={() => chooseTab("week")}
+              />
+            </div>
+          ) : tab === "events" ? (
+            <div id="events-panel" role="tabpanel" aria-labelledby="tab-events">
+              <EventsPage
+                students={students}
+                teachers={teachers}
+                selected={selected}
+                weekStart={weekStart}
+                events={schoolEvents}
+                draft={eventDraft}
+                onDraftChange={setEventDraft}
+                onSelect={choosePerson}
+                onWeekChange={chooseWeek}
+                onOpenLogin={() => setView("login")}
+                onOpenAdmin={() => setView("admin")}
+                onOpenChooser={() => chooseTab("classes")}
+                onOpenEvent={setOpenSchoolEvent}
               />
             </div>
           ) : (
@@ -366,10 +434,11 @@ function AppShell() {
                       weekStart={weekStart}
                       onSelect={choosePerson}
                       onWeekChange={chooseWeek}
-                      paused={Boolean(openEvent)}
+                      paused={Boolean(openEvent || openSchoolEvent)}
                       onOpenLogin={() => setView("login")}
                       onOpenAdmin={() => setView("admin")}
                       onOpenChooser={() => chooseTab("classes")}
+                      onOpenEvents={() => chooseTab("events")}
                     />
                   </div>
                 </>
@@ -414,6 +483,18 @@ function AppShell() {
               await saveClassNote(openEvent, auth.teacherId, body);
             }}
             onClearNote={() => clearClassNote(openEvent)}
+          />
+        ) : null}
+        {openSchoolEvent ? (
+          <EventDetailSheet
+            event={openSchoolEvent}
+            students={students}
+            onClose={() => setOpenSchoolEvent(null)}
+            onEdit={() => {
+              setEventDraft(openSchoolEvent);
+              setOpenSchoolEvent(null);
+              setTab("events");
+            }}
           />
         ) : null}
       </div>
