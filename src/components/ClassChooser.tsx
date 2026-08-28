@@ -1,4 +1,4 @@
-import { CircleAlert } from "lucide-react";
+import { CircleAlert, Users } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { academicRowsFor, DAYS } from "../data/weekTemplate";
 import { track } from "../lib/analytics";
@@ -47,6 +47,29 @@ function meetingLabel(block: BlockLetter, communityMeeting: boolean): string {
   const first = meetings[0];
   if (!first) return `Block ${block}`;
   return `${first.dayShort} ${formatTime(first.start)}`;
+}
+
+function enrollmentLabel(count: number): string {
+  return count === 1 ? "1 student" : `${count} students`;
+}
+
+function EnrollmentMark({
+  count,
+  muted,
+}: {
+  count: number;
+  muted?: boolean;
+}) {
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center gap-0.5 text-[10px] font-medium tabular-nums ${
+        muted ? "opacity-80" : "text-on-surface-variant"
+      }`}
+    >
+      <Users size={10} strokeWidth={1.75} aria-hidden />
+      {count}
+    </span>
+  );
 }
 
 export function ClassChooser({
@@ -318,6 +341,10 @@ function BlockColumn({
   const selectedTone = selected
     ? toneForEvent(toneEvent("class", selected.subject), palette)
     : undefined;
+  const selectedCount = selected
+    ? offerings.find((offering) => offeringKey(offering) === offeringKey(selected))
+        ?.studentCount
+    : undefined;
 
   return (
     <section className="flex min-w-0 flex-1 flex-col">
@@ -347,7 +374,9 @@ function BlockColumn({
                 ? { backgroundColor: selectedTone.bgColor }
                 : undefined
             }
-            aria-label={`Clear ${selected.subject} from block ${block}`}
+            aria-label={`Clear ${selected.subject} from block ${block}${
+              selectedCount != null ? `, ${enrollmentLabel(selectedCount)}` : ""
+            }`}
             onClick={onClear}
           >
             <div className="flex items-start justify-between gap-2">
@@ -358,9 +387,14 @@ function BlockColumn({
                 {selected.level}
               </span>
             </div>
-            <p className="mt-1 text-[11px] leading-4 opacity-80">
-              {selected.teacher}
-              {selected.room ? ` · Rm ${selected.room}` : ""}
+            <p className="mt-1 flex items-center justify-between gap-2 text-[11px] leading-4 opacity-80">
+              <span className="min-w-0 truncate">
+                {selected.teacher}
+                {selected.room ? ` · Rm ${selected.room}` : ""}
+              </span>
+              {selectedCount != null ? (
+                <EnrollmentMark count={selectedCount} muted />
+              ) : null}
             </p>
           </button>
         ) : (
@@ -407,6 +441,9 @@ function OfferingButton({
       <button
         type="button"
         aria-pressed={selected}
+        aria-label={`${offering.subject}, ${offering.level}, ${offering.teacher}${
+          offering.room ? `, room ${offering.room}` : ""
+        }, ${enrollmentLabel(offering.studentCount)}`}
         className={`flex w-full items-start justify-between gap-2 rounded-xl px-2.5 py-2 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 ${
           selected
             ? `${tone.bg} ${tone.text}`
@@ -432,12 +469,15 @@ function OfferingButton({
             {offering.room ? ` · Rm ${offering.room}` : ""}
           </span>
         </span>
-        <span
-          className={`shrink-0 rounded-full px-1.5 py-px text-[10px] font-medium ${
-            selected ? tone.chip : "bg-surface-container-lowest text-on-surface-variant"
-          }`}
-        >
-          {offering.level}
+        <span className="flex shrink-0 flex-col items-end gap-1">
+          <span
+            className={`rounded-full px-1.5 py-px text-[10px] font-medium ${
+              selected ? tone.chip : "bg-surface-container-lowest text-on-surface-variant"
+            }`}
+          >
+            {offering.level}
+          </span>
+          <EnrollmentMark count={offering.studentCount} muted={selected} />
         </span>
       </button>
     </li>
