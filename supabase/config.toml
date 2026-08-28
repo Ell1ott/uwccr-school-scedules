@@ -1,1 +1,8 @@
 project_id = "wexytifqxnbjflsnpvlx"
+
+[functions.notify-event-moderation]
+verify_jwt = true
+
+[functions.moderate-event]
+verify_jwt = true
+

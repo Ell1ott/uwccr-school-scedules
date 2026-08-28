@@ -11,6 +11,7 @@ import {
   formatEventWhen,
   joinSchoolEvent,
   leaveSchoolEvent,
+  notifyEventModeration,
   respondToInvite,
   rsvpLabel,
   type EventResponseRow,
@@ -47,6 +48,14 @@ export function EventDetailSheet({
   );
   const titleId = useId();
   const mine = auth.profileId === event.createdBy;
+  const pending = event.status === "pending";
+  const canEdit =
+    mine && (auth.role === "staff" || event.status === "pending");
+  const canCancel =
+    mine &&
+    event.status !== "cancelled" &&
+    event.status !== "rejected" &&
+    (auth.role === "staff" || event.status === "pending");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [responses, setResponses] = useState<EventResponseRow[] | null>(null);
@@ -56,7 +65,7 @@ export function EventDetailSheet({
   }, [event.id, event.mode]);
 
   useEffect(() => {
-    if (!mine && auth.role !== "staff") return;
+    if (pending || (!mine && auth.role !== "staff")) return;
     let active = true;
     fetchEventResponses(event.id).then((rows) => {
       if (active) setResponses(rows);
@@ -64,7 +73,7 @@ export function EventDetailSheet({
     return () => {
       active = false;
     };
-  }, [event.id, mine, auth.role]);
+  }, [event.id, mine, auth.role, pending]);
 
   const grouped = useMemo(() => {
     if (!responses) return null;
@@ -102,7 +111,15 @@ export function EventDetailSheet({
       overlayLabel="Close event"
       onClose={onClose}
       tone={tone}
-      kicker={event.status === "cancelled" ? "Event · Cancelled" : "Event"}
+      kicker={
+        event.status === "cancelled"
+          ? "Event · Cancelled"
+          : event.status === "pending"
+            ? "Event · Pending approval"
+            : event.status === "rejected"
+              ? "Event · Declined"
+              : "Event"
+      }
       title={<span>{event.title}</span>}
       chip={rsvpLabel(event)}
     >
@@ -125,6 +142,12 @@ export function EventDetailSheet({
 
       {capacityLine ? (
         <p className="mt-4 text-label-sm text-on-surface-variant">{capacityLine}</p>
+      ) : null}
+
+      {pending ? (
+        <p className="mt-4 text-body-md text-on-surface-variant">
+          Admins have been emailed. Nobody else can see this until it is allowed.
+        </p>
       ) : null}
 
       {studentCanAct && event.mode === "invite" ? (
@@ -175,27 +198,48 @@ export function EventDetailSheet({
         )
       ) : null}
 
-      {mine ? (
+      {canEdit || canCancel || (pending && event.moderationToken) ? (
         <div className="mt-6 flex flex-col gap-2">
-          <button
-            type="button"
-            className="h-12 rounded-full bg-surface-container text-label-sm tracking-wide"
-            onClick={onEdit}
-          >
-            Edit this occurrence
-          </button>
-          <button
-            type="button"
-            disabled={busy || event.status === "cancelled"}
-            className="h-12 rounded-full bg-surface-container text-label-sm tracking-wide disabled:opacity-50"
-            onClick={() => void run(() => cancelSchoolEvent(event.id, false))}
-          >
-            Cancel this occurrence
-          </button>
-          {event.seriesId ? (
+          {canEdit ? (
             <button
               type="button"
-              disabled={busy || event.status === "cancelled"}
+              className="h-12 rounded-full bg-surface-container text-label-sm tracking-wide"
+              onClick={onEdit}
+            >
+              Edit this occurrence
+            </button>
+          ) : null}
+          {pending && event.moderationToken ? (
+            <button
+              type="button"
+              disabled={busy}
+              className="h-12 rounded-full bg-surface-container text-label-sm tracking-wide disabled:opacity-50"
+              onClick={() =>
+                void run(() =>
+                  notifyEventModeration(
+                    event.moderationToken!,
+                    window.location.origin,
+                  ),
+                )
+              }
+            >
+              Email admins again
+            </button>
+          ) : null}
+          {canCancel ? (
+            <button
+              type="button"
+              disabled={busy}
+              className="h-12 rounded-full bg-surface-container text-label-sm tracking-wide disabled:opacity-50"
+              onClick={() => void run(() => cancelSchoolEvent(event.id, false))}
+            >
+              Cancel this occurrence
+            </button>
+          ) : null}
+          {canCancel && event.seriesId ? (
+            <button
+              type="button"
+              disabled={busy}
               className="h-12 rounded-full text-label-sm tracking-wide text-error disabled:opacity-50"
               onClick={() => void run(() => cancelSchoolEvent(event.id, true))}
             >
@@ -207,7 +251,7 @@ export function EventDetailSheet({
 
       {error ? <p className="mt-4 text-body-md text-error">{error}</p> : null}
 
-      {grouped && mine ? (
+      {grouped && mine && event.status === "published" ? (
         <div className="mt-6 flex flex-col gap-3">
           <AttendeeGroup title="Going" rows={grouped.going} students={students} />
           <AttendeeGroup

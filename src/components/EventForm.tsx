@@ -1,11 +1,13 @@
 import { useMemo, useState, type FormEvent } from "react";
 import type { EventMode, Student } from "../types";
+import { useAuth } from "../lib/auth";
 import {
   createSchoolEvent,
   crDate,
   crTime,
   expandAudience,
   localToIso,
+  notifyEventModeration,
   occurrenceStamps,
   type EventTarget,
   type SchoolEvent,
@@ -36,6 +38,8 @@ export function EventForm({
   onDone: () => void;
   onCancel: () => void;
 }) {
+  const auth = useAuth();
+  const needsApproval = auth.role === "student";
   const [title, setTitle] = useState(editing?.title ?? "");
   const [description, setDescription] = useState(editing?.description ?? "");
   const [location, setLocation] = useState(editing?.location ?? "");
@@ -58,6 +62,7 @@ export function EventForm({
   const [targets, setTargets] = useState<EventTarget[]>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notifyToken, setNotifyToken] = useState<string | null>(null);
 
   const audienceCount = useMemo(
     () => expandAudience(students, targets).length,
@@ -127,8 +132,41 @@ export function EventForm({
       freq: freq === "none" ? null : freq,
       untilDate: freq === "none" ? null : untilDate,
     });
+    if (message.error) {
+      setBusy(false);
+      setError(message.error);
+      return;
+    }
+    if (needsApproval && message.moderationToken) {
+      const notifyError = await notifyEventModeration(
+        message.moderationToken,
+        window.location.origin,
+      );
+      setBusy(false);
+      if (notifyError) {
+        setNotifyToken(message.moderationToken);
+        setError(
+          `Saved, but we could not email admins: ${notifyError}`,
+        );
+        return;
+      }
+      onDone();
+      return;
+    }
     setBusy(false);
-    if (message) setError(message);
+    onDone();
+  }
+
+  async function retryNotify() {
+    if (!notifyToken) return;
+    setBusy(true);
+    setError(null);
+    const notifyError = await notifyEventModeration(
+      notifyToken,
+      window.location.origin,
+    );
+    setBusy(false);
+    if (notifyError) setError(notifyError);
     else onDone();
   }
 
@@ -297,7 +335,23 @@ export function EventForm({
         </>
       )}
 
+      {needsApproval && !editing ? (
+        <p className="text-body-md text-on-surface-variant">
+          An admin will get an email to allow this before anyone else can see it.
+        </p>
+      ) : null}
+
       {error ? <p className="text-body-md text-error">{error}</p> : null}
+      {notifyToken ? (
+        <button
+          type="button"
+          disabled={busy}
+          className="h-12 rounded-full bg-surface-container text-label-sm tracking-wide disabled:opacity-50"
+          onClick={() => void retryNotify()}
+        >
+          {busy ? "Sending…" : "Email admins again"}
+        </button>
+      ) : null}
 
       <div className="flex flex-col gap-2 pb-8 sm:flex-row">
         <button
@@ -309,10 +363,16 @@ export function EventForm({
         </button>
         <button
           type="submit"
-          disabled={busy}
+          disabled={busy || Boolean(notifyToken)}
           className="h-12 flex-1 rounded-full bg-primary text-label-sm tracking-wide text-on-primary disabled:opacity-50"
         >
-          {busy ? "Saving…" : editing ? "Save changes" : "Post event"}
+          {busy
+            ? "Saving…"
+            : editing
+              ? "Save changes"
+              : needsApproval
+                ? "Submit for approval"
+                : "Post event"}
         </button>
       </div>
     </form>

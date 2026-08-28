@@ -14,6 +14,7 @@ import { ClassChooser } from "./components/ClassChooser";
 import { ClassDetailSheet } from "./components/ClassDetailSheet";
 import { EventDetailSheet } from "./components/EventDetailSheet";
 import { EventsPage } from "./components/EventsPage";
+import { ModerateEventPage } from "./components/ModerateEventPage";
 import { StudentRoster } from "./components/StudentRoster";
 import { DayTimeline } from "./components/DayTimeline";
 import { TeacherAdmin } from "./components/TeacherAdmin";
@@ -74,18 +75,23 @@ import type {
 
 const data = studentsFile as StudentsFile;
 
-type AppView = "app" | "login" | "admin";
+type AppView = "app" | "login" | "admin" | "moderate";
 
 function readView(): AppView {
   const view = new URLSearchParams(window.location.search).get("view");
-  if (view === "login" || view === "admin") return view;
+  if (view === "login" || view === "admin" || view === "moderate") return view;
   return "app";
 }
 
 function writeView(view: AppView) {
   const url = new URL(window.location.href);
-  if (view === "app") url.searchParams.delete("view");
-  else url.searchParams.set("view", view);
+  if (view === "app") {
+    url.searchParams.delete("view");
+    url.searchParams.delete("token");
+    url.searchParams.delete("decision");
+  } else {
+    url.searchParams.set("view", view);
+  }
   window.history.replaceState(null, "", url);
 }
 
@@ -344,6 +350,10 @@ function AppShell() {
 
   if (view === "admin") {
     return <TeacherAdmin teachers={teachers} students={students} onBack={() => setView("app")} />;
+  }
+
+  if (view === "moderate") {
+    return <ModerateEventPage onDone={() => setView("app")} />;
   }
 
   return (

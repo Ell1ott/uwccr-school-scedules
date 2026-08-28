@@ -217,6 +217,7 @@ export type Database = {
           id: string
           location: string
           mode: Database["public"]["Enums"]["event_mode"]
+          moderation_token: string | null
           series_id: string | null
           starts_at: string
           status: Database["public"]["Enums"]["event_status"]
@@ -235,6 +236,7 @@ export type Database = {
           id?: string
           location?: string
           mode: Database["public"]["Enums"]["event_mode"]
+          moderation_token?: string | null
           series_id?: string | null
           starts_at: string
           status?: Database["public"]["Enums"]["event_status"]
@@ -253,6 +255,7 @@ export type Database = {
           id?: string
           location?: string
           mode?: Database["public"]["Enums"]["event_mode"]
+          moderation_token?: string | null
           series_id?: string | null
           starts_at?: string
           status?: Database["public"]["Enums"]["event_status"]
@@ -471,7 +474,7 @@ export type Database = {
           p_title: string
           p_until_date?: string
         }
-        Returns: string[]
+        Returns: Json
       }
       current_profile_id: { Args: never; Returns: string }
       current_student_id: { Args: never; Returns: string }
@@ -482,7 +485,12 @@ export type Database = {
         Returns: Database["public"]["Enums"]["rsvp_status"]
       }
       leave_event: { Args: { p_event_id: string }; Returns: undefined }
+      moderate_events_by_token: {
+        Args: { p_decision: string; p_token: string }
+        Returns: Json
+      }
       promote_waitlist: { Args: { p_event_id: string }; Returns: undefined }
+      seed_event_responses: { Args: { p_event_id: string }; Returns: undefined }
       respond_invite: {
         Args: {
           p_event_id: string
@@ -495,7 +503,7 @@ export type Database = {
     Enums: {
       app_role: "student" | "staff"
       event_mode: "mandatory" | "invite" | "open" | "info"
-      event_status: "published" | "cancelled"
+      event_status: "published" | "cancelled" | "pending" | "rejected"
       rsvp_source: "assigned" | "joined"
       rsvp_status: "pending" | "going" | "declined" | "waitlisted"
       target_kind:

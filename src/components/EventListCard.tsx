@@ -125,7 +125,8 @@ function Face({ name }: { name: string }) {
 }
 
 function modeTag(event: SchoolEvent): string | null {
-  if (event.status === "cancelled") return null;
+  if (event.status === "cancelled" || event.status === "rejected") return null;
+  if (event.status === "pending") return null;
   if (event.mode === "mandatory") return "Mandatory";
   if (event.mode === "invite") return "Invite";
   if (event.mode === "open") return "Open";
@@ -134,6 +135,8 @@ function modeTag(event: SchoolEvent): string | null {
 
 function statusTag(event: SchoolEvent): { label: string; kind: "meta" | "alert" | "ok" } | null {
   if (event.status === "cancelled") return { label: "Cancelled", kind: "alert" };
+  if (event.status === "pending") return { label: "Pending approval", kind: "meta" };
+  if (event.status === "rejected") return { label: "Declined", kind: "alert" };
   if (eventIsSoldOut(event)) return { label: "Sold Out", kind: "alert" };
   if (event.myStatus === "waitlisted") return { label: "Waitlist", kind: "alert" };
   if (event.myStatus === "going" && event.mode !== "mandatory") {
@@ -165,7 +168,9 @@ export function EventListCard({
     <button
       type="button"
       className={`flex w-full items-center gap-3 rounded-[16px] bg-[#f4f4f4] p-3 text-left text-[#171717] ring-1 ring-black/[0.04] transition-colors hover:bg-[#ececec] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 md:gap-4 md:rounded-[18px] md:p-4 ${
-        event.status === "cancelled" ? "opacity-60" : ""
+        event.status === "cancelled" || event.status === "rejected"
+          ? "opacity-60"
+          : ""
       }`}
       onClick={onOpen}
     >
@@ -181,7 +186,9 @@ export function EventListCard({
         </p>
         <h3
           className={`mt-1 text-[16px] leading-5 font-semibold text-[#171717] md:text-lg md:leading-6 ${
-            event.status === "cancelled" ? "line-through" : ""
+            event.status === "cancelled" || event.status === "rejected"
+              ? "line-through"
+              : ""
           }`}
         >
           {event.title}

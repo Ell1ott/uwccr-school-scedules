@@ -43,9 +43,10 @@ function inMonth(date: string, year: number, month: number): boolean {
 }
 
 function chipClass(event: SchoolEvent): string {
-  if (event.status === "cancelled") {
+  if (event.status === "cancelled" || event.status === "rejected") {
     return "bg-[#ececec] text-[#8a8a8a] line-through";
   }
+  if (event.status === "pending") return "bg-[#efe6d8] text-[#6b522e]";
   if (event.mode === "mandatory") return "bg-[#efe6d8] text-[#6b522e]";
   if (event.mode === "invite") return "bg-[#d8e2ee] text-[#1a2b3c]";
   if (event.mode === "open") return "bg-[#e3f0dc] text-[#3d7a3a]";

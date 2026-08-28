@@ -22,7 +22,7 @@ export type EventMode = "mandatory" | "invite" | "open" | "info";
 
 export type RsvpStatus = "pending" | "going" | "declined" | "waitlisted";
 
-export type EventStatus = "published" | "cancelled";
+export type EventStatus = "published" | "cancelled" | "pending" | "rejected";
 
 export type PersonKind = "student" | "teacher";
 

@@ -21,7 +21,7 @@ function emptyCopy(
 ): { title: string; body: string } {
   const staffLine = isStaff
     ? "You can post a gathering whenever there's somewhere to be."
-    : "Staff can post a gathering whenever there's somewhere to be.";
+    : "Submit one for approval when there's somewhere to be.";
 
   if (filter === "all") {
     return {
@@ -136,7 +136,7 @@ export function EventsPage({
                 <h1 className="text-headline-lg-mobile tracking-tight">Events</h1>
               </div>
               <div className="flex items-center gap-2">
-                {auth.role === "staff" ? (
+                {auth.role === "staff" || auth.role === "student" ? (
                   <button
                     type="button"
                     className="flex h-10 items-center gap-1.5 rounded-full bg-primary px-3 text-label-sm tracking-wide text-on-primary"

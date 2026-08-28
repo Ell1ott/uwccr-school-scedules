@@ -52,6 +52,7 @@ export type SchoolEvent = {
   waitlistedCount: number;
   myStatus: RsvpStatus | null;
   goingIds: string[];
+  moderationToken: string | null;
 };
 
 export type EventResponseRow = {
@@ -85,6 +86,7 @@ type EventRow = {
   status: EventStatus;
   going_count: number;
   waitlisted_count: number;
+  moderation_token: string | null;
 };
 
 function formatInZone(
@@ -280,7 +282,7 @@ export function formatMonthChipTime(iso: string): string {
 }
 
 export function isSchoolEventLive(event: SchoolEvent, now = Date.now()): boolean {
-  if (event.status === "cancelled") return false;
+  if (event.status !== "published") return false;
   return now >= Date.parse(event.startsAt) && now < Date.parse(event.endsAt);
 }
 
@@ -290,6 +292,8 @@ export function eventIsSoldOut(event: SchoolEvent): boolean {
 
 export function rsvpLabel(event: SchoolEvent): string {
   if (event.status === "cancelled") return "Cancelled";
+  if (event.status === "pending") return "Pending approval";
+  if (event.status === "rejected") return "Declined";
   if (event.mode === "info") return "On the calendar";
   if (event.mode === "mandatory") return "Mandatory";
   if (event.myStatus === "going") return "Going";
@@ -307,6 +311,9 @@ export function matchesEventFilter(
   event: SchoolEvent,
   filter: EventFilterId,
 ): boolean {
+  if (event.status === "pending" || event.status === "rejected") {
+    return filter === "all";
+  }
   if (filter === "all") return true;
   if (filter === "mandatory") return event.mode === "mandatory";
   if (filter === "invited") {
@@ -350,6 +357,7 @@ function mapEvent(
     waitlistedCount: row.waitlisted_count,
     myStatus,
     goingIds,
+    moderationToken: row.moderation_token,
   };
 }
 
@@ -362,7 +370,7 @@ export async function fetchSchoolEvents(
   const { data: eventRows, error } = await supabase
     .from("events")
     .select(
-      "id, series_id, created_by, title, description, location, starts_at, ends_at, all_day, mode, capacity, status, going_count, waitlisted_count",
+      "id, series_id, created_by, title, description, location, starts_at, ends_at, all_day, mode, capacity, status, going_count, waitlisted_count, moderation_token",
     )
     .gte("starts_at", since)
     .order("starts_at");
@@ -449,9 +457,11 @@ export async function createSchoolEvent(input: {
   audience: string[];
   freq: "daily" | "weekly" | null;
   untilDate: string | null;
-}): Promise<string | null> {
-  if (!supabase) return "Login is not configured yet.";
-  const { error } = await supabase.rpc("create_event_batch", {
+}): Promise<{ error: string | null; moderationToken: string | null }> {
+  if (!supabase) {
+    return { error: "Login is not configured yet.", moderationToken: null };
+  }
+  const { data, error } = await supabase.rpc("create_event_batch", {
     p_title: input.title,
     p_description: input.description,
     p_location: input.location,
@@ -465,7 +475,67 @@ export async function createSchoolEvent(input: {
     p_freq: input.freq ?? undefined,
     p_until_date: input.untilDate ?? undefined,
   });
-  return error?.message ?? null;
+  if (error) return { error: error.message, moderationToken: null };
+  const payload = data as {
+    event_ids?: string[];
+    moderation_token?: string | null;
+  } | null;
+  return {
+    error: null,
+    moderationToken: payload?.moderation_token ?? null,
+  };
+}
+
+export async function notifyEventModeration(
+  token: string,
+  origin: string,
+): Promise<string | null> {
+  if (!supabase) return "Login is not configured yet.";
+  const { data, error } = await supabase.functions.invoke(
+    "notify-event-moderation",
+    { body: { token, origin } },
+  );
+  if (error) return error.message;
+  if (data && typeof data === "object" && "error" in data) {
+    const message = (data as { error?: unknown }).error;
+    if (typeof message === "string" && message) return message;
+  }
+  return null;
+}
+
+export async function moderateEventByToken(
+  token: string,
+  decision: "allow" | "deny",
+): Promise<{ ok: boolean; already: boolean; message: string }> {
+  if (!supabase) {
+    return {
+      ok: false,
+      already: false,
+      message: "Login is not configured yet.",
+    };
+  }
+  const { data, error } = await supabase.functions.invoke("moderate-event", {
+    body: { token, decision },
+  });
+  if (error) {
+    const fallback =
+      data && typeof data === "object" && "message" in data
+        ? String((data as { message?: unknown }).message ?? error.message)
+        : error.message;
+    return { ok: false, already: false, message: fallback };
+  }
+  const payload = (data ?? {}) as {
+    ok?: boolean;
+    already?: boolean;
+    message?: string;
+  };
+  return {
+    ok: Boolean(payload.ok),
+    already: Boolean(payload.already),
+    message:
+      payload.message ??
+      (payload.ok ? "Done." : "Could not update this event."),
+  };
 }
 
 export async function updateSchoolEvent(
@@ -595,7 +665,7 @@ export function applySchoolEvents(
       room: event.location || undefined,
       level: rsvpLabel(event),
       date,
-      cancelled: event.status === "cancelled",
+      cancelled: event.status === "cancelled" || event.status === "rejected",
       icon: "sparkles",
       schoolEventId: event.id,
       eventMode: event.mode,
