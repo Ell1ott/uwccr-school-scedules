@@ -1,5 +1,7 @@
-import { DoorOpen, StickyNote, User, Users, X } from "lucide-react";
+import { DoorOpen, Mail, StickyNote, User, Users, X } from "lucide-react";
 import { useEffect, useId, useMemo, useState, type ReactNode } from "react";
+import { mailtoBcc } from "../data/studentEmails";
+import { track } from "../lib/analytics";
 import { errorMessage } from "../lib/errors";
 import { formatTime } from "../lib/buildSchedule";
 import { formatLongDate } from "../lib/calendar";
@@ -77,6 +79,29 @@ export function ClassDetailSheet({
           ),
     [students, event, currentStudent, teacherView, isStudy, rosterCohort],
   );
+  const classMailto = useMemo(() => {
+    if (!canManage || isStudy) return null;
+    const emails = classmates
+      .map((mate) => mate.email)
+      .filter((email): email is string => Boolean(email));
+    const block = event.block ? `Block ${event.block}` : null;
+    const when = event.date ? formatLongDate(event.date) : null;
+    const subject = [event.title, block, event.cancelled ? "cancelled" : null]
+      .filter(Boolean)
+      .join(" · ");
+    const body = [
+      [event.title, block].filter(Boolean).join(" · "),
+      when,
+      event.cancelled
+        ? event.cancelReason
+          ? `This class is cancelled. ${event.cancelReason}`
+          : "This class is cancelled."
+        : null,
+    ]
+      .filter(Boolean)
+      .join("\n");
+    return mailtoBcc(emails, subject, body || undefined);
+  }, [canManage, isStudy, classmates, event]);
   const meetings = event.block
     ? meetingsForBlock(event.block, communityMeeting)
     : [];
@@ -398,6 +423,23 @@ export function ClassDetailSheet({
                     onChange={setRosterCohort}
                   />
                 </div>
+              ) : classMailto ? (
+                <a
+                  href={classMailto}
+                  className="inline-flex items-center gap-1.5 rounded-full bg-surface-container px-3 py-1.5 text-label-sm font-medium tracking-wide text-on-surface hover:brightness-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                  onClick={() =>
+                    track("class_email_opened", {
+                      subject: event.title,
+                      block: event.block ?? null,
+                      cancelled: Boolean(event.cancelled),
+                      student_count: classmates.length,
+                      email_count: classmates.filter((mate) => mate.email).length,
+                    })
+                  }
+                >
+                  <Mail size={12} strokeWidth={1.75} aria-hidden />
+                  Email class
+                </a>
               ) : null}
             </div>
             {classmates.length === 0 ? (

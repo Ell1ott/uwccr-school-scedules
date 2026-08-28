@@ -14,6 +14,7 @@ export type Student = {
   id: string;
   name: string;
   cohort: CohortId;
+  email: string | null;
   blocks: Partial<Record<BlockLetter, ClassEntry>>;
 };
 
@@ -45,7 +46,7 @@ export type Teacher = {
 export type StudentsFile = {
   generatedAt: string;
   source: string;
-  students: Student[];
+  students: Omit<Student, "email">[];
 };
 
 export type DayId = "mon" | "tue" | "wed" | "thu" | "fri";

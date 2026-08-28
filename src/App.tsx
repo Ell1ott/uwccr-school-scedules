@@ -7,6 +7,7 @@ import {
   useState,
 } from "react";
 import studentsFile from "./data/students.json" with { type: "json" };
+import { withStudentEmails } from "./data/studentEmails";
 import { DAYS } from "./data/weekTemplate";
 import { AppHeader, type AppTabId } from "./components/AppHeader";
 import { ClassChooser } from "./components/ClassChooser";
@@ -99,7 +100,7 @@ export default function App() {
 }
 
 function AppShell() {
-  const students = data.students;
+  const students = useMemo(() => withStudentEmails(data.students), []);
   const teachers = useMemo(() => deriveTeachers(students), [students]);
   const auth = useAuth();
   const cancellations = useCancellations();

@@ -13,6 +13,7 @@ export type Classmate = {
   id: string;
   name: string;
   cohort: CohortId;
+  email: string | null;
 };
 
 export type BlockMeeting = {
@@ -82,6 +83,7 @@ export function classmatesFor(
       id: student.id,
       name: student.name,
       cohort: student.cohort,
+      email: student.email,
     }))
     .sort((a, b) => compareLabels(a.name, b.name));
 }
@@ -100,6 +102,7 @@ export function studyMatesFor(
       id: student.id,
       name: student.name,
       cohort: student.cohort,
+      email: student.email,
     }))
     .sort((a, b) => compareLabels(a.name, b.name));
 }
