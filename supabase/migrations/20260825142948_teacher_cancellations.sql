@@ -43,7 +43,7 @@ as $$
 $$;
 
 revoke all on function public.current_teacher_id() from public;
-grant execute on function public.current_teacher_id() to authenticated;
+grant execute on function public.current_teacher_id() to anon, authenticated;
 
 drop policy if exists cancellations_select_public on public.cancellations;
 create policy cancellations_select_public
@@ -113,4 +113,4 @@ begin
     alter publication supabase_realtime add table public.cancellations;
   end if;
 end
-$$;
+$$;;

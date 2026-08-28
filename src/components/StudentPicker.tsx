@@ -88,7 +88,7 @@ export function StudentPicker({
 
   return (
     <div ref={wrapRef} className={`relative w-full min-w-0 ${inlineList ? "" : "max-w-md md:max-w-xs"}`}>
-      <div className="flex items-center gap-2 rounded-full bg-surface-container px-3 py-2 focus-within:ring-2 focus-within:ring-primary/20">
+      <div className="flex items-center gap-2 rounded-full bg-surface-container-high px-3 py-1.5 focus-within:ring-2 focus-within:ring-primary/20">
         <Search
           size={16}
           strokeWidth={1.75}

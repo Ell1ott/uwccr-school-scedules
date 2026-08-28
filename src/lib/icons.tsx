@@ -10,6 +10,7 @@ import {
   Moon,
   Mountain,
   Sparkles,
+  StickyNote,
   TriangleAlert,
   User,
   Users,
@@ -31,6 +32,7 @@ const ICONS: Record<string, LucideIcon> = {
   "door-open": DoorOpen,
   info: Info,
   warning: TriangleAlert,
+  "sticky-note": StickyNote,
 };
 
 export function EventIcon({

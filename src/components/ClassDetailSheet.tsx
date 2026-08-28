@@ -1,4 +1,4 @@
-import { DoorOpen, User, Users, X } from "lucide-react";
+import { DoorOpen, StickyNote, User, Users, X } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { formatTime } from "../lib/buildSchedule";
@@ -13,8 +13,10 @@ import { usePalette } from "../lib/palette";
 import { teacherIdForName, formatCohorts } from "../lib/teachers";
 import { toneForEvent } from "../lib/tones";
 import type { CohortId, PersonKind, ScheduleEvent, Student } from "../types";
+import { FloatingTabs } from "./FloatingTabs";
 
 const COHORTS: CohortId[] = ["IB1", "IB2"];
+const COHORT_TABS = COHORTS.map((id) => ({ id, label: id }));
 
 export function ClassDetailSheet({
   event,
@@ -28,6 +30,8 @@ export function ClassDetailSheet({
   onSelectTeacher,
   onCancelClass,
   onRestoreClass,
+  onSaveNote,
+  onClearNote,
 }: {
   event: ScheduleEvent;
   students: Student[];
@@ -40,6 +44,8 @@ export function ClassDetailSheet({
   onSelectTeacher: (id: string) => void;
   onCancelClass?: (reason: string, studentIds: string[]) => Promise<void>;
   onRestoreClass?: () => Promise<void>;
+  onSaveNote?: (body: string) => Promise<void>;
+  onClearNote?: () => Promise<void>;
 }) {
   const { palette } = usePalette();
   const tone = toneForEvent(event, palette);
@@ -53,7 +59,9 @@ export function ClassDetailSheet({
     () => currentStudent?.cohort ?? "IB1",
   );
   const [reason, setReason] = useState("");
+  const [noteBody, setNoteBody] = useState(() => event.note ?? "");
   const [busy, setBusy] = useState(false);
+  const [noteBusy, setNoteBusy] = useState<"save" | "clear" | null>(null);
   const [actionError, setActionError] = useState<string | null>(null);
   const classmates = useMemo(
     () =>
@@ -82,6 +90,10 @@ export function ClassDetailSheet({
   useEffect(() => {
     setRosterCohort(currentStudent?.cohort ?? "IB1");
   }, [event.id, currentStudent?.cohort]);
+
+  useEffect(() => {
+    setNoteBody(event.note ?? "");
+  }, [event.id, event.note]);
 
   useEffect(() => {
     const previous = document.activeElement as HTMLElement | null;
@@ -188,10 +200,71 @@ export function ClassDetailSheet({
                 {event.date ? formatLongDate(event.date) : "This class"}
                 {event.block ? ` · Block ${event.block}` : ""}
               </p>
+              <label className="mt-3 block text-label-sm text-on-surface-variant">
+                Class note
+                <textarea
+                  value={noteBody}
+                  onChange={(change) => setNoteBody(change.target.value)}
+                  rows={2}
+                  placeholder="Homework, room change, bring a calculator…"
+                  className="mt-1 w-full rounded-xl bg-surface-container-lowest px-3 py-2 text-body-md outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+                />
+              </label>
+              <div className="mt-3 flex flex-col gap-2">
+                <button
+                  type="button"
+                  disabled={Boolean(noteBusy) || busy}
+                  className="h-11 w-full rounded-full bg-primary text-label-sm tracking-wide text-on-primary disabled:opacity-50"
+                  onClick={async () => {
+                    if (!onSaveNote) return;
+                    setNoteBusy("save");
+                    setActionError(null);
+                    try {
+                      await onSaveNote(noteBody);
+                    } catch (error) {
+                      setActionError(
+                        error instanceof Error
+                          ? error.message
+                          : "Could not save this note.",
+                      );
+                    } finally {
+                      setNoteBusy(null);
+                    }
+                  }}
+                >
+                  {noteBusy === "save" ? "Saving…" : "Save note"}
+                </button>
+                {event.noteId ? (
+                  <button
+                    type="button"
+                    disabled={Boolean(noteBusy) || busy}
+                    className="h-11 w-full rounded-full bg-surface-container-lowest text-label-sm tracking-wide text-on-surface disabled:opacity-50"
+                    onClick={async () => {
+                      if (!onClearNote) return;
+                      setNoteBusy("clear");
+                      setActionError(null);
+                      try {
+                        await onClearNote();
+                        setNoteBody("");
+                      } catch (error) {
+                        setActionError(
+                          error instanceof Error
+                            ? error.message
+                            : "Could not remove this note.",
+                        );
+                      } finally {
+                        setNoteBusy(null);
+                      }
+                    }}
+                  >
+                    {noteBusy === "clear" ? "Removing…" : "Remove note"}
+                  </button>
+                ) : null}
+              </div>
               {event.cancelled ? (
                 <button
                   type="button"
-                  disabled={busy}
+                  disabled={busy || Boolean(noteBusy)}
                   className="mt-3 h-11 w-full rounded-full bg-primary text-label-sm tracking-wide text-on-primary disabled:opacity-50"
                   onClick={async () => {
                     if (!onRestoreClass) return;
@@ -225,7 +298,7 @@ export function ClassDetailSheet({
                   </label>
                   <button
                     type="button"
-                    disabled={busy}
+                    disabled={busy || Boolean(noteBusy)}
                     className="mt-3 h-11 w-full rounded-full bg-error text-label-sm tracking-wide text-on-error disabled:opacity-50"
                     onClick={async () => {
                       if (!onCancelClass) return;
@@ -277,6 +350,18 @@ export function ClassDetailSheet({
                 icon={<DoorOpen size={14} strokeWidth={1.75} />}
               />
             </dl>
+          ) : null}
+
+          {!canManage && event.note ? (
+            <section className={!isStudy ? "mt-6" : ""}>
+              <h3 className="flex items-center gap-1.5 text-label-sm tracking-[0.12em] text-on-surface-variant uppercase">
+                <StickyNote size={12} strokeWidth={1.75} aria-hidden />
+                Note
+              </h3>
+              <p className="mt-2 whitespace-pre-wrap rounded-xl bg-surface-container px-3 py-2 text-body-md">
+                {event.note}
+              </p>
+            </section>
           ) : null}
 
           {meetings.length > 0 ? (
@@ -336,30 +421,13 @@ export function ClassDetailSheet({
                 </span>
               </h3>
               {isStudy ? (
-                <div
-                  role="radiogroup"
-                  aria-label="Year"
-                  className="flex rounded-full bg-surface-container p-1"
-                >
-                  {COHORTS.map((id) => {
-                    const selected = rosterCohort === id;
-                    return (
-                      <button
-                        key={id}
-                        type="button"
-                        role="radio"
-                        aria-checked={selected}
-                        className={`rounded-full px-3 py-1 text-label-sm tracking-wide ${
-                          selected
-                            ? "bg-primary text-on-primary"
-                            : "text-on-surface-variant hover:text-on-surface"
-                        }`}
-                        onClick={() => setRosterCohort(id)}
-                      >
-                        {id}
-                      </button>
-                    );
-                  })}
+                <div className="rounded-2xl bg-surface-container p-1">
+                  <FloatingTabs
+                    ariaLabel="Year"
+                    value={rosterCohort}
+                    options={COHORT_TABS}
+                    onChange={setRosterCohort}
+                  />
                 </div>
               ) : null}
             </div>

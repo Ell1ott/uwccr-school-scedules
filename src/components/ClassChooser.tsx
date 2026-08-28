@@ -1,5 +1,5 @@
-import { ArrowLeft, CircleAlert, Shuffle } from "lucide-react";
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { CircleAlert } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { academicRowsFor, DAYS } from "../data/weekTemplate";
 import { track } from "../lib/analytics";
 import { formatTime } from "../lib/buildSchedule";
@@ -25,8 +25,10 @@ import type {
   ScheduleEvent,
   Student,
 } from "../types";
+import { FloatingTabs } from "./FloatingTabs";
 
 const COHORTS: CohortId[] = ["IB1", "IB2"];
+const COHORT_TABS = COHORTS.map((id) => ({ id, label: id }));
 
 function toneEvent(kind: "class" | "study", title: string): ScheduleEvent {
   return {
@@ -59,8 +61,6 @@ export function ClassChooser({
   onClose: () => void;
 }) {
   const { palette } = usePalette();
-  const titleId = useId();
-  const closeRef = useRef<HTMLButtonElement>(null);
   const onCloseRef = useRef(onClose);
   const [cohort, setCohort] = useState<CohortId | null>(
     () => currentStudent?.cohort ?? null,
@@ -92,8 +92,6 @@ export function ClassChooser({
   }, [onClose]);
 
   useEffect(() => {
-    const previous = document.activeElement as HTMLElement | null;
-    closeRef.current?.focus();
     window.scrollTo(0, 0);
 
     function onKey(event: KeyboardEvent) {
@@ -102,7 +100,6 @@ export function ClassChooser({
     document.addEventListener("keydown", onKey);
     return () => {
       document.removeEventListener("keydown", onKey);
-      previous?.focus();
     };
   }, []);
 
@@ -146,74 +143,28 @@ export function ClassChooser({
   }
 
   return (
-    <div className="flex h-dvh flex-col overflow-hidden bg-surface text-on-surface">
-      <header className="shrink-0 border-b border-outline-variant/60 bg-surface pt-safe">
-        <div className="px-container-padding-desktop py-4">
-          <div className="flex items-start justify-between gap-4">
-            <div className="min-w-0">
-              <p className="flex items-center gap-1.5 text-label-sm tracking-[0.14em] text-on-surface-variant uppercase">
-                <Shuffle size={12} strokeWidth={1.75} aria-hidden />
-                Preview only
-              </p>
-              <h1
-                id={titleId}
-                className="mt-1 text-headline-lg-mobile tracking-tight"
-              >
-                Try classes
-              </h1>
-              <p className="mt-1 text-[13px] leading-5 text-on-surface-variant">
-                Swap offerings by block. Nothing is saved to anyone's real
-                schedule.
-              </p>
-            </div>
-            <button
-              ref={closeRef}
-              type="button"
-              className="flex h-10 shrink-0 items-center gap-2 rounded-full bg-surface-container px-3 text-on-surface hover:bg-surface-container-high focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-              aria-label="Back to week view"
-              onClick={onClose}
-            >
-              <ArrowLeft size={14} strokeWidth={1.75} aria-hidden />
-              <span className="text-label-sm tracking-wide">Week view</span>
-            </button>
-          </div>
-
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <div
-              role="radiogroup"
-              aria-label="Year"
-              className="flex rounded-full bg-surface-container p-1"
-            >
-              {COHORTS.map((id) => {
-                const selected = cohort === id;
-                return (
-                  <button
-                    key={id}
-                    type="button"
-                    role="radio"
-                    aria-checked={selected}
-                    className={`rounded-full px-3.5 py-1.5 text-label-sm tracking-wide ${
-                      selected
-                        ? "bg-primary text-on-primary"
-                        : "text-on-surface-variant hover:text-on-surface"
-                    }`}
-                    onClick={() => chooseCohort(id)}
-                  >
-                    {id}
-                  </button>
-                );
-              })}
-            </div>
-            {cohort ? (
-              <>
-                <CountPill label="HL" value={counts.HL} target={3} />
-                <CountPill label="SL" value={counts.SL} target={3} />
-                <CountPill label="TOK" value={counts.TOK} target={1} />
-              </>
-            ) : null}
-          </div>
+    <div className="flex h-[calc(100dvh-3rem-env(safe-area-inset-top,0px))] flex-col overflow-hidden text-on-surface">
+      <h1 className="sr-only">Try classes</h1>
+      <div className="shrink-0 px-container-padding-mobile pt-4 pb-3 md:px-container-padding-desktop">
+        <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-surface-container px-3 py-2.5">
+          <FloatingTabs
+            ariaLabel="Year"
+            value={cohort}
+            options={COHORT_TABS}
+            onChange={chooseCohort}
+          />
+          {cohort ? (
+            <>
+              <CountPill label="HL" value={counts.HL} target={3} />
+              <CountPill label="SL" value={counts.SL} target={3} />
+              <CountPill label="TOK" value={counts.TOK} target={1} />
+            </>
+          ) : null}
+          <p className="text-[13px] leading-5 text-on-surface-variant">
+            Preview only. Nothing is saved to anyone's real schedule.
+          </p>
         </div>
-      </header>
+      </div>
 
       {issues.length > 0 ? (
         <div

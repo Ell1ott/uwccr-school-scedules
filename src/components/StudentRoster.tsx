@@ -4,6 +4,12 @@ import { track } from "../lib/analytics";
 import { initials } from "../lib/classDetail";
 import { subjectSummary } from "../lib/teachers";
 import type { PersonKind, SelectedPerson, Student, Teacher } from "../types";
+import { FloatingTabs } from "./FloatingTabs";
+
+const ROSTER_TABS = [
+  { id: "student", label: "Students" },
+  { id: "teacher", label: "Teachers" },
+] as const;
 
 function compareNames(a: string, b: string): number {
   return a.localeCompare(b, undefined, { sensitivity: "base", numeric: true });
@@ -81,7 +87,7 @@ export function StudentRoster({
       : `${students.length} students`;
 
   return (
-    <div className="mx-auto max-w-6xl px-container-padding-mobile pt-safe pb-16 md:px-container-padding-desktop">
+    <div className="mx-auto max-w-6xl px-container-padding-mobile pb-16 md:px-container-padding-desktop">
       <div className="pt-8 pb-6 md:pt-10">
         <p className="text-label-sm tracking-[0.14em] text-on-surface-variant uppercase">
           IB1 & IB2 · {countLabel}
@@ -106,25 +112,16 @@ export function StudentRoster({
             </button>
           ) : null}
         </p>
-        <div className="mt-4 flex w-fit rounded-full bg-surface-container p-1">
-          {(["student", "teacher"] as const).map((kind) => (
-            <button
-              key={kind}
-              type="button"
-              className={`rounded-full px-4 py-1.5 text-label-sm ${
-                tab === kind
-                  ? "bg-surface-container-lowest text-on-surface shadow-sm"
-                  : "text-on-surface-variant hover:text-on-surface"
-              }`}
-              aria-pressed={tab === kind}
-              onClick={() => {
-                if (kind !== tab) track("roster_tab_changed", { tab: kind });
-                setTab(kind);
-              }}
-            >
-              {kind === "student" ? "Students" : "Teachers"}
-            </button>
-          ))}
+        <div className="mt-4 w-fit rounded-2xl bg-surface-container p-1.5">
+          <FloatingTabs
+            ariaLabel="Roster"
+            value={tab}
+            options={ROSTER_TABS}
+            onChange={(kind) => {
+              if (kind !== tab) track("roster_tab_changed", { tab: kind });
+              setTab(kind);
+            }}
+          />
         </div>
         <label className="mt-4 flex items-center gap-2 rounded-full bg-surface-container px-3 py-2.5 focus-within:ring-2 focus-within:ring-primary/20 md:hidden">
           <span className="sr-only">Search names</span>
@@ -151,7 +148,7 @@ export function StudentRoster({
         <>
           <nav
             aria-label="Jump to letter"
-            className="sticky top-[env(safe-area-inset-top,0px)] z-20 -mx-container-padding-mobile border-b border-outline-variant/60 bg-surface/90 px-container-padding-mobile py-2 backdrop-blur-xl md:top-[calc(4rem+env(safe-area-inset-top,0px))] md:-mx-container-padding-desktop md:px-container-padding-desktop"
+            className="sticky top-[calc(3rem+env(safe-area-inset-top,0px))] z-20 -mx-container-padding-mobile border-b border-outline-variant/60 bg-surface-container-lowest/90 px-container-padding-mobile py-2 backdrop-blur-xl md:-mx-container-padding-desktop md:px-container-padding-desktop"
           >
             <ul className="flex gap-1 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {letters.map((letter) => (
@@ -176,7 +173,7 @@ export function StudentRoster({
                   sectionRefs.current[letter] = node;
                 }}
                 aria-labelledby={`roster-letter-${letter}`}
-                className="scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))] md:scroll-mt-[calc(8.75rem+env(safe-area-inset-top,0px))]"
+                className="scroll-mt-[calc(4.5rem+env(safe-area-inset-top,0px))] md:scroll-mt-[calc(7.75rem+env(safe-area-inset-top,0px))]"
               >
                 <h3
                   id={`roster-letter-${letter}`}
@@ -194,7 +191,7 @@ export function StudentRoster({
                     <li key={person.id}>
                       <button
                         type="button"
-                        className="flex w-full items-center gap-3 rounded-[14px] bg-surface-container-lowest px-3 py-2.5 text-left shadow-[0_4px_12px_rgba(4,22,39,0.05)] transition-[filter,box-shadow,transform] duration-200 hover:shadow-[0_6px_16px_rgba(4,22,39,0.1)] hover:brightness-[0.99] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+                        className="flex w-full items-center gap-3 rounded-[14px] bg-surface-container-low px-3 py-2.5 text-left shadow-[0_4px_12px_rgba(4,22,39,0.05)] transition-[filter,box-shadow,transform] duration-200 hover:shadow-[0_6px_16px_rgba(4,22,39,0.1)] hover:brightness-[0.99] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
                         onClick={() => onSelect({ kind: tab, id: person.id })}
                       >
                         <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full bg-secondary-container text-[12px] font-semibold tracking-wide text-on-secondary-container">

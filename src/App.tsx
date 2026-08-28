@@ -1,4 +1,3 @@
-import { Shuffle } from "lucide-react";
 import {
   useCallback,
   useEffect,
@@ -9,16 +8,14 @@ import {
 } from "react";
 import studentsFile from "./data/students.json" with { type: "json" };
 import { DAYS } from "./data/weekTemplate";
+import { AppHeader, type AppTabId } from "./components/AppHeader";
 import { ClassChooser } from "./components/ClassChooser";
 import { ClassDetailSheet } from "./components/ClassDetailSheet";
-import { PalettePicker } from "./components/PalettePicker";
-import { StudentPicker } from "./components/StudentPicker";
 import { StudentRoster } from "./components/StudentRoster";
 import { DayTimeline } from "./components/DayTimeline";
 import { TeacherAdmin } from "./components/TeacherAdmin";
 import { TeacherLogin } from "./components/TeacherLogin";
 import { WeekGrid } from "./components/WeekGrid";
-import { WeekNav } from "./components/WeekNav";
 import {
   setSelectedPerson,
   setTeacherContext,
@@ -31,6 +28,10 @@ import {
   applyCancellations,
   useCancellations,
 } from "./lib/cancellations";
+import {
+  applyLessonNotes,
+  useLessonNotes,
+} from "./lib/lessonNotes";
 import {
   clampWeekStart,
   mondayOf,
@@ -46,7 +47,6 @@ import {
   storePerson,
   storeWeekStart,
 } from "./lib/storage";
-import { cohortCaption, teacherCaption } from "./lib/cohort";
 import { supabase } from "./lib/supabase";
 import { deriveTeachers, teacherIdForName } from "./lib/teachers";
 import type { PaletteId } from "./lib/tones";
@@ -100,6 +100,7 @@ function AppShell() {
   const teachers = useMemo(() => deriveTeachers(students), [students]);
   const auth = useAuth();
   const cancellations = useCancellations();
+  const lessonNotes = useLessonNotes();
   const [view, setViewState] = useState<AppView>(() => readView());
   const [selected, setSelected] = useState<SelectedPerson | null>(
     () => readStoredPerson(),
@@ -112,7 +113,7 @@ function AppShell() {
     clampWeekStart(readStoredWeekStart() ?? mondayOf(new Date())),
   );
   const [openEvent, setOpenEvent] = useState<ScheduleEvent | null>(null);
-  const [chooserOpen, setChooserOpen] = useState(false);
+  const [tab, setTab] = useState<AppTabId>("week");
   const communityMeeting = weekHasCommunityMeeting(weekStart);
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
@@ -177,10 +178,12 @@ function AppShell() {
     [choosePerson, setView],
   );
 
-  function openChooser() {
+  function chooseTab(next: AppTabId) {
+    if (next === tab) return;
     setOpenEvent(null);
-    setChooserOpen(true);
-    track("class_chooser_opened");
+    if (next === "classes") track("class_chooser_opened");
+    else if (tab === "classes") track("class_chooser_closed");
+    setTab(next);
   }
 
   function openClass(event: ScheduleEvent) {
@@ -202,15 +205,19 @@ function AppShell() {
       ? teachers.find((item) => item.id === selected.id)
       : undefined;
   const week = useMemo(() => {
-    if (chooserOpen) return null;
+    if (tab !== "week") return null;
     const built = student
       ? buildSchedule(student, weekStart)
       : teacher
         ? buildTeacherSchedule(teacher, weekStart)
         : null;
     if (!built) return null;
-    return applyCancellations(built, weekStart, cancellations);
-  }, [chooserOpen, student, teacher, weekStart, cancellations]);
+    return applyLessonNotes(
+      applyCancellations(built, weekStart, cancellations),
+      weekStart,
+      lessonNotes,
+    );
+  }, [tab, student, teacher, weekStart, cancellations, lessonNotes]);
 
   useEffect(() => {
     setTeacherContext(auth.teacherId);
@@ -243,7 +250,9 @@ function AppShell() {
         match &&
         (match.cancelled !== openEvent.cancelled ||
           match.cancellationId !== openEvent.cancellationId ||
-          match.cancelReason !== openEvent.cancelReason)
+          match.cancelReason !== openEvent.cancelReason ||
+          match.note !== openEvent.note ||
+          match.noteId !== openEvent.noteId)
       ) {
         setOpenEvent(match);
         return;
@@ -258,12 +267,6 @@ function AppShell() {
     }
     window.scrollTo(0, 0);
   }, [selected]);
-
-  const caption = teacher
-    ? teacherCaption(weekStart)
-    : student
-      ? cohortCaption(student.cohort, weekStart)
-      : "IB1 & IB2 2026–2027";
 
   const canManageEvent = Boolean(
     openEvent &&
@@ -288,116 +291,74 @@ function AppShell() {
 
   return (
     <PaletteProvider palette={palette} setPalette={choosePalette}>
-      {chooserOpen ? (
-        <ClassChooser
+      <div className="min-h-dvh bg-surface-dim text-on-surface">
+        <AppHeader
+          tab={tab}
+          onTabChange={chooseTab}
+          weekStart={weekStart}
+          onWeekChange={chooseWeek}
           students={students}
-          currentStudent={student}
-          communityMeeting={communityMeeting}
-          onClose={() => {
-            track("class_chooser_closed");
-            setChooserOpen(false);
-          }}
+          teachers={teachers}
+          selected={selected}
+          onSelect={choosePerson}
+          onOpenLogin={() => setView("login")}
+          onOpenAdmin={() => setView("admin")}
         />
-      ) : (
-      <div className="min-h-dvh bg-surface text-on-surface">
-        <header className="fixed top-0 z-50 hidden w-full bg-surface/80 pt-safe shadow-[0_1px_8px_rgba(0,0,0,0.04)] backdrop-blur-xl md:block">
-          <div className="flex h-16 items-center justify-between gap-3 px-container-padding-mobile md:px-container-padding-desktop">
-            <div className="min-w-0">
-              <h1 className="truncate text-title-md tracking-tight">Week View</h1>
-              <p className="hidden text-label-sm text-on-surface-variant md:block">
-                {caption}
-              </p>
-            </div>
-            <div className="flex min-w-0 items-center gap-2">
-              <button
-                type="button"
-                className="flex h-10 flex-shrink-0 items-center gap-2 rounded-full bg-surface-container px-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-                aria-label="Try classes"
-                onClick={openChooser}
-              >
-                <Shuffle
-                  size={14}
-                  strokeWidth={1.75}
-                  className="shrink-0 text-on-surface-variant"
-                  aria-hidden
-                />
-                <span className="hidden text-label-sm tracking-wide text-on-surface-variant lg:inline">
-                  Try classes
-                </span>
-              </button>
-              {auth.teacherName ? (
-                <button
-                  type="button"
-                  className="hidden h-10 shrink-0 rounded-full bg-surface-container px-3 text-label-sm tracking-wide text-on-surface-variant lg:inline"
-                  onClick={() => void auth.signOut()}
-                >
-                  Sign out
-                </button>
-              ) : (
-                <button
-                  type="button"
-                  className="hidden h-10 shrink-0 rounded-full bg-surface-container px-3 text-label-sm tracking-wide text-on-surface-variant lg:inline"
-                  onClick={() => setView("login")}
-                >
-                  Staff
-                </button>
-              )}
-              <PalettePicker />
-              <WeekNav weekStart={weekStart} onChange={chooseWeek} />
-              <StudentPicker
+
+        <main className="pt-[calc(3rem+env(safe-area-inset-top,0px))]">
+          <div className="rounded-t-2xl shadow-[0_-1px_0_rgba(4,22,39,0.04),0_-12px_32px_rgba(4,22,39,0.06)]">
+            <div className="min-h-[calc(100dvh-3rem-env(safe-area-inset-top,0px))] overflow-hidden rounded-t-2xl bg-surface-container-lowest">
+          {tab === "classes" ? (
+            <div id="classes-panel" role="tabpanel" aria-labelledby="tab-classes">
+              <ClassChooser
                 students={students}
-                teachers={teachers}
-                selected={selected}
-                onSelect={choosePerson}
+                currentStudent={student}
+                communityMeeting={communityMeeting}
+                onClose={() => chooseTab("week")}
               />
             </div>
-          </div>
-        </header>
-
-        <main className="md:pt-16">
-          {!week ? (
-            <StudentRoster
-              students={students}
-              teachers={teachers}
-              onSelect={(person) => choosePerson(person, "roster")}
-              onOpenLogin={() => setView("login")}
-            />
           ) : (
-            <>
-              <div className="hidden pt-6 md:block">
-                <WeekGrid
-                  week={week}
-                  weekStart={weekStart}
-                  onClassClick={openClass}
-                />
-              </div>
-              <div className="md:hidden">
-                <DayTimeline
-                  dayId={dayId}
-                  onDayChange={(id) => {
-                    if (id !== dayId) {
-                      track("day_changed", {
-                        day_id: id,
-                        previous_day_id: dayId,
-                      });
-                    }
-                    setDayId(id);
-                  }}
-                  events={week[dayId]}
-                  onClassClick={openClass}
+            <div id="week-panel" role="tabpanel" aria-labelledby="tab-week">
+              {!week ? (
+                <StudentRoster
                   students={students}
                   teachers={teachers}
-                  selected={selected}
-                  weekStart={weekStart}
-                  onSelect={choosePerson}
-                  onWeekChange={chooseWeek}
-                  paused={Boolean(openEvent)}
+                  onSelect={(person) => choosePerson(person, "roster")}
                   onOpenLogin={() => setView("login")}
-                  onOpenAdmin={() => setView("admin")}
                 />
-              </div>
-            </>
+              ) : (
+                <>
+                  <div className="hidden pt-6 md:block">
+                    <WeekGrid
+                      week={week}
+                      weekStart={weekStart}
+                      onClassClick={openClass}
+                    />
+                  </div>
+                  <div className="md:hidden">
+                    <DayTimeline
+                      dayId={dayId}
+                      onDayChange={(id) => {
+                        if (id !== dayId) {
+                          track("day_changed", {
+                            day_id: id,
+                            previous_day_id: dayId,
+                          });
+                        }
+                        setDayId(id);
+                      }}
+                      events={week[dayId]}
+                      onClassClick={openClass}
+                      weekStart={weekStart}
+                      paused={Boolean(openEvent)}
+                    />
+                  </div>
+                </>
+              )}
+            </div>
           )}
+            </div>
+          </div>
         </main>
         {openEvent ? (
           <ClassDetailSheet
@@ -478,10 +439,82 @@ function AppShell() {
                 throw error;
               }
             }}
+            onSaveNote={async (body) => {
+              try {
+                if (!supabase || !auth.teacherId) {
+                  throw new Error("Sign in to add a note.");
+                }
+                if (!openEvent.date || !openEvent.block) {
+                  throw new Error("This class has no date for a note.");
+                }
+                const trimmed = body.trim();
+                const hasExisting = Boolean(openEvent.noteId);
+                if (!trimmed) {
+                  if (!openEvent.noteId) return;
+                  const { error } = await supabase
+                    .from("lesson_notes")
+                    .delete()
+                    .eq("id", openEvent.noteId);
+                  if (error) throw new Error(error.message);
+                  track("lesson_note_cleared", {
+                    has_existing: hasExisting,
+                    date: openEvent.date,
+                    block: openEvent.block,
+                    subject: openEvent.title,
+                  });
+                  return;
+                }
+                const { error } = await supabase.from("lesson_notes").upsert(
+                  {
+                    teacher_id: auth.teacherId,
+                    on_date: openEvent.date,
+                    block: openEvent.block,
+                    subject: openEvent.title,
+                    body: trimmed,
+                    updated_at: new Date().toISOString(),
+                  },
+                  { onConflict: "teacher_id,on_date,block" },
+                );
+                if (error) throw new Error(error.message);
+                track("lesson_note_saved", {
+                  has_existing: hasExisting,
+                  date: openEvent.date,
+                  block: openEvent.block,
+                  subject: openEvent.title,
+                });
+              } catch (error) {
+                track("lesson_note_failed", {
+                  error: errorMessage(error),
+                });
+                throw error;
+              }
+            }}
+            onClearNote={async () => {
+              try {
+                if (!supabase || !openEvent.noteId) {
+                  throw new Error("Nothing to remove.");
+                }
+                const { error } = await supabase
+                  .from("lesson_notes")
+                  .delete()
+                  .eq("id", openEvent.noteId);
+                if (error) throw new Error(error.message);
+                track("lesson_note_cleared", {
+                  has_existing: true,
+                  date: openEvent.date ?? null,
+                  block: openEvent.block ?? null,
+                  subject: openEvent.title,
+                });
+              } catch (error) {
+                track("lesson_note_failed", {
+                  error: errorMessage(error),
+                });
+                throw error;
+              }
+            }}
           />
         ) : null}
       </div>
-      )}
     </PaletteProvider>
   );
 }

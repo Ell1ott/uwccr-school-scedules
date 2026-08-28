@@ -61,6 +61,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      lesson_notes: {
+        Row: {
+          id: string;
+          teacher_id: string;
+          on_date: string;
+          block: string;
+          body: string;
+          subject: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          teacher_id: string;
+          on_date: string;
+          block: string;
+          body: string;
+          subject?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          teacher_id?: string;
+          on_date?: string;
+          block?: string;
+          body?: string;
+          subject?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
       push_subscriptions: {
         Row: {
           id: string;

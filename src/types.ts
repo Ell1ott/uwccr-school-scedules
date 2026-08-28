@@ -98,4 +98,6 @@ export type ScheduleEvent = {
   cancelled?: boolean;
   cancelReason?: string | null;
   cancellationId?: string;
+  note?: string | null;
+  noteId?: string;
 };

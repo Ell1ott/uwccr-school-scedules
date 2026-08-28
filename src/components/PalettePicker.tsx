@@ -62,7 +62,7 @@ export function PalettePicker({
         aria-label="Color palette"
         aria-expanded={open}
         aria-controls={listId}
-        className={`flex h-10 items-center gap-2 rounded-full bg-surface-container px-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 ${buttonClassName ?? ""}`}
+        className={`flex h-8 items-center gap-2 rounded-full bg-surface-container-high px-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 ${buttonClassName ?? ""}`}
         onClick={() => setOpen((value) => !value)}
       >
         <span className="flex min-w-0 items-center gap-2">

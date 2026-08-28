@@ -6,7 +6,6 @@ import { cohortCaption, teacherCaption } from "../lib/cohort";
 import { useAuth } from "../lib/auth";
 import { PalettePicker } from "./PalettePicker";
 import { StudentPicker } from "./StudentPicker";
-import { WeekNav } from "./WeekNav";
 
 export function ScheduleMenu({
   students,
@@ -14,7 +13,6 @@ export function ScheduleMenu({
   selected,
   weekStart,
   onSelect,
-  onWeekChange,
   onClose,
   onOpenLogin,
   onOpenAdmin,
@@ -24,7 +22,6 @@ export function ScheduleMenu({
   selected: SelectedPerson | null;
   weekStart: string;
   onSelect: (person: SelectedPerson) => void;
-  onWeekChange: (weekStart: string) => void;
   onClose: () => void;
   onOpenLogin?: () => void;
   onOpenAdmin?: () => void;
@@ -85,7 +82,7 @@ export function ScheduleMenu({
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <h2 id={titleId} className="text-title-md tracking-tight">
-                Week View
+                Settings
               </h2>
               <p className="mt-0.5 text-label-sm text-on-surface-variant">
                 {caption}
@@ -117,18 +114,6 @@ export function ScheduleMenu({
                 onSelect(person);
                 onClose();
               }}
-            />
-          </section>
-
-          <section className="flex flex-col gap-2">
-            <h3 className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
-              Week
-            </h3>
-            <WeekNav
-              weekStart={weekStart}
-              onChange={onWeekChange}
-              showLabel
-              className="h-12 w-full justify-between px-2"
             />
           </section>
 

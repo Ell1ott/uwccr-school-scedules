@@ -153,7 +153,7 @@ export function WeekGrid({
 }) {
   return (
     <div className="px-container-padding-desktop pb-16">
-      <div className={`sticky top-16 z-30 grid ${COLS} gap-x-4 bg-surface/90 py-3 backdrop-blur-md`}>
+      <div className={`sticky top-[calc(3rem+env(safe-area-inset-top,0px))] z-30 grid ${COLS} gap-x-4 bg-surface-container-lowest/90 py-3 backdrop-blur-md`}>
         <div />
         {DAYS.map((day) => (
           <div

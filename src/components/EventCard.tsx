@@ -177,6 +177,14 @@ export function EventCard({
             {event.studentCount == null ? ` · ${extra.teacher}` : extra.room ? ` · Rm ${extra.room}` : ""}
           </p>
         ))}
+        {event.note ? (
+          <p className="flex items-start gap-1 text-current/70">
+            <EventIcon name="sticky-note" className="mt-0.5" />
+            <span className={compact ? "line-clamp-1" : "line-clamp-2"}>
+              {event.note}
+            </span>
+          </p>
+        ) : null}
       </div>
       {live}
     </>
