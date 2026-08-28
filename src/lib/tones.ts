@@ -137,7 +137,7 @@ export const PALETTE_OPTIONS: {
 
 export const DEFAULT_PALETTE: PaletteId = "system";
 
-type SubjectKey =
+export type SubjectKey =
   | "biology"
   | "chemistry"
   | "physics"
@@ -580,7 +580,7 @@ const SUBJECT_PALETTES: Record<PaletteId, Record<SubjectKey, Tone>> = {
   system,
 };
 
-function subjectKey(subject: string): SubjectKey {
+export function subjectKey(subject: string): SubjectKey {
   const n = subject.toLowerCase();
   if (n.includes("tok") || n.includes("tdc")) return "tok";
   if (n.includes("biology")) return "biology";

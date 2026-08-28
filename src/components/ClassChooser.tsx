@@ -1,4 +1,4 @@
-import { CircleAlert, Users } from "lucide-react";
+import { CircleAlert, Users, X } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { academicRowsFor, DAYS } from "../data/weekTemplate";
 import { track } from "../lib/analytics";
@@ -16,6 +16,7 @@ import {
   type ClassOffering,
 } from "../lib/classCatalog";
 import { meetingsForBlock } from "../lib/classDetail";
+import { LessonMark } from "../lib/icons";
 import { usePalette } from "../lib/palette";
 import { toneForEvent, type Tone } from "../lib/tones";
 import type {
@@ -166,7 +167,7 @@ export function ClassChooser({
   }
 
   return (
-    <div className="flex h-[calc(100dvh-3rem-env(safe-area-inset-top,0px))] flex-col overflow-hidden text-on-surface">
+    <div className="fixed inset-0 z-[80] flex flex-col overflow-hidden bg-surface-container-lowest pt-safe text-on-surface md:static md:z-auto md:h-[calc(100dvh-3rem-env(safe-area-inset-top,0px))] md:pt-0">
       <h1 className="sr-only">Try classes</h1>
       <div className="shrink-0 px-container-padding-mobile pt-4 pb-3 md:px-container-padding-desktop">
         <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-surface-container px-3 py-2.5">
@@ -186,6 +187,14 @@ export function ClassChooser({
           <p className="text-[13px] leading-5 text-on-surface-variant">
             Preview only. Nothing is saved to anyone's real schedule.
           </p>
+          <button
+            type="button"
+            className="ml-auto flex size-8 shrink-0 items-center justify-center rounded-full text-on-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 md:hidden"
+            aria-label="Close class chooser"
+            onClick={onClose}
+          >
+            <X size={18} strokeWidth={1.75} aria-hidden />
+          </button>
         </div>
       </div>
 
@@ -305,7 +314,10 @@ function AcademicPreview({
                   className={`flex h-11 items-center justify-between gap-1 rounded-lg px-2 text-[11px] leading-4 font-medium ${tone.bg} ${tone.text}`}
                   style={tone.bgColor ? { backgroundColor: tone.bgColor } : undefined}
                 >
-                  <span className="min-w-0 truncate">{entry.subject}</span>
+                  <span className="flex min-w-0 items-center gap-1">
+                    <LessonMark subject={entry.subject} size={12} />
+                    <span className="truncate">{entry.subject}</span>
+                  </span>
                   <span className={`shrink-0 rounded-full px-1.5 py-px text-[9px] ${tone.chip}`}>
                     {entry.level} · {block}
                   </span>
@@ -380,7 +392,10 @@ function BlockColumn({
             onClick={onClear}
           >
             <div className="flex items-start justify-between gap-2">
-              <p className="text-[13px] leading-4 font-semibold">{selected.subject}</p>
+              <p className="flex min-w-0 items-start gap-1.5 text-[13px] leading-4 font-semibold">
+                <LessonMark subject={selected.subject} size={14} className="mt-px" />
+                <span className="min-w-0">{selected.subject}</span>
+              </p>
               <span
                 className={`shrink-0 rounded-full px-1.5 py-px text-[10px] font-medium ${selectedTone.chip}`}
               >
@@ -457,8 +472,11 @@ function OfferingButton({
         onClick={onSelect}
       >
         <span className="min-w-0">
-          <span className="block truncate text-[12px] leading-4 font-medium">
-            {offering.subject}
+          <span className="flex min-w-0 items-center gap-1.5">
+            <LessonMark subject={offering.subject} size={13} />
+            <span className="truncate text-[12px] leading-4 font-medium">
+              {offering.subject}
+            </span>
           </span>
           <span
             className={`mt-0.5 block truncate text-[10px] leading-3 ${

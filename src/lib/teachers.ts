@@ -8,10 +8,8 @@ import type {
   Teacher,
   TeacherClass,
 } from "../types";
-
-const BLOCKS: BlockLetter[] = ["A", "B", "C", "D", "E", "F", "G", "H"];
-const LEVEL_ORDER = ["HL", "SL", "TOK"];
-const COHORT_ORDER: CohortId[] = ["IB1", "IB2"];
+import { compareLabels, compareNames } from "./people";
+import { BLOCK_LETTERS, COHORTS, LEVEL_ORDER } from "./school";
 
 export function normalizeRoom(room: string): string {
   return room.replace(/\.0$/, "");
@@ -58,13 +56,13 @@ function formatLevels(levels: Iterable<string>): string {
     if (ia !== -1 || ib !== -1) {
       return (ia === -1 ? 99 : ia) - (ib === -1 ? 99 : ib);
     }
-    return a.localeCompare(b);
+    return compareLabels(a, b);
   });
   return unique.join("/");
 }
 
 function sortedCohorts(cohorts: Iterable<CohortId>): CohortId[] {
-  return COHORT_ORDER.filter((id) => [...cohorts].includes(id));
+  return COHORTS.filter((id) => [...cohorts].includes(id));
 }
 
 function mostCommonRoom(rooms: Map<string, number>): string {
@@ -98,7 +96,7 @@ export function deriveTeachers(students: Student[]): Teacher[] {
   const groups = new Map<string, SubjectGroup>();
 
   for (const student of students) {
-    for (const block of BLOCKS) {
+    for (const block of BLOCK_LETTERS) {
       for (const entry of entriesInBlock(student, block)) {
         const teacher = canonicalTeacherName(entry.teacher);
         if (!teacher) continue;
@@ -159,14 +157,14 @@ export function deriveTeachers(students: Student[]): Teacher[] {
       classes.sort(
         (a, b) =>
           b.studentCount - a.studentCount ||
-          a.subject.localeCompare(b.subject, undefined, { sensitivity: "base" }),
+          compareLabels(a.subject, b.subject),
       );
       blocks[block] = classes;
     }
     const subjects = [...data.subjectCounts.entries()]
       .sort(
         (a, b) =>
-          b[1] - a[1] || a[0].localeCompare(b[0], undefined, { sensitivity: "base" }),
+          b[1] - a[1] || compareLabels(a[0], b[0]),
       )
       .map(([subject]) => subject);
     const id = slugifyTeacher(name);
@@ -181,7 +179,7 @@ export function deriveTeachers(students: Student[]): Teacher[] {
   }
 
   teachers.sort((a, b) =>
-    a.name.localeCompare(b.name, undefined, { sensitivity: "base", numeric: true }),
+    compareNames(a.name, b.name),
   );
   return teachers;
 }

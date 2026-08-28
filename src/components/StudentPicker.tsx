@@ -1,4 +1,6 @@
-import { Check, Search, User } from "lucide-react";
+import { UserIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import { Check, Search } from "lucide-react";
 import { useEffect, useId, useMemo, useRef, useState } from "react";
 import type { SelectedPerson, Student, Teacher } from "../types";
 
@@ -25,12 +27,14 @@ export function StudentPicker({
   selected,
   onSelect,
   inlineList,
+  fieldClassName,
 }: {
   students: Student[];
   teachers: Teacher[];
   selected: SelectedPerson | null;
   onSelect: (person: SelectedPerson) => void;
   inlineList?: boolean;
+  fieldClassName?: string;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
@@ -88,9 +92,11 @@ export function StudentPicker({
 
   return (
     <div ref={wrapRef} className={`relative w-full min-w-0 ${inlineList ? "" : "max-w-md md:max-w-xs"}`}>
-      <div className="flex items-center gap-2 rounded-full bg-surface-container-high px-3 py-1.5 focus-within:ring-2 focus-within:ring-primary/20">
+      <div
+        className={`flex items-center gap-1.5 rounded-full focus-within:ring-2 focus-within:ring-primary/20 ${fieldClassName ?? "h-8.5 bg-surface-container-lowest px-2.5"}`}
+      >
         <Search
-          size={16}
+          size={14}
           strokeWidth={1.75}
           className="shrink-0 text-on-surface-variant"
           aria-hidden
@@ -100,7 +106,7 @@ export function StudentPicker({
           aria-expanded={open}
           aria-controls={listId}
           aria-autocomplete="list"
-          className="w-full bg-transparent text-body-md text-on-surface outline-none placeholder:text-on-surface-variant/70"
+          className="w-full bg-transparent text-[13px] leading-5 text-on-surface outline-none placeholder:text-on-surface-variant/70"
           placeholder={selectedName ? selectedName : "Search students & teachers"}
           value={open ? query : selectedName && !open ? "" : query}
           onChange={(e) => {
@@ -132,11 +138,18 @@ export function StudentPicker({
         {selectedName ? (
           <button
             type="button"
-            className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-on-primary"
+            className="shrink-0 text-primary"
             aria-label="Selected person"
             onClick={() => setOpen(true)}
           >
-            <User size={12} strokeWidth={1.75} aria-hidden />
+            <HugeiconsIcon
+              className="opacity-50"
+              icon={UserIcon}
+              size={15}
+              color="currentColor"
+              strokeWidth={1.75}
+              aria-hidden
+            />
           </button>
         ) : null}
       </div>

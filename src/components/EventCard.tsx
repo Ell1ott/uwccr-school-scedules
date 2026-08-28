@@ -1,5 +1,5 @@
 import { formatTimeRange } from "../lib/buildSchedule";
-import { EventIcon } from "../lib/icons";
+import { EventIcon, LessonMark } from "../lib/icons";
 import { usePalette } from "../lib/palette";
 import { formatCohorts } from "../lib/teachers";
 import { isBandKind, toneForEvent } from "../lib/tones";
@@ -125,8 +125,9 @@ export function EventCard({
     <>
       <div className="absolute top-0 bottom-0 left-0 w-1" />
       <div className={`flex items-start justify-between gap-2 ${compact ? "mb-0.5" : "mb-1.5"}`}>
-        <h3 className={`text-[15px] font-semibold leading-5 ${event.cancelled ? "line-through" : ""}`}>
-          {event.title}
+        <h3 className="flex min-w-0 items-start gap-1.5 text-[15px] font-semibold leading-5">
+          <LessonMark subject={event.title} size={compact ? 14 : 16} className="mt-px" />
+          <span className={event.cancelled ? "line-through" : ""}>{event.title}</span>
         </h3>
         {chipLabel ? (
           <div

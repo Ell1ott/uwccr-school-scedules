@@ -30,7 +30,7 @@ export function WeekNav({
     <div
       className={
         float
-          ? `flex h-8 min-w-0 items-center rounded-lg bg-surface-container-lowest/70 px-0.5 ${className ?? ""}`
+          ? `flex h-8 min-w-0 items-center ${className ?? ""}`
           : bare
             ? `flex h-full items-center ${className ?? ""}`
             : `flex h-10 flex-shrink-0 items-center gap-1 rounded-full bg-surface-container px-1 ${className ?? ""}`
@@ -40,7 +40,7 @@ export function WeekNav({
         type="button"
         className={
           float || bare
-            ? "flex size-8 shrink-0 items-center justify-center rounded-full opacity-70 hover:bg-black/5 hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+            ? "flex size-8 shrink-0 items-center justify-center rounded-full text-on-surface-variant opacity-70 hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
             : "flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
         }
         aria-label="Previous week"
@@ -78,7 +78,7 @@ export function WeekNav({
         type="button"
         className={
           float || bare
-            ? "flex size-8 shrink-0 items-center justify-center rounded-full opacity-70 hover:bg-black/5 hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+            ? "flex size-8 shrink-0 items-center justify-center rounded-full text-on-surface-variant opacity-70 hover:opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
             : "flex h-8 w-8 items-center justify-center rounded-full text-on-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
         }
         aria-label="Next week"

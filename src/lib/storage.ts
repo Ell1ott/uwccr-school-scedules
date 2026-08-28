@@ -4,6 +4,7 @@ import type { SelectedPerson } from "../types";
 const STORAGE_KEY = "uwccr-selected-student";
 const PERSON_KEY = "uwccr-selected-person";
 const PALETTE_KEY = "uwccr-color-palette";
+const LESSON_ICONS_KEY = "uwccr-lesson-icons";
 const WEEK_KEY = "uwccr-week-start";
 
 function parsePerson(value: string | null): SelectedPerson | null {
@@ -72,6 +73,25 @@ export function readStoredPalette(): PaletteId {
 export function storePalette(id: PaletteId): void {
   try {
     localStorage.setItem(PALETTE_KEY, id);
+  } catch {
+    /* ignore quota / private mode */
+  }
+}
+
+export function readStoredLessonIcons(): boolean {
+  try {
+    const value = localStorage.getItem(LESSON_ICONS_KEY);
+    if (value === "1" || value === "true") return true;
+    if (value === "0" || value === "false") return false;
+  } catch {
+    /* ignore quota / private mode */
+  }
+  return false;
+}
+
+export function storeLessonIcons(on: boolean): void {
+  try {
+    localStorage.setItem(LESSON_ICONS_KEY, on ? "1" : "0");
   } catch {
     /* ignore quota / private mode */
   }

@@ -87,7 +87,7 @@ export function StudentRoster({
       : `${students.length} students`;
 
   return (
-    <div className="mx-auto max-w-6xl px-container-padding-mobile pb-16 md:px-container-padding-desktop">
+    <div className="mx-auto max-w-6xl px-container-padding-mobile pt-safe pb-16 md:px-container-padding-desktop md:pt-0">
       <div className="pt-8 pb-6 md:pt-10">
         <p className="text-label-sm tracking-[0.14em] text-on-surface-variant uppercase">
           IB1 & IB2 · {countLabel}
@@ -148,7 +148,7 @@ export function StudentRoster({
         <>
           <nav
             aria-label="Jump to letter"
-            className="sticky top-[calc(3rem+env(safe-area-inset-top,0px))] z-20 -mx-container-padding-mobile border-b border-outline-variant/60 bg-surface-container-lowest/90 px-container-padding-mobile py-2 backdrop-blur-xl md:-mx-container-padding-desktop md:px-container-padding-desktop"
+            className="sticky top-[env(safe-area-inset-top,0px)] z-20 -mx-container-padding-mobile border-b border-outline-variant/60 bg-surface-container-lowest/90 px-container-padding-mobile py-2 backdrop-blur-xl md:top-[calc(3rem+env(safe-area-inset-top,0px))] md:-mx-container-padding-desktop md:px-container-padding-desktop"
           >
             <ul className="flex gap-1 overflow-x-auto pb-0.5 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
               {letters.map((letter) => (
@@ -173,7 +173,7 @@ export function StudentRoster({
                   sectionRefs.current[letter] = node;
                 }}
                 aria-labelledby={`roster-letter-${letter}`}
-                className="scroll-mt-[calc(4.5rem+env(safe-area-inset-top,0px))] md:scroll-mt-[calc(7.75rem+env(safe-area-inset-top,0px))]"
+                className="scroll-mt-[calc(5.5rem+env(safe-area-inset-top,0px))] md:scroll-mt-[calc(7.75rem+env(safe-area-inset-top,0px))]"
               >
                 <h3
                   id={`roster-letter-${letter}`}

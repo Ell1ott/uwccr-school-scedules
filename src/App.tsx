@@ -33,21 +33,28 @@ import {
   useLessonNotes,
 } from "./lib/lessonNotes";
 import {
+  cancelClass,
+  clearClassNote,
+  restoreClass,
+  saveClassNote,
+} from "./lib/classActions";
+import {
   clampWeekStart,
   mondayOf,
   weekHasCommunityMeeting,
 } from "./lib/calendar";
 import { PaletteProvider } from "./lib/palette";
-import { notifyCancellation } from "./lib/push";
+import { selectedStudent, selectedTeacher } from "./lib/people";
 import {
+  readStoredLessonIcons,
   readStoredPalette,
   readStoredPerson,
   readStoredWeekStart,
+  storeLessonIcons,
   storePalette,
   storePerson,
   storeWeekStart,
 } from "./lib/storage";
-import { supabase } from "./lib/supabase";
 import { deriveTeachers, teacherIdForName } from "./lib/teachers";
 import type { PaletteId } from "./lib/tones";
 import type {
@@ -83,10 +90,6 @@ function classEventProps(event: ScheduleEvent) {
   };
 }
 
-function errorMessage(error: unknown): string {
-  return error instanceof Error ? error.message : "unknown";
-}
-
 export default function App() {
   return (
     <AuthProvider>
@@ -109,6 +112,9 @@ function AppShell() {
     () => todayDayId() ?? DAYS[0].id,
   );
   const [palette, setPalette] = useState<PaletteId>(() => readStoredPalette());
+  const [showLessonIcons, setShowLessonIcons] = useState(
+    () => readStoredLessonIcons(),
+  );
   const [weekStart, setWeekStart] = useState(() =>
     clampWeekStart(readStoredWeekStart() ?? mondayOf(new Date())),
   );
@@ -127,6 +133,14 @@ function AppShell() {
     if (id !== palette) track("palette_changed", { palette_id: id });
     setPalette(id);
     storePalette(id);
+  }
+
+  function chooseLessonIcons(on: boolean) {
+    if (on !== showLessonIcons) {
+      track("lesson_icons_toggled", { enabled: on });
+    }
+    setShowLessonIcons(on);
+    storeLessonIcons(on);
   }
 
   function chooseWeek(next: string) {
@@ -196,16 +210,9 @@ function AppShell() {
     setOpenEvent(null);
   }
 
-  const student =
-    selected?.kind === "student"
-      ? students.find((item) => item.id === selected.id)
-      : undefined;
-  const teacher =
-    selected?.kind === "teacher"
-      ? teachers.find((item) => item.id === selected.id)
-      : undefined;
+  const student = selectedStudent(students, selected);
+  const teacher = selectedTeacher(teachers, selected);
   const week = useMemo(() => {
-    if (tab !== "week") return null;
     const built = student
       ? buildSchedule(student, weekStart)
       : teacher
@@ -217,7 +224,7 @@ function AppShell() {
       weekStart,
       lessonNotes,
     );
-  }, [tab, student, teacher, weekStart, cancellations, lessonNotes]);
+  }, [student, teacher, weekStart, cancellations, lessonNotes]);
 
   useEffect(() => {
     setTeacherContext(auth.teacherId);
@@ -290,7 +297,12 @@ function AppShell() {
   }
 
   return (
-    <PaletteProvider palette={palette} setPalette={choosePalette}>
+    <PaletteProvider
+      palette={palette}
+      setPalette={choosePalette}
+      showLessonIcons={showLessonIcons}
+      setShowLessonIcons={chooseLessonIcons}
+    >
       <div className="min-h-dvh bg-surface-dim text-on-surface">
         <AppHeader
           tab={tab}
@@ -302,12 +314,11 @@ function AppShell() {
           selected={selected}
           onSelect={choosePerson}
           onOpenLogin={() => setView("login")}
-          onOpenAdmin={() => setView("admin")}
         />
 
-        <main className="pt-[calc(3rem+env(safe-area-inset-top,0px))]">
-          <div className="rounded-t-2xl shadow-[0_-1px_0_rgba(4,22,39,0.04),0_-12px_32px_rgba(4,22,39,0.06)]">
-            <div className="min-h-[calc(100dvh-3rem-env(safe-area-inset-top,0px))] overflow-hidden rounded-t-2xl bg-surface-container-lowest">
+        <main>
+          <div className="md:-mt-px md:rounded-t-2xl md:shadow-[0_-12px_32px_rgba(4,22,39,0.06)]">
+            <div className="min-h-dvh bg-surface-container-lowest md:min-h-[calc(100dvh-3rem-env(safe-area-inset-top,0px))] md:rounded-t-2xl">
           {tab === "classes" ? (
             <div id="classes-panel" role="tabpanel" aria-labelledby="tab-classes">
               <ClassChooser
@@ -349,8 +360,16 @@ function AppShell() {
                       }}
                       events={week[dayId]}
                       onClassClick={openClass}
+                      students={students}
+                      teachers={teachers}
+                      selected={selected}
                       weekStart={weekStart}
+                      onSelect={choosePerson}
+                      onWeekChange={chooseWeek}
                       paused={Boolean(openEvent)}
+                      onOpenLogin={() => setView("login")}
+                      onOpenAdmin={() => setView("admin")}
+                      onOpenChooser={() => chooseTab("classes")}
                     />
                   </div>
                 </>
@@ -376,142 +395,25 @@ function AppShell() {
               choosePerson({ kind: "teacher", id }, "class_detail")
             }
             onCancelClass={async (reason, studentIds) => {
-              try {
-                if (!supabase || !auth.teacherId || !auth.session) {
-                  throw new Error("Sign in to cancel a class.");
-                }
-                if (!openEvent.date || !openEvent.block) {
-                  throw new Error("This class has no date to cancel.");
-                }
-                const { data, error } = await supabase
-                  .from("cancellations")
-                  .insert({
-                    teacher_id: auth.teacherId,
-                    on_date: openEvent.date,
-                    block: openEvent.block,
-                    subject: openEvent.title,
-                    reason: reason || null,
-                    start_time: openEvent.start,
-                    student_ids: studentIds,
-                  })
-                  .select("id")
-                  .single();
-                if (error) throw new Error(error.message);
-                track("lesson_cancelled", {
-                  teacher_id: auth.teacherId,
-                  date: openEvent.date,
-                  block: openEvent.block,
-                  subject: openEvent.title,
-                  student_count: studentIds.length,
-                  has_reason: Boolean(reason),
-                  cancellation_id: data?.id ?? null,
-                });
-                if (data) {
-                  void notifyCancellation(auth.session.access_token, data.id);
-                }
-              } catch (error) {
-                track("lesson_cancel_failed", {
-                  error: errorMessage(error),
-                });
-                throw error;
+              if (!auth.teacherId || !auth.session) {
+                throw new Error("Sign in to cancel a class.");
               }
+              await cancelClass(
+                openEvent,
+                auth.teacherId,
+                auth.session.access_token,
+                reason,
+                studentIds,
+              );
             }}
-            onRestoreClass={async () => {
-              try {
-                if (!supabase || !openEvent.cancellationId) {
-                  throw new Error("Nothing to restore.");
-                }
-                const { error } = await supabase
-                  .from("cancellations")
-                  .delete()
-                  .eq("id", openEvent.cancellationId);
-                if (error) throw new Error(error.message);
-                track("lesson_restored", {
-                  cancellation_id: openEvent.cancellationId,
-                  date: openEvent.date ?? null,
-                  block: openEvent.block ?? null,
-                  subject: openEvent.title,
-                });
-              } catch (error) {
-                track("lesson_restore_failed", {
-                  error: errorMessage(error),
-                });
-                throw error;
-              }
-            }}
+            onRestoreClass={() => restoreClass(openEvent)}
             onSaveNote={async (body) => {
-              try {
-                if (!supabase || !auth.teacherId) {
-                  throw new Error("Sign in to add a note.");
-                }
-                if (!openEvent.date || !openEvent.block) {
-                  throw new Error("This class has no date for a note.");
-                }
-                const trimmed = body.trim();
-                const hasExisting = Boolean(openEvent.noteId);
-                if (!trimmed) {
-                  if (!openEvent.noteId) return;
-                  const { error } = await supabase
-                    .from("lesson_notes")
-                    .delete()
-                    .eq("id", openEvent.noteId);
-                  if (error) throw new Error(error.message);
-                  track("lesson_note_cleared", {
-                    has_existing: hasExisting,
-                    date: openEvent.date,
-                    block: openEvent.block,
-                    subject: openEvent.title,
-                  });
-                  return;
-                }
-                const { error } = await supabase.from("lesson_notes").upsert(
-                  {
-                    teacher_id: auth.teacherId,
-                    on_date: openEvent.date,
-                    block: openEvent.block,
-                    subject: openEvent.title,
-                    body: trimmed,
-                    updated_at: new Date().toISOString(),
-                  },
-                  { onConflict: "teacher_id,on_date,block" },
-                );
-                if (error) throw new Error(error.message);
-                track("lesson_note_saved", {
-                  has_existing: hasExisting,
-                  date: openEvent.date,
-                  block: openEvent.block,
-                  subject: openEvent.title,
-                });
-              } catch (error) {
-                track("lesson_note_failed", {
-                  error: errorMessage(error),
-                });
-                throw error;
+              if (!auth.teacherId) {
+                throw new Error("Sign in to add a note.");
               }
+              await saveClassNote(openEvent, auth.teacherId, body);
             }}
-            onClearNote={async () => {
-              try {
-                if (!supabase || !openEvent.noteId) {
-                  throw new Error("Nothing to remove.");
-                }
-                const { error } = await supabase
-                  .from("lesson_notes")
-                  .delete()
-                  .eq("id", openEvent.noteId);
-                if (error) throw new Error(error.message);
-                track("lesson_note_cleared", {
-                  has_existing: true,
-                  date: openEvent.date ?? null,
-                  block: openEvent.block ?? null,
-                  subject: openEvent.title,
-                });
-              } catch (error) {
-                track("lesson_note_failed", {
-                  error: errorMessage(error),
-                });
-                throw error;
-              }
-            }}
+            onClearNote={() => clearClassNote(openEvent)}
           />
         ) : null}
       </div>

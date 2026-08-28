@@ -1,9 +1,18 @@
-import { useLayoutEffect, useRef, type ReactNode } from "react";
+import { EllipsisVertical } from "lucide-react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import { DAYS } from "../data/weekTemplate";
+import { track } from "../lib/analytics";
 import { formatTime, todayDayId } from "../lib/buildSchedule";
 import { formatDayDate, mondayOf } from "../lib/calendar";
-import type { DayId, ScheduleEvent } from "../types";
+import type {
+  DayId,
+  ScheduleEvent,
+  SelectedPerson,
+  Student,
+  Teacher,
+} from "../types";
 import { EventCard } from "./EventCard";
+import { ScheduleMenu } from "./ScheduleMenu";
 
 const LINE_HALF_PX = 4;
 
@@ -12,18 +21,35 @@ export function DayTimeline({
   onDayChange,
   events,
   onClassClick,
+  students,
+  teachers,
+  selected,
   weekStart,
+  onSelect,
+  onWeekChange,
   paused = false,
+  onOpenLogin,
+  onOpenAdmin,
+  onOpenChooser,
   banner,
 }: {
   dayId: DayId;
   onDayChange: (id: DayId) => void;
   events: ScheduleEvent[];
   onClassClick?: (event: ScheduleEvent) => void;
+  students: Student[];
+  teachers: Teacher[];
+  selected: SelectedPerson | null;
   weekStart: string;
+  onSelect: (person: SelectedPerson) => void;
+  onWeekChange: (weekStart: string) => void;
   paused?: boolean;
+  onOpenLogin?: () => void;
+  onOpenAdmin?: () => void;
+  onOpenChooser?: () => void;
   banner?: ReactNode;
 }) {
+  const [menuOpen, setMenuOpen] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const lineRef = useRef<HTMLDivElement>(null);
   const now = new Date();
@@ -31,7 +57,7 @@ export function DayTimeline({
   const todayId = todayDayId(now);
 
   useLayoutEffect(() => {
-    if (paused) return;
+    if (paused || menuOpen) return;
     const list = listRef.current;
     const line = lineRef.current;
     if (!list || !line) return;
@@ -48,51 +74,80 @@ export function DayTimeline({
       cancelled = true;
       cancelAnimationFrame(frame);
     };
-  }, [dayId, events, paused, weekStart]);
+  }, [dayId, events, paused, menuOpen, weekStart]);
 
   return (
     <div className="flex flex-col">
-      <div className="sticky top-[calc(3rem+env(safe-area-inset-top,0px))] z-40 bg-surface-container-lowest/80 px-container-padding-mobile pt-3 pb-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)] backdrop-blur-md">
-        <div className="flex min-w-0">
-          {DAYS.map((day) => {
-            const selected = day.id === dayId;
-            const isToday = isCurrentWeek && todayId === day.id;
-            const date = formatDayDate(weekStart, day.id);
-            return (
-              <button
-                key={day.id}
-                type="button"
-                aria-label={`${day.label} ${date}`}
-                aria-pressed={selected}
-                className="flex flex-1 flex-col items-center gap-1.5 rounded-xl py-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-                onClick={() => onDayChange(day.id)}
-              >
-                <span
-                  className={`text-[11px] font-medium tracking-[0.08em] ${
-                    selected
-                      ? "text-on-surface"
-                      : "text-on-surface-variant/70"
-                  }`}
+      <div className="sticky top-0 z-40 bg-surface-container-lowest/80 px-container-padding-mobile pt-[calc(env(safe-area-inset-top,0px)+1rem)] pb-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)] backdrop-blur-md">
+        <div className="flex items-end gap-0.5">
+          <div className="flex min-w-0 flex-1">
+            {DAYS.map((day) => {
+              const selectedDay = day.id === dayId;
+              const isToday = isCurrentWeek && todayId === day.id;
+              const date = formatDayDate(weekStart, day.id);
+              return (
+                <button
+                  key={day.id}
+                  type="button"
+                  aria-label={`${day.label} ${date}`}
+                  aria-pressed={selectedDay}
+                  className="flex flex-1 flex-col items-center gap-1.5 rounded-xl py-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+                  onClick={() => onDayChange(day.id)}
                 >
-                  {day.short}
-                </span>
-                <span
-                  className={`flex size-9 items-center justify-center rounded-full text-[15px] font-semibold tabular-nums transition-colors ${
-                    selected
-                      ? "bg-primary text-on-primary"
-                      : isToday
-                        ? "text-primary ring-1 ring-primary/30"
-                        : "text-on-surface-variant"
-                  }`}
-                >
-                  {date}
-                </span>
-              </button>
-            );
-          })}
+                  <span
+                    className={`text-[11px] font-medium tracking-[0.08em] ${
+                      selectedDay
+                        ? "text-on-surface"
+                        : "text-on-surface-variant/70"
+                    }`}
+                  >
+                    {day.short}
+                  </span>
+                  <span
+                    className={`flex size-9 items-center justify-center rounded-full text-[15px] font-semibold tabular-nums transition-colors ${
+                      selectedDay
+                        ? "bg-primary text-on-primary"
+                        : isToday
+                          ? "text-primary ring-1 ring-primary/30"
+                          : "text-on-surface-variant"
+                    }`}
+                  >
+                    {date}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+          <button
+            type="button"
+            className="-mr-1.5 flex size-9 items-center justify-center rounded-full text-on-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+            aria-label="Schedule options"
+            aria-haspopup="dialog"
+            aria-expanded={menuOpen}
+            onClick={() => {
+              setMenuOpen(true);
+              track("schedule_menu_opened");
+            }}
+          >
+            <EllipsisVertical size={16} strokeWidth={1.75} aria-hidden />
+          </button>
         </div>
       </div>
       {banner ? <div className="pt-3">{banner}</div> : null}
+      {menuOpen ? (
+        <ScheduleMenu
+          students={students}
+          teachers={teachers}
+          selected={selected}
+          weekStart={weekStart}
+          onSelect={onSelect}
+          onWeekChange={onWeekChange}
+          onClose={() => setMenuOpen(false)}
+          onOpenLogin={onOpenLogin}
+          onOpenAdmin={onOpenAdmin}
+          onOpenChooser={onOpenChooser}
+        />
+      ) : null}
 
       <div className="mt-2 px-container-padding-mobile pb-16">
         <div ref={listRef} className="relative flex flex-col gap-3">

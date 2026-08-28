@@ -1,6 +1,6 @@
 import { DoorOpen, StickyNote, User, Users, X } from "lucide-react";
-import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { createPortal } from "react-dom";
+import { useEffect, useId, useMemo, useState, type ReactNode } from "react";
+import { errorMessage } from "../lib/errors";
 import { formatTime } from "../lib/buildSchedule";
 import { formatLongDate } from "../lib/calendar";
 import {
@@ -9,14 +9,15 @@ import {
   meetingsForBlock,
   studyMatesFor,
 } from "../lib/classDetail";
+import { LessonMark } from "../lib/icons";
 import { usePalette } from "../lib/palette";
+import { findById } from "../lib/people";
+import { COHORT_TABS } from "../lib/school";
 import { teacherIdForName, formatCohorts } from "../lib/teachers";
 import { toneForEvent } from "../lib/tones";
 import type { CohortId, PersonKind, ScheduleEvent, Student } from "../types";
+import { BottomSheet, SheetHandle } from "./BottomSheet";
 import { FloatingTabs } from "./FloatingTabs";
-
-const COHORTS: CohortId[] = ["IB1", "IB2"];
-const COHORT_TABS = COHORTS.map((id) => ({ id, label: id }));
 
 export function ClassDetailSheet({
   event,
@@ -50,9 +51,7 @@ export function ClassDetailSheet({
   const { palette } = usePalette();
   const tone = toneForEvent(event, palette);
   const titleId = useId();
-  const closeRef = useRef<HTMLButtonElement>(null);
-  const onCloseRef = useRef(onClose);
-  const currentStudent = students.find((item) => item.id === currentStudentId);
+  const currentStudent = findById(students, currentStudentId);
   const teacherView = viewerKind === "teacher";
   const isStudy = event.kind === "study";
   const [rosterCohort, setRosterCohort] = useState<CohortId>(
@@ -95,23 +94,6 @@ export function ClassDetailSheet({
     setNoteBody(event.note ?? "");
   }, [event.id, event.note]);
 
-  useEffect(() => {
-    const previous = document.activeElement as HTMLElement | null;
-    closeRef.current?.focus();
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-
-    function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape") onCloseRef.current();
-    }
-    document.addEventListener("keydown", onKey);
-    return () => {
-      document.removeEventListener("keydown", onKey);
-      document.body.style.overflow = previousOverflow;
-      previous?.focus();
-    };
-  }, []);
-
   const chipParts = isStudy
     ? [event.block ? `Block ${event.block}` : null]
     : [
@@ -135,25 +117,21 @@ export function ClassDetailSheet({
       ? "No students are listed in this class."
       : "No one else is listed in this class.";
 
-  return createPortal(
-    <div className="fixed inset-0 z-[80] flex items-end justify-center md:items-center md:p-6">
-      <button
-        type="button"
-        className="sheet-overlay absolute inset-0 bg-primary/45"
-        aria-label="Close class details"
-        onClick={onClose}
-      />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={titleId}
-        className="sheet-panel relative z-10 flex max-h-[88dvh] w-full max-w-lg flex-col overflow-hidden rounded-t-[28px] bg-surface-container-lowest shadow-[0_-12px_48px_rgba(4,22,39,0.18)] md:max-h-[min(40rem,85vh)] md:rounded-[28px]"
-      >
+  return (
+    <BottomSheet
+      labelledBy={titleId}
+      overlayLabel="Close class details"
+      onClose={onClose}
+      className="md:items-center md:p-6"
+      panelClassName="max-w-lg md:max-h-[min(40rem,85vh)] md:rounded-[28px]"
+    >
+      {(closeRef) => (
+        <>
         <div
           className={`relative ${tone.bg} ${tone.text} px-5 pt-2 pb-5 md:pt-5`}
           style={tone.bgColor ? { backgroundColor: tone.bgColor } : undefined}
         >
-          <div className="mx-auto mb-3 h-1 w-10 rounded-full bg-current/25 md:hidden" />
+          <SheetHandle className="bg-current/25" />
           <div className="flex items-center justify-between gap-3">
             <p className="text-label-sm tracking-[0.14em] text-current/70 uppercase">
               {event.cancelled ? `${kindLabel} · Cancelled` : kindLabel}
@@ -170,9 +148,12 @@ export function ClassDetailSheet({
           </div>
           <h2
             id={titleId}
-            className="mt-1 text-headline-lg-mobile tracking-tight md:text-[28px]"
+            className="mt-1 flex items-start gap-2.5 text-headline-lg-mobile tracking-tight md:text-[28px]"
           >
-            {event.title}
+            {!isStudy ? (
+              <LessonMark subject={event.title} size={26} className="mt-1" />
+            ) : null}
+            <span>{event.title}</span>
           </h2>
           {event.cancelled ? (
             <p className="mt-2 text-body-md text-current/80">
@@ -223,9 +204,7 @@ export function ClassDetailSheet({
                       await onSaveNote(noteBody);
                     } catch (error) {
                       setActionError(
-                        error instanceof Error
-                          ? error.message
-                          : "Could not save this note.",
+                        errorMessage(error, "Could not save this note."),
                       );
                     } finally {
                       setNoteBusy(null);
@@ -248,9 +227,7 @@ export function ClassDetailSheet({
                         setNoteBody("");
                       } catch (error) {
                         setActionError(
-                          error instanceof Error
-                            ? error.message
-                            : "Could not remove this note.",
+                          errorMessage(error, "Could not remove this note."),
                         );
                       } finally {
                         setNoteBusy(null);
@@ -274,9 +251,7 @@ export function ClassDetailSheet({
                       await onRestoreClass();
                     } catch (error) {
                       setActionError(
-                        error instanceof Error
-                          ? error.message
-                          : "Could not restore this class.",
+                        errorMessage(error, "Could not restore this class."),
                       );
                     } finally {
                       setBusy(false);
@@ -483,9 +458,9 @@ export function ClassDetailSheet({
             )}
           </section>
         </div>
-      </div>
-    </div>,
-    document.body,
+        </>
+      )}
+    </BottomSheet>
   );
 }
 

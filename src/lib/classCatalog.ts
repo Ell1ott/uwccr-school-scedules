@@ -1,19 +1,10 @@
 import { canonicalTeacherName } from "../data/teacherAliases";
 import type { BlockLetter, ClassEntry, CohortId, Student } from "../types";
+import { compareLabels } from "./people";
+import { BLOCK_LETTERS, LEVEL_ORDER } from "./school";
 import { entriesInBlock, normalizeRoom } from "./teachers";
 
-export const BLOCK_LETTERS: BlockLetter[] = [
-  "A",
-  "B",
-  "C",
-  "D",
-  "E",
-  "F",
-  "G",
-  "H",
-];
-
-const LEVEL_ORDER = ["HL", "SL", "TOK"];
+export { BLOCK_LETTERS };
 
 export type ClassOffering = {
   subject: string;
@@ -112,9 +103,9 @@ export function offeringsForCohort(
       const levelB = LEVEL_ORDER.indexOf(b.level.toUpperCase());
       return (
         b.studentCount - a.studentCount ||
-        a.subject.localeCompare(b.subject, undefined, { sensitivity: "base" }) ||
+        compareLabels(a.subject, b.subject) ||
         (levelA === -1 ? 99 : levelA) - (levelB === -1 ? 99 : levelB) ||
-        a.teacher.localeCompare(b.teacher, undefined, { sensitivity: "base" })
+        compareLabels(a.teacher, b.teacher)
       );
     });
     catalog[block] = list;

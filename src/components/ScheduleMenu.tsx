@@ -1,4 +1,4 @@
-import { X } from "lucide-react";
+import { Shuffle, X } from "lucide-react";
 import { useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
 import type { SelectedPerson, Student, Teacher } from "../types";
@@ -6,6 +6,7 @@ import { cohortCaption, teacherCaption } from "../lib/cohort";
 import { useAuth } from "../lib/auth";
 import { PalettePicker } from "./PalettePicker";
 import { StudentPicker } from "./StudentPicker";
+import { WeekNav } from "./WeekNav";
 
 export function ScheduleMenu({
   students,
@@ -13,18 +14,22 @@ export function ScheduleMenu({
   selected,
   weekStart,
   onSelect,
+  onWeekChange,
   onClose,
   onOpenLogin,
   onOpenAdmin,
+  onOpenChooser,
 }: {
   students: Student[];
   teachers: Teacher[];
   selected: SelectedPerson | null;
   weekStart: string;
   onSelect: (person: SelectedPerson) => void;
+  onWeekChange: (weekStart: string) => void;
   onClose: () => void;
   onOpenLogin?: () => void;
   onOpenAdmin?: () => void;
+  onOpenChooser?: () => void;
 }) {
   const auth = useAuth();
   const titleId = useId();
@@ -82,7 +87,7 @@ export function ScheduleMenu({
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
               <h2 id={titleId} className="text-title-md tracking-tight">
-                Settings
+                Week View
               </h2>
               <p className="mt-0.5 text-label-sm text-on-surface-variant">
                 {caption}
@@ -110,6 +115,7 @@ export function ScheduleMenu({
               teachers={teachers}
               selected={selected}
               inlineList
+              fieldClassName="h-12 bg-surface-container px-4"
               onSelect={(person) => {
                 onSelect(person);
                 onClose();
@@ -117,15 +123,46 @@ export function ScheduleMenu({
             />
           </section>
 
+          <section className="flex flex-col gap-2">
+            <h3 className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
+              Week
+            </h3>
+            <WeekNav
+              weekStart={weekStart}
+              onChange={onWeekChange}
+              showLabel
+              className="h-12 w-full justify-between px-2"
+            />
+          </section>
+
+          {onOpenChooser ? (
+            <section className="flex flex-col gap-2">
+              <h3 className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
+                Classes
+              </h3>
+              <button
+                type="button"
+                className="flex h-12 items-center gap-2 rounded-full bg-surface-container px-4 text-left text-label-sm tracking-wide text-on-surface"
+                onClick={() => {
+                  onOpenChooser();
+                  onClose();
+                }}
+              >
+                <Shuffle size={16} strokeWidth={1.75} aria-hidden />
+                Try classes
+              </button>
+            </section>
+          ) : null}
+
           <section className="flex flex-col gap-2 pb-2">
             <h3 className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
-              Palette
+              Look
             </h3>
             <PalettePicker
               showLabel
               inlineList
               className="w-full"
-              buttonClassName="h-12 w-full justify-between px-4"
+              buttonClassName="h-12 w-full justify-between bg-surface-container px-4"
             />
           </section>
 

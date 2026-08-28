@@ -1,5 +1,6 @@
 import { academicRowsFor, DAYS } from "../data/weekTemplate";
 import { canonicalTeacherName } from "../data/teacherAliases";
+import { compareLabels } from "./people";
 import { entriesInBlock, normalizeRoom } from "./teachers";
 import type {
   BlockLetter,
@@ -82,9 +83,7 @@ export function classmatesFor(
       name: student.name,
       cohort: student.cohort,
     }))
-    .sort((a, b) =>
-      a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
-    );
+    .sort((a, b) => compareLabels(a.name, b.name));
 }
 
 export function studyMatesFor(
@@ -102,9 +101,7 @@ export function studyMatesFor(
       name: student.name,
       cohort: student.cohort,
     }))
-    .sort((a, b) =>
-      a.name.localeCompare(b.name, undefined, { sensitivity: "base" }),
-    );
+    .sort((a, b) => compareLabels(a.name, b.name));
 }
 
 export function meetingsForBlock(
