@@ -1,4 +1,4 @@
-import { Shuffle, Sparkles, X } from "lucide-react";
+import { MessageSquare, Shuffle, Sparkles, X } from "lucide-react";
 import { useId } from "react";
 import type { SelectedPerson, Student, Teacher } from "../types";
 import { useAuth } from "../lib/auth";
@@ -21,6 +21,7 @@ export function ScheduleMenu({
   onOpenAdmin,
   onOpenChooser,
   onOpenEvents,
+  onOpenFeedback,
 }: {
   students: Student[];
   teachers: Teacher[];
@@ -33,6 +34,7 @@ export function ScheduleMenu({
   onOpenAdmin?: () => void;
   onOpenChooser?: () => void;
   onOpenEvents?: () => void;
+  onOpenFeedback?: () => void;
 }) {
   const auth = useAuth();
   const titleId = useId();
@@ -155,6 +157,25 @@ export function ScheduleMenu({
                 buttonClassName="h-12 w-full justify-between bg-surface-container px-4"
               />
             </section>
+
+            {onOpenFeedback ? (
+              <section className="flex flex-col gap-2">
+                <h3 className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
+                  Help
+                </h3>
+                <button
+                  type="button"
+                  className="flex h-12 items-center gap-2 rounded-full bg-surface-container px-4 text-left text-label-sm tracking-wide text-on-surface"
+                  onClick={() => {
+                    onOpenFeedback();
+                    onClose();
+                  }}
+                >
+                  <MessageSquare size={16} strokeWidth={1.75} aria-hidden />
+                  Send feedback
+                </button>
+              </section>
+            ) : null}
 
             <section className="flex flex-col gap-2 pb-2">
               <h3 className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">

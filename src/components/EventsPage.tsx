@@ -50,6 +50,7 @@ export function EventsPage({
   onOpenAdmin,
   onOpenChooser,
   onOpenEvent,
+  onOpenFeedback,
 }: {
   students: Student[];
   teachers: Teacher[];
@@ -64,6 +65,7 @@ export function EventsPage({
   onOpenAdmin?: () => void;
   onOpenChooser?: () => void;
   onOpenEvent: (event: SchoolEvent) => void;
+  onOpenFeedback?: () => void;
 }) {
   const auth = useAuth();
   const [filter, setFilter] = useState<EventFilterId>("all");
@@ -122,6 +124,7 @@ export function EventsPage({
           onOpenLogin={onOpenLogin}
           onOpenAdmin={onOpenAdmin}
           onOpenChooser={onOpenChooser}
+          onOpenFeedback={onOpenFeedback}
         />
       ) : null}
 

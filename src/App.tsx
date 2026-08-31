@@ -14,6 +14,7 @@ import { ClassChooser } from "./components/ClassChooser";
 import { ClassDetailSheet } from "./components/ClassDetailSheet";
 import { EventDetailSheet } from "./components/EventDetailSheet";
 import { EventsPage } from "./components/EventsPage";
+import { FeedbackSheet } from "./components/FeedbackSheet";
 import { ModerateEventPage } from "./components/ModerateEventPage";
 import { StudentRoster } from "./components/StudentRoster";
 import { DayTimeline } from "./components/DayTimeline";
@@ -50,6 +51,13 @@ import {
 import { PaletteProvider } from "./lib/palette";
 import { selectedStudent, selectedTeacher } from "./lib/people";
 import {
+  navigate,
+  previousRoute,
+  toPath,
+  useAppRoute,
+  type AppRoute,
+} from "./lib/route";
+import {
   applySchoolEvents,
   useSchoolEvents,
   type SchoolEvent,
@@ -75,26 +83,6 @@ import type {
 
 const data = studentsFile as StudentsFile;
 
-type AppView = "app" | "login" | "admin" | "moderate";
-
-function readView(): AppView {
-  const view = new URLSearchParams(window.location.search).get("view");
-  if (view === "login" || view === "admin" || view === "moderate") return view;
-  return "app";
-}
-
-function writeView(view: AppView) {
-  const url = new URL(window.location.href);
-  if (view === "app") {
-    url.searchParams.delete("view");
-    url.searchParams.delete("token");
-    url.searchParams.delete("decision");
-  } else {
-    url.searchParams.set("view", view);
-  }
-  window.history.replaceState(null, "", url);
-}
-
 function classEventProps(event: ScheduleEvent) {
   return {
     event_kind: event.kind,
@@ -102,6 +90,25 @@ function classEventProps(event: ScheduleEvent) {
     block: event.block ?? null,
     cancelled: Boolean(event.cancelled),
   };
+}
+
+function eventsListRoute(route: AppRoute): AppRoute {
+  if (route.page === "events" && route.eventId && route.draft !== "new") {
+    return { page: "events", eventId: route.eventId };
+  }
+  return { page: "events" };
+}
+
+function tabFromRoute(route: AppRoute): AppTabId {
+  if (route.page === "try-classes") return "classes";
+  if (route.page === "events") return "events";
+  return "week";
+}
+
+function routeFromTab(tab: AppTabId): AppRoute {
+  if (tab === "classes") return { page: "try-classes" };
+  if (tab === "events") return { page: "events" };
+  return { page: "week" };
 }
 
 export default function App() {
@@ -113,13 +120,15 @@ export default function App() {
 }
 
 function AppShell() {
+  const route = useAppRoute();
   const students = useMemo(() => withStudentEmails(data.students), []);
   const teachers = useMemo(() => deriveTeachers(students), [students]);
   const auth = useAuth();
   const cancellations = useCancellations();
   const lessonNotes = useLessonNotes();
-  const schoolEvents = useSchoolEvents(auth.studentId);
-  const [view, setViewState] = useState<AppView>(() => readView());
+  const { events: schoolEvents, loaded: eventsLoaded } = useSchoolEvents(
+    auth.studentId,
+  );
   const [selected, setSelected] = useState<SelectedPerson | null>(
     () => readStoredPerson(),
   );
@@ -134,21 +143,44 @@ function AppShell() {
     clampWeekStart(readStoredWeekStart() ?? mondayOf(new Date())),
   );
   const [openEvent, setOpenEvent] = useState<ScheduleEvent | null>(null);
-  const [openSchoolEvent, setOpenSchoolEvent] = useState<SchoolEvent | null>(
-    null,
-  );
-  const [eventDraft, setEventDraft] = useState<"create" | SchoolEvent | null>(
-    null,
-  );
-  const [tab, setTab] = useState<AppTabId>("week");
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const communityMeeting = weekHasCommunityMeeting(weekStart);
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
+  const tab = tabFromRoute(route);
+  const matchedSchoolEvent =
+    route.page === "events" && route.eventId
+      ? schoolEvents.find((item) => item.id === route.eventId) ?? null
+      : null;
+  const eventDraft: "create" | SchoolEvent | null =
+    route.page === "events" && route.draft === "new"
+      ? "create"
+      : route.page === "events" && route.draft === "edit"
+        ? matchedSchoolEvent
+        : null;
+  const openSchoolEvent =
+    route.page === "events" && !route.draft ? matchedSchoolEvent : null;
 
-  const setView = useCallback((next: AppView) => {
-    setViewState(next);
-    writeView(next);
-  }, []);
+  useLayoutEffect(() => {
+    const canonical = toPath(route);
+    if (`${window.location.pathname}${window.location.search}` !== canonical) {
+      navigate(route, { replace: true });
+    }
+  }, [route]);
+
+  useEffect(() => {
+    if (route.page !== "events" || !route.eventId) return;
+    if (!eventsLoaded || auth.loading || !auth.session || !auth.role) return;
+    if (matchedSchoolEvent) return;
+    navigate({ page: "events" }, { replace: true });
+  }, [
+    route,
+    eventsLoaded,
+    auth.loading,
+    auth.session,
+    auth.role,
+    matchedSchoolEvent,
+  ]);
 
   function choosePalette(id: PaletteId) {
     if (id !== palette) track("palette_changed", { palette_id: id });
@@ -183,7 +215,6 @@ function AppShell() {
     setWeekStart(clamped);
     storeWeekStart(clamped);
     setOpenEvent(null);
-    setOpenSchoolEvent(null);
   }
 
   const choosePerson = useCallback(
@@ -192,7 +223,6 @@ function AppShell() {
       setSelected(person);
       storePerson(person);
       setOpenEvent(null);
-      setOpenSchoolEvent(null);
       setSelectedPerson(person);
       track("schedule_viewed", {
         person_kind: person.kind,
@@ -205,6 +235,11 @@ function AppShell() {
     [],
   );
 
+  const goHome = useCallback(() => {
+    const from = previousRoute();
+    navigate(from ?? { page: "week" }, { replace: true });
+  }, []);
+
   const onSignedIn = useCallback(() => {
     if (auth.teacherId) {
       setTeacherContext(auth.teacherId);
@@ -214,18 +249,17 @@ function AppShell() {
       track("student_logged_in", { student_id: auth.studentId });
       choosePerson({ kind: "student", id: auth.studentId }, "login");
     }
-    setTab("events");
-    setView("app");
-  }, [auth.teacherId, auth.studentId, choosePerson, setView]);
+    const from = previousRoute();
+    navigate(from ?? { page: "events" }, { replace: true });
+  }, [auth.teacherId, auth.studentId, choosePerson]);
 
   function chooseTab(next: AppTabId) {
     if (next === tab) return;
     setOpenEvent(null);
-    setOpenSchoolEvent(null);
     if (next === "classes") track("class_chooser_opened");
     else if (tab === "classes") track("class_chooser_closed");
     if (next === "events") track("events_opened");
-    setTab(next);
+    navigate(routeFromTab(next));
   }
 
   function openClass(event: ScheduleEvent) {
@@ -233,12 +267,11 @@ function AppShell() {
       const match = schoolEvents.find((item) => item.id === event.schoolEventId);
       if (match) {
         setOpenEvent(null);
-        setOpenSchoolEvent(match);
+        navigate({ page: "events", eventId: match.id });
         track("school_event_opened", { event_id: match.id, source: "week" });
       }
       return;
     }
-    setOpenSchoolEvent(null);
     setOpenEvent(event);
     track("class_detail_opened", classEventProps(event));
   }
@@ -246,6 +279,28 @@ function AppShell() {
   function closeClass() {
     if (openEvent) track("class_detail_closed", classEventProps(openEvent));
     setOpenEvent(null);
+  }
+
+  function openLogin() {
+    setOpenEvent(null);
+    navigate({ page: "login" });
+  }
+
+  function openAdmin() {
+    setOpenEvent(null);
+    navigate({ page: "admin" });
+  }
+
+  function onDraftChange(draft: "create" | SchoolEvent | null) {
+    if (draft === "create") {
+      navigate({ page: "events", draft: "new" });
+      return;
+    }
+    if (draft) {
+      navigate({ page: "events", eventId: draft.id, draft: "edit" });
+      return;
+    }
+    navigate(eventsListRoute(route));
   }
 
   const student = selectedStudent(students, selected);
@@ -292,18 +347,16 @@ function AppShell() {
         previous_person_id: null,
         previous_person_kind: null,
       });
-    } else if (view === "app") {
+    } else if (
+      route.page === "week" ||
+      route.page === "try-classes" ||
+      route.page === "events"
+    ) {
       track("roster_viewed");
     }
     // First paint only: load vs roster, not later switches.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  useEffect(() => {
-    if (!openSchoolEvent) return;
-    const match = schoolEvents.find((item) => item.id === openSchoolEvent.id);
-    if (match && match !== openSchoolEvent) setOpenSchoolEvent(match);
-  }, [schoolEvents, openSchoolEvent]);
 
   useEffect(() => {
     if (!openEvent || !week) return;
@@ -331,6 +384,11 @@ function AppShell() {
     window.scrollTo(0, 0);
   }, [selected]);
 
+  function openFeedback() {
+    track("feedback_opened");
+    setFeedbackOpen(true);
+  }
+
   const canManageEvent = Boolean(
     openEvent &&
       auth.teacherId &&
@@ -338,22 +396,28 @@ function AppShell() {
       openEvent.teacher &&
       teacherIdForName(openEvent.teacher) === auth.teacherId,
   );
-  if (view === "login") {
+  if (route.page === "login") {
     return (
       <TeacherLogin
-        onBack={() => setView("app")}
+        onBack={goHome}
         onSignedIn={onSignedIn}
-        onAdmin={() => setView("admin")}
+        onAdmin={() => navigate({ page: "admin" }, { replace: true })}
       />
     );
   }
 
-  if (view === "admin") {
-    return <TeacherAdmin teachers={teachers} students={students} onBack={() => setView("app")} />;
+  if (route.page === "admin") {
+    return (
+      <TeacherAdmin
+        teachers={teachers}
+        students={students}
+        onBack={goHome}
+      />
+    );
   }
 
-  if (view === "moderate") {
-    return <ModerateEventPage onDone={() => setView("app")} />;
+  if (route.page === "moderate") {
+    return <ModerateEventPage onDone={() => navigate({ page: "week" })} />;
   }
 
   return (
@@ -373,7 +437,8 @@ function AppShell() {
           teachers={teachers}
           selected={selected}
           onSelect={choosePerson}
-          onOpenLogin={() => setView("login")}
+          onOpenLogin={openLogin}
+          onOpenFeedback={openFeedback}
         />
 
         <main>
@@ -397,13 +462,16 @@ function AppShell() {
                 weekStart={weekStart}
                 events={schoolEvents}
                 draft={eventDraft}
-                onDraftChange={setEventDraft}
+                onDraftChange={onDraftChange}
                 onSelect={choosePerson}
                 onWeekChange={chooseWeek}
-                onOpenLogin={() => setView("login")}
-                onOpenAdmin={() => setView("admin")}
+                onOpenLogin={openLogin}
+                onOpenAdmin={openAdmin}
                 onOpenChooser={() => chooseTab("classes")}
-                onOpenEvent={setOpenSchoolEvent}
+                onOpenEvent={(event) =>
+                  navigate({ page: "events", eventId: event.id })
+                }
+                onOpenFeedback={openFeedback}
               />
             </div>
           ) : (
@@ -413,7 +481,8 @@ function AppShell() {
                   students={students}
                   teachers={teachers}
                   onSelect={(person) => choosePerson(person, "roster")}
-                  onOpenLogin={() => setView("login")}
+                  onOpenLogin={openLogin}
+                  onOpenFeedback={openFeedback}
                 />
               ) : (
                 <>
@@ -444,11 +513,12 @@ function AppShell() {
                       weekStart={weekStart}
                       onSelect={choosePerson}
                       onWeekChange={chooseWeek}
-                      paused={Boolean(openEvent || openSchoolEvent)}
-                      onOpenLogin={() => setView("login")}
-                      onOpenAdmin={() => setView("admin")}
+                      paused={Boolean(openEvent || openSchoolEvent || feedbackOpen)}
+                      onOpenLogin={openLogin}
+                      onOpenAdmin={openAdmin}
                       onOpenChooser={() => chooseTab("classes")}
                       onOpenEvents={() => chooseTab("events")}
+                      onOpenFeedback={openFeedback}
                     />
                   </div>
                 </>
@@ -499,13 +569,18 @@ function AppShell() {
           <EventDetailSheet
             event={openSchoolEvent}
             students={students}
-            onClose={() => setOpenSchoolEvent(null)}
+            onClose={() => navigate({ page: "events" })}
             onEdit={() => {
-              setEventDraft(openSchoolEvent);
-              setOpenSchoolEvent(null);
-              setTab("events");
+              navigate({
+                page: "events",
+                eventId: openSchoolEvent.id,
+                draft: "edit",
+              });
             }}
           />
+        ) : null}
+        {feedbackOpen ? (
+          <FeedbackSheet onClose={() => setFeedbackOpen(false)} />
         ) : null}
       </div>
     </PaletteProvider>

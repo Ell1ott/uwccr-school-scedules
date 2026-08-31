@@ -40,11 +40,13 @@ export function StudentRoster({
   teachers,
   onSelect,
   onOpenLogin,
+  onOpenFeedback,
 }: {
   students: Student[];
   teachers: Teacher[];
   onSelect: (person: SelectedPerson) => void;
   onOpenLogin?: () => void;
+  onOpenFeedback?: () => void;
 }) {
   const [tab, setTab] = useState<PersonKind>("student");
   const [query, setQuery] = useState("");
@@ -104,8 +106,21 @@ export function StudentRoster({
               className="font-medium text-on-surface underline-offset-2 hover:underline"
               onClick={onOpenLogin}
             >
-              Log in for events, or to cancel a class if you teach
+              Log in for events, or to cancel a class if you teach.
             </button>
+          ) : null}
+          {onOpenFeedback ? (
+            <>
+              {onOpenLogin ? " " : null}
+              <button
+                type="button"
+                className="font-medium text-on-surface underline-offset-2 hover:underline"
+                onClick={onOpenFeedback}
+              >
+                Send feedback
+              </button>
+              {" anytime."}
+            </>
           ) : null}
         </p>
         <div className="mt-4 w-fit rounded-2xl bg-surface-container p-1.5">

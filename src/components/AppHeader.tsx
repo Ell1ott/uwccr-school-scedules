@@ -1,4 +1,4 @@
-import { Calendar, Shuffle, Sparkles } from "lucide-react";
+import { Calendar, MessageSquare, Shuffle, Sparkles } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { useAuth } from "../lib/auth";
 import type { SelectedPerson, Student, Teacher } from "../types";
@@ -153,6 +153,7 @@ export function AppHeader({
   selected,
   onSelect,
   onOpenLogin,
+  onOpenFeedback,
 }: {
   tab: AppTabId;
   onTabChange: (tab: AppTabId) => void;
@@ -163,6 +164,7 @@ export function AppHeader({
   selected: SelectedPerson | null;
   onSelect: (person: SelectedPerson) => void;
   onOpenLogin?: () => void;
+  onOpenFeedback?: () => void;
 }) {
   const auth = useAuth();
 
@@ -180,6 +182,16 @@ export function AppHeader({
           <AppTabs tab={tab} onTabChange={onTabChange} />
         </div>
         <div className="ml-auto flex min-w-0 items-center gap-2">
+          {onOpenFeedback ? (
+            <button
+              type="button"
+              className="flex h-8.5 shrink-0 items-center gap-1.5 rounded-full bg-surface-container-lowest px-2.5 text-label-sm tracking-wide text-on-surface-variant"
+              onClick={onOpenFeedback}
+            >
+              <MessageSquare size={14} strokeWidth={1.75} aria-hidden />
+              Feedback
+            </button>
+          ) : null}
           {auth.displayName ? (
             <button
               type="button"

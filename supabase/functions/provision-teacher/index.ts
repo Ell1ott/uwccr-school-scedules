@@ -63,7 +63,7 @@ function loginEmailHtml(input: {
   appUrl: string;
   role: Role;
 }) {
-  const loginUrl = `${input.appUrl.replace(/\/$/, "")}/?view=login`;
+  const loginUrl = `${input.appUrl.replace(/\/$/, "")}/login`;
   const purpose =
     input.role === "student"
       ? "You can log in to Week View to see your events, accept invitations, and join what is open."

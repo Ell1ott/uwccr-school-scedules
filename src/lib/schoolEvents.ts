@@ -696,17 +696,28 @@ export function applySchoolEvents(
   return next;
 }
 
-export function useSchoolEvents(studentId: string | null): SchoolEvent[] {
+export function useSchoolEvents(studentId: string | null): {
+  events: SchoolEvent[];
+  loaded: boolean;
+} {
   const [rows, setRows] = useState<SchoolEvent[]>([]);
+  const [loaded, setLoaded] = useState(!supabase);
 
   useEffect(() => {
-    if (!supabase) return;
+    if (!supabase) {
+      setLoaded(true);
+      return;
+    }
     const client = supabase;
     let active = true;
+    setLoaded(false);
 
     async function refresh() {
       const next = await fetchSchoolEvents(studentId);
-      if (active) setRows(next);
+      if (active) {
+        setRows(next);
+        setLoaded(true);
+      }
     }
 
     void refresh();
@@ -734,5 +745,5 @@ export function useSchoolEvents(studentId: string | null): SchoolEvent[] {
     };
   }, [studentId]);
 
-  return rows;
+  return { events: rows, loaded };
 }

@@ -108,7 +108,7 @@ export function TeacherAdmin({
     }
   }, [emails]);
 
-  const loginUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/?view=login`;
+  const loginUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/login`;
 
   const filteredTeachers = useMemo(
     () => teachers.filter((teacher) => matchesQuery(teacher.name, query)),

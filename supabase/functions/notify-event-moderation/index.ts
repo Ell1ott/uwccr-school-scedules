@@ -245,8 +245,8 @@ Deno.serve(async (req) => {
       log("audience_error", { error: audienceError.message });
     }
 
-    const allowUrl = `${origin}/?view=moderate&token=${encodeURIComponent(token)}&decision=allow`;
-    const denyUrl = `${origin}/?view=moderate&token=${encodeURIComponent(token)}&decision=deny`;
+    const allowUrl = `${origin}/moderate?token=${encodeURIComponent(token)}&decision=allow`;
+    const denyUrl = `${origin}/moderate?token=${encodeURIComponent(token)}&decision=deny`;
     const html = moderationHtml({
       hostName: profile.display_name,
       events: rows,

@@ -11,6 +11,10 @@
     {
       "source": "/wvq/:path(.*)",
       "destination": "https://us.i.posthog.com/:path"
+    },
+    {
+      "source": "/:path(.*)",
+      "destination": "/index.html"
     }
   ]
 }

@@ -6,3 +6,6 @@ verify_jwt = true
 [functions.moderate-event]
 verify_jwt = true
 
+[functions.send-feedback]
+verify_jwt = false
+
