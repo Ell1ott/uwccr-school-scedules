@@ -192,7 +192,7 @@ export function TeacherLogin({
         >
           Forgot password
         </button>
-        {onAdmin ? (
+        {onAdmin && import.meta.env.VITE_SHOW_SEND_LOGINS ? (
           <button
             type="button"
             className="mt-2 h-10 w-full text-label-sm tracking-wide text-on-surface-variant/80"

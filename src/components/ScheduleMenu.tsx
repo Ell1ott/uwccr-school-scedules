@@ -183,16 +183,18 @@ export function ScheduleMenu({
                   Log in
                 </button>
               )}
-              <button
-                type="button"
-                className="h-12 rounded-full px-4 text-left text-label-sm tracking-wide text-on-surface-variant"
-                onClick={() => {
-                  onOpenAdmin?.();
-                  onClose();
-                }}
-              >
-                Send logins
-              </button>
+              {import.meta.env.VITE_SHOW_SEND_LOGINS ? (
+                <button
+                  type="button"
+                  className="h-12 rounded-full px-4 text-left text-label-sm tracking-wide text-on-surface-variant"
+                  onClick={() => {
+                    onOpenAdmin?.();
+                    onClose();
+                  }}
+                >
+                  Send logins
+                </button>
+              ) : null}
             </section>
           </div>
         </>

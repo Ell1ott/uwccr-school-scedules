@@ -346,17 +346,17 @@ export function EventForm({
         <button
           type="button"
           disabled={busy}
-          className="h-12 rounded-full bg-surface-container text-label-sm tracking-wide disabled:opacity-50"
+          className="inline-flex h-12 w-full items-center justify-center rounded-full bg-surface-container px-4 text-label-sm tracking-wide disabled:opacity-50"
           onClick={() => void retryNotify()}
         >
           {busy ? "Sending…" : "Email admins again"}
         </button>
       ) : null}
 
-      <div className="flex flex-col gap-2 pb-8 sm:flex-row">
+      <div className="flex items-stretch gap-2 pb-8">
         <button
           type="button"
-          className="h-12 flex-1 rounded-full bg-surface-container text-label-sm tracking-wide"
+          className="inline-flex min-h-12 shrink-0 items-center justify-center rounded-full bg-surface-container px-5 text-label-sm tracking-wide"
           onClick={onCancel}
         >
           Cancel
@@ -364,7 +364,7 @@ export function EventForm({
         <button
           type="submit"
           disabled={busy || Boolean(notifyToken)}
-          className="h-12 flex-1 rounded-full bg-primary text-label-sm tracking-wide text-on-primary disabled:opacity-50"
+          className="inline-flex min-h-12 min-w-0 flex-1 items-center justify-center rounded-full bg-primary px-3 py-2 text-center text-label-sm tracking-wide text-on-primary disabled:opacity-50 sm:px-5"
         >
           {busy
             ? "Saving…"
