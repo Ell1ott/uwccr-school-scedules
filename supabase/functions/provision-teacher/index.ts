@@ -49,11 +49,37 @@ function json(body: unknown, status = 200) {
   });
 }
 
-function generatePassword(length = 14) {
-  const alphabet =
-    "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789";
-  const bytes = crypto.getRandomValues(new Uint8Array(length));
-  return Array.from(bytes, (byte) => alphabet[byte % alphabet.length]).join("");
+const PASSWORD_WORDS = [
+  "acorn", "amber", "apple", "apron", "arrow", "bagel", "beach", "berry",
+  "birch", "bloom", "brave", "breeze", "brook", "camel", "candy", "cedar",
+  "cherry", "cider", "cloud", "clover", "coast", "cocoa", "coral", "creek",
+  "daisy", "delta", "denim", "eagle", "earth", "echo", "ember", "fern",
+  "field", "flame", "flora", "forest", "frost", "garden", "ginger", "glaze",
+  "glow", "grape", "grove", "harbor", "hazel", "honey", "iris", "ivory",
+  "jade", "jelly", "kiwi", "lake", "lemon", "lilac", "linen", "lotus",
+  "maple", "meadow", "melon", "mint", "mist", "moss", "nest", "olive",
+  "otter", "peach", "pearl", "pebble", "petal", "pine", "plum", "pond",
+  "quilt", "rain", "raven", "ridge", "river", "robin", "ruby", "sage",
+  "sail", "sandy", "seed", "shade", "shell", "silver", "snow", "spark",
+  "spruce", "star", "stone", "sunny", "swift", "tide", "toast", "trail",
+  "tulip", "valley", "velvet", "violet", "walnut", "wave", "wheat", "willow",
+  "wind", "winter", "wool",
+];
+
+function randomInt(max: number) {
+  const bytes = crypto.getRandomValues(new Uint8Array(4));
+  return new DataView(bytes.buffer).getUint32(0, true) % max;
+}
+
+function generatePassword() {
+  const first = PASSWORD_WORDS[randomInt(PASSWORD_WORDS.length)]!;
+  let second = PASSWORD_WORDS[randomInt(PASSWORD_WORDS.length)]!;
+  while (second === first) {
+    second = PASSWORD_WORDS[randomInt(PASSWORD_WORDS.length)]!;
+  }
+  const number = 10 + randomInt(90);
+  const cap = (word: string) => word[0]!.toUpperCase() + word.slice(1);
+  return `${cap(first)}${cap(second)}${number}`;
 }
 
 function loginEmailHtml(input: {
