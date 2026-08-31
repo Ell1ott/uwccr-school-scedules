@@ -320,7 +320,7 @@ export function TeacherAdmin({
                           </div>
                           <div className="flex flex-wrap gap-x-2">
                             <dt className="text-on-surface-variant">Password</dt>
-                            <dd className="tabular-nums">{result.password}</dd>
+                            <dd className="font-mono">{result.password}</dd>
                           </div>
                         </dl>
                         <button

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-08-24T13:32:43.333185+00:00",
+  "generatedAt": "2026-08-31T18:20:46.580175+00:00",
   "source": "https://docs.google.com/spreadsheets/d/1pGFqN1XrL4T_NDr_a9fkAmuwMf5ob3e_0_f6_uFDC8c/export?format=xlsx&gid=0 + students.json (IB2 unchanged)",
   "students": [
     {
@@ -1330,11 +1330,11 @@
       "name": "Emilie Lisa Francese",
       "cohort": "IB1",
       "blocks": {
-        "A": {
-          "subject": "French B",
+        "B": {
+          "subject": "English Lang & Lit",
           "level": "HL",
-          "teacher": "Andrés",
-          "room": "1"
+          "teacher": "Christine",
+          "room": "17"
         },
         "C": {
           "subject": "Economics",
@@ -1355,22 +1355,22 @@
           "room": "14"
         },
         "F": {
+          "subject": "Spanish B",
+          "level": "SL",
+          "teacher": "Ana Teresa",
+          "room": "6"
+        },
+        "G": {
           "subject": "Math Analysis and Approaches",
           "level": "SL",
           "teacher": "JD",
           "room": "10"
         },
-        "G": {
+        "H": {
           "subject": "TOK",
           "level": "TOK",
-          "teacher": "QQ",
-          "room": "4"
-        },
-        "H": {
-          "subject": "English Lang & Lit",
-          "level": "SL",
-          "teacher": "Heloise",
-          "room": "18"
+          "teacher": "Jeff Lile",
+          "room": "12"
         }
       }
     },
@@ -1723,22 +1723,22 @@
       "cohort": "IB1",
       "blocks": {
         "A": {
-          "subject": "Global Politics",
-          "level": "HL",
-          "teacher": "Tiya",
-          "room": "2"
+          "subject": "Biology",
+          "level": "SL",
+          "teacher": "Jeff",
+          "room": "15"
         },
         "B": {
-          "subject": "Theatre",
-          "level": "SL",
-          "teacher": "Andrés",
-          "room": "1"
+          "subject": "Economics",
+          "level": "HL",
+          "teacher": "Brian",
+          "room": "9"
         },
         "C": {
-          "subject": "ESS",
+          "subject": "Visual Arts",
           "level": "HL",
-          "teacher": "Heidy",
-          "room": "9"
+          "teacher": "Melissa",
+          "room": "3"
         },
         "D": {
           "subject": "English B",
@@ -2225,10 +2225,10 @@
           "room": "10"
         },
         "C": {
-          "subject": "Global Politics",
+          "subject": "Chemistry",
           "level": "HL",
-          "teacher": "Tiya",
-          "room": "2"
+          "teacher": "Karina",
+          "room": "13"
         },
         "D": {
           "subject": "Biology",
@@ -2828,7 +2828,7 @@
           "subject": "Spanish AB",
           "level": "SL",
           "teacher": "Andrés",
-          "room": "4"
+          "room": "1"
         },
         "G": {
           "subject": "English Lang & Lit",
@@ -2975,7 +2975,7 @@
           "subject": "Spanish AB",
           "level": "SL",
           "teacher": "Andrés",
-          "room": "4"
+          "room": "1"
         },
         "G": {
           "subject": "TOK",
@@ -3459,7 +3459,7 @@
           "subject": "Spanish AB",
           "level": "SL",
           "teacher": "Andrés",
-          "room": "4"
+          "room": "1"
         },
         "G": {
           "subject": "English Lang & Lit",
@@ -3606,7 +3606,7 @@
           "subject": "Spanish AB",
           "level": "SL",
           "teacher": "Andrés",
-          "room": "4"
+          "room": "1"
         },
         "G": {
           "subject": "English Lang & Lit",
@@ -3841,17 +3841,17 @@
           "teacher": "Brian",
           "room": "7"
         },
+        "D": {
+          "subject": "Spanish B",
+          "level": "HL",
+          "teacher": "Ana Teresa",
+          "room": "6"
+        },
         "E": {
           "subject": "Math Applications and Interpretation",
           "level": "SL",
           "teacher": "Éricka",
           "room": "12"
-        },
-        "F": {
-          "subject": "Spanish B",
-          "level": "SL",
-          "teacher": "Paula",
-          "room": "2"
         },
         "G": {
           "subject": "TOK",
@@ -3998,7 +3998,7 @@
           "subject": "Spanish AB",
           "level": "SL",
           "teacher": "Andrés",
-          "room": "4"
+          "room": "1"
         },
         "G": {
           "subject": "TOK",
@@ -4341,7 +4341,7 @@
           "subject": "Spanish AB",
           "level": "SL",
           "teacher": "Andrés",
-          "room": "4"
+          "room": "1"
         },
         "G": {
           "subject": "English Lang & Lit",
@@ -4390,7 +4390,7 @@
           "subject": "Spanish AB",
           "level": "SL",
           "teacher": "Andrés",
-          "room": "4"
+          "room": "1"
         },
         "G": {
           "subject": "TOK",
@@ -4488,7 +4488,7 @@
           "subject": "Spanish AB",
           "level": "SL",
           "teacher": "Andrés",
-          "room": "4"
+          "room": "1"
         },
         "G": {
           "subject": "Math Applications and Interpretation",
@@ -4635,7 +4635,7 @@
           "subject": "Spanish AB",
           "level": "SL",
           "teacher": "Andrés",
-          "room": "4"
+          "room": "1"
         },
         "G": {
           "subject": "Math Analysis and Approaches",
@@ -4739,7 +4739,7 @@
           "subject": "Spanish AB",
           "level": "SL",
           "teacher": "Andrés",
-          "room": "4"
+          "room": "1"
         },
         "H": {
           "subject": "TOK",
@@ -4785,10 +4785,10 @@
           "room": "16"
         },
         "F": {
-          "subject": "Spanish B",
+          "subject": "Spanish AB",
           "level": "SL",
-          "teacher": "Ana Teresa",
-          "room": "6"
+          "teacher": "QQ",
+          "room": "4"
         },
         "H": {
           "subject": "TOK",
@@ -4831,7 +4831,7 @@
           "subject": "Spanish AB",
           "level": "SL",
           "teacher": "Andrés",
-          "room": "4"
+          "room": "1"
         },
         "G": {
           "subject": "English Lang & Lit",
