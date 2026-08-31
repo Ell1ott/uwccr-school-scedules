@@ -13,7 +13,7 @@ import { DAYS } from "../data/weekTemplate";
 import { dateForDay, parseISODate, toISODate } from "./calendar";
 import { offeringKey } from "./classCatalog";
 import { parseTime } from "./buildSchedule";
-import { supabase } from "./supabase";
+import { SUPABASE_ANON_KEY, functionsUrl, supabase } from "./supabase";
 import { entriesInBlock } from "./teachers";
 
 export const SCHOOL_TZ = "America/Costa_Rica";
@@ -490,17 +490,31 @@ export async function notifyEventModeration(
   token: string,
   origin: string,
 ): Promise<string | null> {
-  if (!supabase) return "Login is not configured yet.";
-  const { data, error } = await supabase.functions.invoke(
-    "notify-event-moderation",
-    { body: { token, origin } },
-  );
-  if (error) return error.message;
-  if (data && typeof data === "object" && "error" in data) {
-    const message = (data as { error?: unknown }).error;
-    if (typeof message === "string" && message) return message;
+  if (!supabase || !functionsUrl) return "Login is not configured yet.";
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData.session?.access_token;
+  if (!accessToken) return "Sign in to submit events.";
+  const response = await fetch(`${functionsUrl}/notify-event-moderation`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      apikey: SUPABASE_ANON_KEY,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ token, origin }),
+  });
+  let payload: { error?: unknown; ok?: boolean } = {};
+  try {
+    payload = (await response.json()) as { error?: unknown; ok?: boolean };
+  } catch {
+    /* ignore */
   }
-  return null;
+  const fromBody =
+    typeof payload.error === "string" && payload.error ? payload.error : null;
+  if (!response.ok) {
+    return fromBody ?? `Could not email admins (${response.status}).`;
+  }
+  return fromBody;
 }
 
 export async function moderateEventByToken(

@@ -1,4 +1,4 @@
-couldimport "jsr:@supabase/functions-js/edge-runtime.d.ts";
+import "jsr:@supabase/functions-js/edge-runtime.d.ts";
 import { createClient } from "npm:@supabase/supabase-js@2";
 
 const corsHeaders = {
@@ -32,6 +32,14 @@ type ProvisionResult = {
 
 function log(event: string, details: Record<string, unknown> = {}) {
   console.log(JSON.stringify({ event, ...details }));
+}
+
+const RESEND_FROM = "UWCCR Schedules <noreply@costarica.uwc.social>";
+
+function resendFrom() {
+  const configured = Deno.env.get("RESEND_FROM") ?? "";
+  if (configured.includes("@costarica.uwc.social")) return configured;
+  return RESEND_FROM;
 }
 
 function json(body: unknown, status = 200) {
@@ -100,7 +108,7 @@ async function sendLoginEmail(
 ): Promise<{ ok: boolean; error?: string }> {
   const resendKey = Deno.env.get("RESEND_API_KEY") ?? "";
   const fromConfigured = Boolean(Deno.env.get("RESEND_FROM"));
-  const from = Deno.env.get("RESEND_FROM") ?? "UWCCR Schedules <noreply@costarica.uwc.social>";
+  const from = resendFrom();
   log("email_start", {
     to: input.email,
     role: input.role,

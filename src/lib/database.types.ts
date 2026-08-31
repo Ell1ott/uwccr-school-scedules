@@ -489,6 +489,7 @@ export type Database = {
         Args: { p_decision: string; p_token: string }
         Returns: Json
       }
+      pending_events_for_token: { Args: { p_token: string }; Returns: Json }
       promote_waitlist: { Args: { p_event_id: string }; Returns: undefined }
       seed_event_responses: { Args: { p_event_id: string }; Returns: undefined }
       respond_invite: {

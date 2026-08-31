@@ -19,7 +19,7 @@ export function ModerateEventPage({ onDone }: { onDone: () => void }) {
   const [ok, setOk] = useState<boolean | null>(invalid ? false : null);
 
   useEffect(() => {
-    if (invalid || !decision) return;
+    if (invalid || (decision !== "allow" && decision !== "deny")) return;
     void moderateEventByToken(token, decision).then((result) => {
       setOk(result.ok);
       setMessage(result.message);
