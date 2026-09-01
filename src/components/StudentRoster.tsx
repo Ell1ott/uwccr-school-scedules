@@ -6,6 +6,7 @@ import { compareNames, matchesQuery } from "../lib/people";
 import { subjectSummary } from "../lib/teachers";
 import type { PersonKind, SelectedPerson, Student, Teacher } from "../types";
 import { FloatingTabs } from "./FloatingTabs";
+import { MobileHubButton } from "./MobileHub";
 
 const ROSTER_TABS = [
   { id: "student", label: "Students" },
@@ -41,12 +42,16 @@ export function StudentRoster({
   onSelect,
   onOpenLogin,
   onOpenFeedback,
+  hubOpen,
+  onOpenHub,
 }: {
   students: Student[];
   teachers: Teacher[];
   onSelect: (person: SelectedPerson) => void;
   onOpenLogin?: () => void;
   onOpenFeedback?: () => void;
+  hubOpen?: boolean;
+  onOpenHub?: () => void;
 }) {
   const [tab, setTab] = useState<PersonKind>("student");
   const [query, setQuery] = useState("");
@@ -86,14 +91,25 @@ export function StudentRoster({
 
   return (
     <div className="mx-auto max-w-6xl px-container-padding-mobile pt-safe pb-16 md:px-container-padding-desktop md:pt-0">
-      <div className="pt-8 pb-6 md:pt-10">
-        <p className="text-label-sm tracking-[0.14em] text-on-surface-variant uppercase">
-          IB1 & IB2 · {countLabel}
-        </p>
-        <h2 className="mt-1 text-headline-lg-mobile tracking-tight md:text-headline-lg">
-          Find yourself
-        </h2>
-        <p className="mt-2 max-w-lg text-body-md text-on-surface-variant">
+      <div className="flex items-start justify-between gap-3 pt-8 pb-6 md:pt-10">
+        <div className="min-w-0">
+          <p className="text-label-sm tracking-[0.14em] text-on-surface-variant uppercase">
+            IB1 & IB2 · {countLabel}
+          </p>
+          <h2 className="mt-1 text-headline-lg-mobile tracking-tight md:text-headline-lg">
+            Find yourself
+          </h2>
+        </div>
+        {onOpenHub ? (
+          <MobileHubButton
+            className="md:hidden"
+            expanded={hubOpen}
+            onClick={onOpenHub}
+          />
+        ) : null}
+      </div>
+      <div className="pb-6">
+        <p className="mt-0 max-w-lg text-body-md text-on-surface-variant">
           Names are A–Z. Tap a card
           <span className="md:hidden">, or search if you already know yours</span>
           <span className="hidden md:inline">

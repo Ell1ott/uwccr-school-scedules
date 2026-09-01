@@ -1,19 +1,11 @@
-import { EllipsisVertical } from "lucide-react";
-import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
+import { useLayoutEffect, useRef, type ReactNode } from "react";
 import { DAYS } from "../data/weekTemplate";
-import { track } from "../lib/analytics";
 import { formatTime, todayDayId } from "../lib/buildSchedule";
 import { formatDayDate, mondayOf } from "../lib/calendar";
 import { minutesOfDay } from "../lib/now";
-import type {
-  DayId,
-  ScheduleEvent,
-  SelectedPerson,
-  Student,
-  Teacher,
-} from "../types";
+import type { DayId, ScheduleEvent } from "../types";
 import { EventCard } from "./EventCard";
-import { ScheduleMenu } from "./ScheduleMenu";
+import { MobileHubButton } from "./MobileHub";
 
 const LINE_HALF_PX = 4;
 
@@ -22,39 +14,24 @@ export function DayTimeline({
   onDayChange,
   events,
   onClassClick,
-  students,
-  teachers,
-  selected,
   weekStart,
-  onSelect,
   onWeekChange,
   paused = false,
-  onOpenLogin,
-  onOpenAdmin,
-  onOpenChooser,
-  onOpenEvents,
-  onOpenFeedback,
+  hubOpen,
+  onOpenHub,
   banner,
 }: {
   dayId: DayId;
   onDayChange: (id: DayId) => void;
   events: ScheduleEvent[];
   onClassClick?: (event: ScheduleEvent) => void;
-  students: Student[];
-  teachers: Teacher[];
-  selected: SelectedPerson | null;
   weekStart: string;
-  onSelect: (person: SelectedPerson) => void;
   onWeekChange: (weekStart: string) => void;
   paused?: boolean;
-  onOpenLogin?: () => void;
-  onOpenAdmin?: () => void;
-  onOpenChooser?: () => void;
-  onOpenEvents?: () => void;
-  onOpenFeedback?: () => void;
+  hubOpen?: boolean;
+  onOpenHub?: () => void;
   banner?: ReactNode;
 }) {
-  const [menuOpen, setMenuOpen] = useState(false);
   const listRef = useRef<HTMLDivElement>(null);
   const lineRef = useRef<HTMLDivElement>(null);
   const now = new Date();
@@ -62,7 +39,7 @@ export function DayTimeline({
   const todayId = todayDayId(now);
 
   useLayoutEffect(() => {
-    if (paused || menuOpen) return;
+    if (paused) return;
     const list = listRef.current;
     const line = lineRef.current;
     if (!list || !line) return;
@@ -79,7 +56,7 @@ export function DayTimeline({
       cancelled = true;
       cancelAnimationFrame(frame);
     };
-  }, [dayId, events, paused, menuOpen, weekStart]);
+  }, [dayId, events, paused, weekStart]);
 
   const allDayEvents = events.filter((event) => event.allDay);
   const timedEvents = events.filter((event) => !event.allDay);
@@ -126,38 +103,29 @@ export function DayTimeline({
               );
             })}
           </div>
+          {onOpenHub ? (
+            <MobileHubButton
+              size="sm"
+              className="-mr-1.5"
+              expanded={hubOpen}
+              onClick={onOpenHub}
+            />
+          ) : null}
+        </div>
+        {isCurrentWeek ? null : (
           <button
             type="button"
-            className="-mr-1.5 flex size-9 items-center justify-center rounded-full text-on-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-            aria-label="Schedule options"
-            aria-haspopup="dialog"
-            aria-expanded={menuOpen}
+            className="mx-auto mt-3 flex h-8 items-center rounded-full bg-surface-container px-3 text-label-sm tracking-wide text-on-surface"
             onClick={() => {
-              setMenuOpen(true);
-              track("schedule_menu_opened");
+              onWeekChange(mondayOf(now));
+              if (todayId) onDayChange(todayId);
             }}
           >
-            <EllipsisVertical size={16} strokeWidth={1.75} aria-hidden />
+            This week
           </button>
-        </div>
+        )}
       </div>
       {banner ? <div className="pt-3">{banner}</div> : null}
-      {menuOpen ? (
-        <ScheduleMenu
-          students={students}
-          teachers={teachers}
-          selected={selected}
-          weekStart={weekStart}
-          onSelect={onSelect}
-          onWeekChange={onWeekChange}
-          onClose={() => setMenuOpen(false)}
-          onOpenLogin={onOpenLogin}
-          onOpenAdmin={onOpenAdmin}
-          onOpenChooser={onOpenChooser}
-          onOpenEvents={onOpenEvents}
-          onOpenFeedback={onOpenFeedback}
-        />
-      ) : null}
 
       <div className="mt-2 px-container-padding-mobile pb-16">
         <div ref={listRef} className="relative flex flex-col gap-3">

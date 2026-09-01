@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { track } from "../lib/analytics";
 import { useAuth } from "../lib/auth";
+import { errorMessage } from "../lib/errors";
 import { supabaseConfigured } from "../lib/supabase";
 import { StaffPage } from "./StaffPage";
 
@@ -44,11 +45,18 @@ export function TeacherLogin({
     setNotice(null);
     setBusy(true);
     track("login_attempted");
-    const message = await auth.signIn(email, password);
-    setBusy(false);
-    if (message) {
+    try {
+      const message = await auth.signIn(email, password);
+      if (message) {
+        track("login_failed", { error: message });
+        setError(message);
+      }
+    } catch (error) {
+      const message = errorMessage(error, "Sign in failed.");
       track("login_failed", { error: message });
       setError(message);
+    } finally {
+      setBusy(false);
     }
   }
 
@@ -61,10 +69,15 @@ export function TeacherLogin({
     }
     setBusy(true);
     track("password_reset_requested");
-    const message = await auth.resetPassword(email);
-    setBusy(false);
-    if (message) setError(message);
-    else setNotice("Check your email for a reset link.");
+    try {
+      const message = await auth.resetPassword(email);
+      if (message) setError(message);
+      else setNotice("Check your email for a reset link.");
+    } catch (error) {
+      setError(errorMessage(error, "Password reset failed."));
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function onUpdatePassword(event: FormEvent) {
@@ -75,10 +88,15 @@ export function TeacherLogin({
       return;
     }
     setBusy(true);
-    const message = await auth.updatePassword(nextPassword.trim());
-    setBusy(false);
-    if (message) setError(message);
-    else setNotice("Password updated. You are signed in.");
+    try {
+      const message = await auth.updatePassword(nextPassword.trim());
+      if (message) setError(message);
+      else setNotice("Password updated. You are signed in.");
+    } catch (error) {
+      setError(errorMessage(error, "Password update failed."));
+    } finally {
+      setBusy(false);
+    }
   }
 
   if (auth.recovery) {

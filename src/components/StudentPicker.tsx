@@ -27,6 +27,7 @@ export function StudentPicker({
   onSelect,
   inlineList,
   fieldClassName,
+  autoFocus,
 }: {
   students: Student[];
   teachers: Teacher[];
@@ -34,8 +35,9 @@ export function StudentPicker({
   onSelect: (person: SelectedPerson) => void;
   inlineList?: boolean;
   fieldClassName?: string;
+  autoFocus?: boolean;
 }) {
-  const [open, setOpen] = useState(false);
+  const [open, setOpen] = useState(() => Boolean(autoFocus));
   const [query, setQuery] = useState("");
   const [activeIndex, setActiveIndex] = useState(0);
   const wrapRef = useRef<HTMLDivElement>(null);
@@ -93,6 +95,7 @@ export function StudentPicker({
           aria-autocomplete="list"
           className="w-full bg-transparent text-[13px] leading-5 text-on-surface outline-none placeholder:text-on-surface-variant/70"
           placeholder={selectedName ? selectedName : "Search students & teachers"}
+          autoFocus={autoFocus}
           value={open ? query : selectedName && !open ? "" : query}
           onChange={(e) => {
             setQuery(e.target.value);

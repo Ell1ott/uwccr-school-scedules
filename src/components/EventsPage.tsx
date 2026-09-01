@@ -1,4 +1,4 @@
-import { CalendarPlus, EllipsisVertical, Sparkles } from "lucide-react";
+import { CalendarPlus, Sparkles } from "lucide-react";
 import { useMemo, useState } from "react";
 import { useAuth } from "../lib/auth";
 import {
@@ -10,12 +10,12 @@ import {
   type EventFilterId,
   type SchoolEvent,
 } from "../lib/schoolEvents";
-import type { SelectedPerson, Student, Teacher } from "../types";
+import type { Student } from "../types";
 import { EventForm } from "./EventForm";
 import { EventListCard } from "./EventListCard";
 import { EventsMonthCalendar } from "./EventsMonthCalendar";
 import { FloatingTabs } from "./FloatingTabs";
-import { ScheduleMenu } from "./ScheduleMenu";
+import { MobileHubButton } from "./MobileHub";
 
 function emptyCopy(
   filter: EventFilterId,
@@ -40,38 +40,25 @@ function emptyCopy(
 
 export function EventsPage({
   students,
-  teachers,
-  selected,
-  weekStart,
   events,
   draft,
   onDraftChange,
-  onSelect,
-  onWeekChange,
   onOpenLogin,
-  onOpenAdmin,
-  onOpenChooser,
   onOpenEvent,
-  onOpenFeedback,
+  hubOpen,
+  onOpenHub,
 }: {
   students: Student[];
-  teachers: Teacher[];
-  selected: SelectedPerson | null;
-  weekStart: string;
   events: SchoolEvent[];
   draft: "create" | SchoolEvent | null;
   onDraftChange: (draft: "create" | SchoolEvent | null) => void;
-  onSelect: (person: SelectedPerson) => void;
-  onWeekChange: (weekStart: string) => void;
   onOpenLogin?: () => void;
-  onOpenAdmin?: () => void;
-  onOpenChooser?: () => void;
   onOpenEvent: (event: SchoolEvent) => void;
-  onOpenFeedback?: () => void;
+  hubOpen?: boolean;
+  onOpenHub?: () => void;
 }) {
   const auth = useAuth();
   const [filter, setFilter] = useState<EventFilterId>("all");
-  const [menuOpen, setMenuOpen] = useState(false);
   const composing = draft;
   const filtered = useMemo(
     () => events.filter((event) => matchesEventFilter(event, filter)),
@@ -120,22 +107,6 @@ export function EventsPage({
 
   return (
     <div className="flex min-h-dvh flex-col md:min-h-[calc(100dvh-3rem-env(safe-area-inset-top,0px))]">
-      {menuOpen ? (
-        <ScheduleMenu
-          students={students}
-          teachers={teachers}
-          selected={selected}
-          weekStart={weekStart}
-          onSelect={onSelect}
-          onWeekChange={onWeekChange}
-          onClose={() => setMenuOpen(false)}
-          onOpenLogin={onOpenLogin}
-          onOpenAdmin={onOpenAdmin}
-          onOpenChooser={onOpenChooser}
-          onOpenFeedback={onOpenFeedback}
-        />
-      ) : null}
-
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row lg:items-start">
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="sticky top-0 z-40 bg-surface-container-lowest/80 px-container-padding-mobile pt-[calc(env(safe-area-inset-top,0px)+1rem)] pb-3 shadow-[0_4px_12px_rgba(0,0,0,0.02)] backdrop-blur-md md:static md:bg-transparent md:px-container-padding-desktop md:pt-8 md:shadow-none md:backdrop-blur-none">
@@ -157,14 +128,13 @@ export function EventsPage({
                     New
                   </button>
                 ) : null}
-                <button
-                  type="button"
-                  className="flex size-10 items-center justify-center rounded-full text-on-surface-variant md:hidden"
-                  aria-label="Schedule options"
-                  onClick={() => setMenuOpen(true)}
-                >
-                  <EllipsisVertical size={16} strokeWidth={1.75} />
-                </button>
+                {onOpenHub ? (
+                  <MobileHubButton
+                    className="md:hidden"
+                    expanded={hubOpen}
+                    onClick={onOpenHub}
+                  />
+                ) : null}
               </div>
             </div>
             {loggedOut ? null : (

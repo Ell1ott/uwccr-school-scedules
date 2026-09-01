@@ -8,17 +8,38 @@ export type ScheduleViewSource =
   | "class_detail"
   | "login";
 
+type CaptureOptions = {
+  send_instantly?: boolean;
+  skip_client_rate_limiting?: boolean;
+  transport?: "XHR" | "fetch" | "sendBeacon";
+};
+
 type PostHogClient = {
   init: (key: string, options: Record<string, unknown>) => void;
-  capture: (event: string, properties?: Record<string, unknown>) => void;
+  capture: (
+    event: string,
+    properties?: Record<string, unknown>,
+    options?: CaptureOptions,
+  ) => void;
   register: (properties: Record<string, unknown>) => void;
   unregister: (property: string) => void;
 };
 
 type Pending =
-  | { kind: "capture"; event: string; properties?: Record<string, unknown> }
+  | {
+      kind: "capture";
+      event: string;
+      properties?: Record<string, unknown>;
+      options?: CaptureOptions;
+    }
   | { kind: "register"; properties: Record<string, unknown> }
   | { kind: "unregister"; property: string };
+
+const AUTH_CAPTURE_OPTIONS: CaptureOptions = {
+  send_instantly: true,
+  skip_client_rate_limiting: true,
+  transport: "sendBeacon",
+};
 
 const MAX_PENDING = 80;
 
@@ -58,7 +79,7 @@ function deviceContext(): Record<string, string> {
 
 function apply(ph: PostHogClient, item: Pending): void {
   if (item.kind === "capture") {
-    ph.capture(item.event, item.properties);
+    ph.capture(item.event, item.properties, item.options);
     return;
   }
   if (item.kind === "register") {
@@ -142,6 +163,23 @@ export function track(
         event,
         properties: { ...deviceContext(), ...properties },
       });
+    });
+  } catch {
+    /* drop */
+  }
+}
+
+/** Fire immediately (no microtask) so auth success/failure is not lost. */
+export function trackNow(
+  event: string,
+  properties?: Record<string, unknown>,
+): void {
+  try {
+    enqueue({
+      kind: "capture",
+      event,
+      properties: { ...deviceContext(), ...properties },
+      options: AUTH_CAPTURE_OPTIONS,
     });
   } catch {
     /* drop */

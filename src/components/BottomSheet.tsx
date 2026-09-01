@@ -27,7 +27,7 @@ export function BottomSheet({
 
   return createPortal(
     <div
-      className={`fixed inset-0 z-[80] flex items-end justify-center ${className ?? ""}`}
+      className={`fixed inset-0 z-[90] flex items-end justify-center ${className ?? ""}`}
     >
       <button
         type="button"

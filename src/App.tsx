@@ -15,6 +15,7 @@ import { ClassDetailSheet } from "./components/ClassDetailSheet";
 import { EventDetailSheet } from "./components/EventDetailSheet";
 import { EventsPage } from "./components/EventsPage";
 import { FeedbackSheet } from "./components/FeedbackSheet";
+import { MobileHub } from "./components/MobileHub";
 import { ModerateEventPage } from "./components/ModerateEventPage";
 import { StudentRoster } from "./components/StudentRoster";
 import { DayTimeline } from "./components/DayTimeline";
@@ -142,6 +143,7 @@ function AppShell() {
   );
   const [openEvent, setOpenEvent] = useState<ScheduleEvent | null>(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  const [hubOpen, setHubOpen] = useState(false);
   const communityMeeting = weekHasCommunityMeeting(weekStart);
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
@@ -386,6 +388,11 @@ function AppShell() {
     setFeedbackOpen(true);
   }
 
+  function openHub() {
+    setHubOpen(true);
+    track("schedule_menu_opened");
+  }
+
   const canManageEvent = Boolean(
     openEvent &&
       auth.teacherId &&
@@ -448,27 +455,23 @@ function AppShell() {
                 currentStudent={student}
                 communityMeeting={communityMeeting}
                 onClose={() => chooseTab("week")}
+                hubOpen={hubOpen}
+                onOpenHub={openHub}
               />
             </div>
           ) : tab === "events" ? (
             <div id="events-panel" role="tabpanel" aria-labelledby="tab-events">
               <EventsPage
                 students={students}
-                teachers={teachers}
-                selected={selected}
-                weekStart={weekStart}
                 events={schoolEvents}
                 draft={eventDraft}
                 onDraftChange={onDraftChange}
-                onSelect={choosePerson}
-                onWeekChange={chooseWeek}
                 onOpenLogin={openLogin}
-                onOpenAdmin={openAdmin}
-                onOpenChooser={() => chooseTab("classes")}
                 onOpenEvent={(event) =>
                   navigate({ page: "events", eventId: event.id })
                 }
-                onOpenFeedback={openFeedback}
+                hubOpen={hubOpen}
+                onOpenHub={openHub}
               />
             </div>
           ) : (
@@ -480,6 +483,8 @@ function AppShell() {
                   onSelect={(person) => choosePerson(person, "roster")}
                   onOpenLogin={openLogin}
                   onOpenFeedback={openFeedback}
+                  hubOpen={hubOpen}
+                  onOpenHub={openHub}
                 />
               ) : (
                 <>
@@ -504,18 +509,13 @@ function AppShell() {
                       }}
                       events={week[dayId]}
                       onClassClick={openClass}
-                      students={students}
-                      teachers={teachers}
-                      selected={selected}
                       weekStart={weekStart}
-                      onSelect={choosePerson}
                       onWeekChange={chooseWeek}
-                      paused={Boolean(openEvent || openSchoolEvent || feedbackOpen)}
-                      onOpenLogin={openLogin}
-                      onOpenAdmin={openAdmin}
-                      onOpenChooser={() => chooseTab("classes")}
-                      onOpenEvents={() => chooseTab("events")}
-                      onOpenFeedback={openFeedback}
+                      paused={Boolean(
+                        openEvent || openSchoolEvent || feedbackOpen || hubOpen,
+                      )}
+                      hubOpen={hubOpen}
+                      onOpenHub={openHub}
                     />
                   </div>
                 </>
@@ -578,6 +578,36 @@ function AppShell() {
         ) : null}
         {feedbackOpen ? (
           <FeedbackSheet onClose={() => setFeedbackOpen(false)} />
+        ) : null}
+        {hubOpen ? (
+          <MobileHub
+            tab={tab}
+            students={students}
+            teachers={teachers}
+            selected={selected}
+            dayId={dayId}
+            weekStart={weekStart}
+            onSelect={(person) => {
+              choosePerson(person);
+              chooseTab("week");
+            }}
+            onWeekChange={chooseWeek}
+            onPickDay={(id) => {
+              if (id !== dayId) {
+                track("day_changed", {
+                  day_id: id,
+                  previous_day_id: dayId,
+                });
+              }
+              setDayId(id);
+              chooseTab("week");
+            }}
+            onTabChange={chooseTab}
+            onClose={() => setHubOpen(false)}
+            onOpenLogin={openLogin}
+            onOpenAdmin={openAdmin}
+            onOpenFeedback={openFeedback}
+          />
         ) : null}
       </div>
     </PaletteProvider>

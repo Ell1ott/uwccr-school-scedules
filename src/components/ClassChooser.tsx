@@ -29,6 +29,7 @@ import type {
   Student,
 } from "../types";
 import { FloatingTabs } from "./FloatingTabs";
+import { MobileHubButton } from "./MobileHub";
 
 function toneEvent(kind: "class" | "study", title: string): ScheduleEvent {
   return {
@@ -77,11 +78,15 @@ export function ClassChooser({
   currentStudent,
   communityMeeting = false,
   onClose,
+  hubOpen,
+  onOpenHub,
 }: {
   students: Student[];
   currentStudent?: Student;
   communityMeeting?: boolean;
   onClose: () => void;
+  hubOpen?: boolean;
+  onOpenHub?: () => void;
 }) {
   const { palette } = usePalette();
   const [cohort, setCohort] = useState<CohortId | null>(
@@ -109,7 +114,10 @@ export function ClassChooser({
     [communityMeeting],
   );
 
-  useEscape(onClose);
+  useEscape(() => {
+    if (hubOpen) return;
+    onClose();
+  });
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -174,14 +182,24 @@ export function ClassChooser({
           <p className="text-[13px] leading-5 text-on-surface-variant">
             Preview only. Nothing is saved to anyone's real schedule.
           </p>
-          <button
-            type="button"
-            className="ml-auto flex size-8 shrink-0 items-center justify-center rounded-full text-on-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 md:hidden"
-            aria-label="Close class chooser"
-            onClick={onClose}
-          >
-            <X size={18} strokeWidth={1.75} aria-hidden />
-          </button>
+          <div className="ml-auto flex shrink-0 items-center">
+            {onOpenHub ? (
+              <MobileHubButton
+                size="sm"
+                className="md:hidden"
+                expanded={hubOpen}
+                onClick={onOpenHub}
+              />
+            ) : null}
+            <button
+              type="button"
+              className="flex size-8 shrink-0 items-center justify-center rounded-full text-on-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 md:hidden"
+              aria-label="Close class chooser"
+              onClick={onClose}
+            >
+              <X size={18} strokeWidth={1.75} aria-hidden />
+            </button>
+          </div>
         </div>
       </div>
 

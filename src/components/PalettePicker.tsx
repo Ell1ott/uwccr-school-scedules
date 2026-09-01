@@ -91,12 +91,14 @@ export function PalettePicker({
   buttonClassName,
   listClassName,
   inlineList,
+  alwaysExpanded,
 }: {
   showLabel?: boolean;
   className?: string;
   buttonClassName?: string;
   listClassName?: string;
   inlineList?: boolean;
+  alwaysExpanded?: boolean;
 } = {}) {
   const { palette, setPalette } = usePalette();
   const [open, setOpen] = useState(false);
@@ -158,6 +160,15 @@ export function PalettePicker({
       })}
     </ul>
   );
+
+  if (alwaysExpanded) {
+    return (
+      <div className={`flex flex-col gap-2 ${className ?? ""}`}>
+        {paletteList}
+        <LessonIconsToggle variant="menu" />
+      </div>
+    );
+  }
 
   return (
     <div
