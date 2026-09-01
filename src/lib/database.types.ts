@@ -83,6 +83,45 @@ export type Database = {
           },
         ]
       }
+      email_ingest_log: {
+        Row: {
+          created_at: string
+          decision: string
+          event_ids: string[]
+          from_address: string
+          id: string
+          message_id: string | null
+          reason: string
+          resend_email_id: string
+          subject: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          decision: string
+          event_ids?: string[]
+          from_address?: string
+          id?: string
+          message_id?: string | null
+          reason?: string
+          resend_email_id: string
+          subject?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          decision?: string
+          event_ids?: string[]
+          from_address?: string
+          id?: string
+          message_id?: string | null
+          reason?: string
+          resend_email_id?: string
+          subject?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       event_audience: {
         Row: {
           event_id: string
@@ -464,6 +503,24 @@ export type Database = {
           p_all_day: boolean
           p_audience: string[]
           p_capacity: number | null
+          p_description: string
+          p_ends: string[]
+          p_freq?: string
+          p_location: string
+          p_mode: Database["public"]["Enums"]["event_mode"]
+          p_starts: string[]
+          p_targets: Json
+          p_title: string
+          p_until_date?: string
+        }
+        Returns: Json
+      }
+      create_pending_event_batch: {
+        Args: {
+          p_all_day: boolean
+          p_audience: string[]
+          p_capacity: number | null
+          p_created_by: string
           p_description: string
           p_ends: string[]
           p_freq?: string

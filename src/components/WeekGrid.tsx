@@ -1,6 +1,6 @@
 import { DAYS } from "../data/weekTemplate";
-import { formatTime, parseTime } from "../lib/buildSchedule";
-import { formatDayDate } from "../lib/calendar";
+import { formatTime, parseTime, todayDayId } from "../lib/buildSchedule";
+import { formatDayDate, mondayOf } from "../lib/calendar";
 import { isBandKind } from "../lib/tones";
 import type { DayId, ScheduleEvent } from "../types";
 import { EventCard } from "./EventCard";
@@ -151,6 +151,7 @@ export function WeekGrid({
   weekStart: string;
   onClassClick?: (event: ScheduleEvent) => void;
 }) {
+  const todayId = weekStart === mondayOf(new Date()) ? todayDayId() : null;
   return (
     <div className="px-container-padding-desktop pb-16">
       <div className={`sticky top-[calc(3rem+env(safe-area-inset-top,0px))] z-30 grid ${COLS} gap-x-4 bg-surface-container-lowest/90 py-3 backdrop-blur-md`}>
@@ -158,9 +159,23 @@ export function WeekGrid({
         {DAYS.map((day) => (
           <div
             key={day.id}
-            className="text-center text-label-sm tracking-[0.12em] text-on-surface-variant uppercase"
+            aria-current={day.id === todayId ? "date" : undefined}
+            className={`flex items-center justify-center gap-1.5 text-label-sm tracking-[0.12em] uppercase ${
+              day.id === todayId
+                ? "font-semibold text-primary"
+                : "text-on-surface-variant"
+            }`}
           >
-            {day.label} {formatDayDate(weekStart, day.id)}
+            {day.label}
+            <span
+              className={
+                day.id === todayId
+                  ? "flex size-6 items-center justify-center rounded-full bg-primary tracking-normal text-on-primary"
+                  : undefined
+              }
+            >
+              {formatDayDate(weekStart, day.id)}
+            </span>
           </div>
         ))}
       </div>

@@ -66,11 +66,9 @@ import {
   readStoredLessonIcons,
   readStoredPalette,
   readStoredPerson,
-  readStoredWeekStart,
   storeLessonIcons,
   storePalette,
   storePerson,
-  storeWeekStart,
 } from "./lib/storage";
 import { deriveTeachers, teacherIdForName } from "./lib/teachers";
 import type { PaletteId } from "./lib/tones";
@@ -140,7 +138,7 @@ function AppShell() {
     () => readStoredLessonIcons(),
   );
   const [weekStart, setWeekStart] = useState(() =>
-    clampWeekStart(readStoredWeekStart() ?? mondayOf(new Date())),
+    clampWeekStart(mondayOf(new Date())),
   );
   const [openEvent, setOpenEvent] = useState<ScheduleEvent | null>(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
@@ -213,7 +211,6 @@ function AppShell() {
       });
     }
     setWeekStart(clamped);
-    storeWeekStart(clamped);
     setOpenEvent(null);
   }
 

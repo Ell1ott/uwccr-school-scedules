@@ -9,3 +9,6 @@ verify_jwt = true
 [functions.send-feedback]
 verify_jwt = false
 
+[functions.ingest-resend-email]
+verify_jwt = false
+

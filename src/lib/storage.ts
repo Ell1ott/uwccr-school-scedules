@@ -5,7 +5,6 @@ const STORAGE_KEY = "uwccr-selected-student";
 const PERSON_KEY = "uwccr-selected-person";
 const PALETTE_KEY = "uwccr-color-palette";
 const LESSON_ICONS_KEY = "uwccr-lesson-icons";
-const WEEK_KEY = "uwccr-week-start";
 
 function parsePerson(value: string | null): SelectedPerson | null {
   if (!value) return null;
@@ -92,24 +91,6 @@ export function readStoredLessonIcons(): boolean {
 export function storeLessonIcons(on: boolean): void {
   try {
     localStorage.setItem(LESSON_ICONS_KEY, on ? "1" : "0");
-  } catch {
-    /* ignore quota / private mode */
-  }
-}
-
-export function readStoredWeekStart(): string | null {
-  try {
-    const value = localStorage.getItem(WEEK_KEY);
-    if (value && /^\d{4}-\d{2}-\d{2}$/.test(value)) return value;
-  } catch {
-    /* ignore */
-  }
-  return null;
-}
-
-export function storeWeekStart(weekStart: string): void {
-  try {
-    localStorage.setItem(WEEK_KEY, weekStart);
   } catch {
     /* ignore quota / private mode */
   }

@@ -65,6 +65,7 @@ export function DetailSheet({
   title,
   chip,
   banner,
+  headerActions,
   children,
 }: {
   labelledBy: string;
@@ -75,6 +76,7 @@ export function DetailSheet({
   title: ReactNode;
   chip?: string | null;
   banner?: ReactNode;
+  headerActions?: ReactNode;
   children: ReactNode;
 }) {
   return (
@@ -100,15 +102,18 @@ export function DetailSheet({
               <p className="text-label-sm tracking-[0.14em] text-current/70 uppercase">
                 {kicker}
               </p>
-              <button
-                ref={closeRef}
-                type="button"
-                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black/10 text-current hover:bg-black/16"
-                aria-label="Close"
-                onClick={onClose}
-              >
-                <X size={16} strokeWidth={1.75} aria-hidden />
-              </button>
+              <div className="flex shrink-0 items-center gap-1.5">
+                {headerActions}
+                <button
+                  ref={closeRef}
+                  type="button"
+                  className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black/10 text-current hover:bg-black/16"
+                  aria-label="Close"
+                  onClick={onClose}
+                >
+                  <X size={16} strokeWidth={1.75} aria-hidden />
+                </button>
+              </div>
             </div>
             <h2
               id={labelledBy}

@@ -1,10 +1,12 @@
-import { Calendar, MapPin, Users } from "lucide-react";
-import { useEffect, useId, useMemo, useState } from "react";
+import { Calendar, Check, MapPin, Share2, Users } from "lucide-react";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
 import { track } from "../lib/analytics";
 import { useAuth } from "../lib/auth";
 import { initials } from "../lib/classDetail";
+import { LinkifiedText } from "../lib/linkify";
 import { usePalette } from "../lib/palette";
 import { findById } from "../lib/people";
+import { toPath } from "../lib/route";
 import {
   cancelSchoolEvent,
   fetchEventResponses,
@@ -20,6 +22,16 @@ import {
 import { toneForEvent } from "../lib/tones";
 import type { Student } from "../types";
 import { DetailSheet, SheetFact } from "./BottomSheet";
+
+function eventShareUrl(eventId: string) {
+  return `${window.location.origin}${toPath({ page: "events", eventId })}`;
+}
+
+function eventShareText(event: SchoolEvent) {
+  return [formatEventWhen(event), event.location || null]
+    .filter(Boolean)
+    .join(" · ");
+}
 
 export function EventDetailSheet({
   event,
@@ -58,7 +70,9 @@ export function EventDetailSheet({
     (auth.role === "staff" || event.status === "pending");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
   const [responses, setResponses] = useState<EventResponseRow[] | null>(null);
+  const copiedTimer = useRef<number | null>(null);
 
   useEffect(() => {
     track("school_event_opened", { event_id: event.id, mode: event.mode });
@@ -88,6 +102,43 @@ export function EventDetailSheet({
     }
     return buckets;
   }, [responses]);
+
+  useEffect(() => {
+    return () => {
+      if (copiedTimer.current != null) window.clearTimeout(copiedTimer.current);
+    };
+  }, []);
+
+  async function shareEvent() {
+    const url = eventShareUrl(event.id);
+    const text = eventShareText(event);
+    const payload = { title: event.title, text, url };
+    track("school_event_shared", { event_id: event.id, mode: event.mode });
+
+    try {
+      if (typeof navigator.share === "function") {
+        const canShare =
+          typeof navigator.canShare !== "function" || navigator.canShare(payload);
+        if (canShare) {
+          await navigator.share(payload);
+          return;
+        }
+      }
+    } catch (err) {
+      if (err instanceof DOMException && err.name === "AbortError") return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(
+        [event.title, text, url].filter(Boolean).join("\n"),
+      );
+      setCopied(true);
+      if (copiedTimer.current != null) window.clearTimeout(copiedTimer.current);
+      copiedTimer.current = window.setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setError("Couldn't share this event. Copy the page link instead.");
+    }
+  }
 
   async function run(action: () => Promise<string | null>) {
     setBusy(true);
@@ -122,6 +173,20 @@ export function EventDetailSheet({
       }
       title={<span>{event.title}</span>}
       chip={rsvpLabel(event)}
+      headerActions={
+        <button
+          type="button"
+          className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-black/10 text-current hover:bg-black/16"
+          aria-label={copied ? "Link copied" : "Share event"}
+          onClick={() => void shareEvent()}
+        >
+          {copied ? (
+            <Check size={16} strokeWidth={1.75} aria-hidden />
+          ) : (
+            <Share2 size={16} strokeWidth={1.75} aria-hidden />
+          )}
+        </button>
+      }
     >
       <dl className="grid grid-cols-2 gap-3">
         <SheetFact
@@ -137,7 +202,10 @@ export function EventDetailSheet({
       </dl>
 
       {event.description ? (
-        <p className="mt-6 whitespace-pre-wrap text-body-md">{event.description}</p>
+        <LinkifiedText
+          text={event.description}
+          className="mt-6 whitespace-pre-wrap break-words text-body-md"
+        />
       ) : null}
 
       {capacityLine ? (
