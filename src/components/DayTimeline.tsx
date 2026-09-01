@@ -15,7 +15,6 @@ export function DayTimeline({
   events,
   onClassClick,
   weekStart,
-  onWeekChange,
   paused = false,
   hubOpen,
   onOpenHub,
@@ -26,7 +25,6 @@ export function DayTimeline({
   events: ScheduleEvent[];
   onClassClick?: (event: ScheduleEvent) => void;
   weekStart: string;
-  onWeekChange: (weekStart: string) => void;
   paused?: boolean;
   hubOpen?: boolean;
   onOpenHub?: () => void;

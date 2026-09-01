@@ -510,7 +510,6 @@ function AppShell() {
                       events={week[dayId]}
                       onClassClick={openClass}
                       weekStart={weekStart}
-                      onWeekChange={chooseWeek}
                       paused={Boolean(
                         openEvent || openSchoolEvent || feedbackOpen || hubOpen,
                       )}
