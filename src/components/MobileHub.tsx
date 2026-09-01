@@ -23,7 +23,6 @@ import {
 import { initials } from "../lib/classDetail";
 import { selectedStudent, selectedTeacher } from "../lib/people";
 import { usePalette } from "../lib/palette";
-import { BLOCK_LETTERS } from "../lib/school";
 import { subjectSummary } from "../lib/teachers";
 import { PALETTE_OPTIONS } from "../lib/tones";
 import type { DayId, SelectedPerson, Student, Teacher } from "../types";
@@ -303,16 +302,7 @@ export function MobileHub({
                 ariaLabel="Try classes"
                 onClick={() => goTab("classes")}
               >
-                <span className="flex gap-0.5" aria-hidden>
-                  {BLOCK_LETTERS.slice(0, 4).map((block) => (
-                    <span
-                      key={block}
-                      className="flex size-4 items-center justify-center rounded-[4px] bg-secondary-container text-[8px] font-semibold text-on-secondary-container"
-                    >
-                      {block}
-                    </span>
-                  ))}
-                </span>
+                <Shuffle size={18} strokeWidth={1.75} aria-hidden />
               </DestinationTile>
             </section>
 
@@ -349,11 +339,7 @@ export function MobileHub({
               </button>
               {inspectMore ? (
                 <div className="flex flex-col gap-2 px-3 pb-3">
-                  <PalettePicker
-                    alwaysExpanded
-                    className="w-full"
-                    listClassName="rounded-2xl bg-surface-container py-1"
-                  />
+                  <PalettePicker alwaysExpanded className="w-full" />
                   {onOpenFeedback ? (
                     <button
                       type="button"

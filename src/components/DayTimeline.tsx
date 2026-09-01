@@ -112,18 +112,6 @@ export function DayTimeline({
             />
           ) : null}
         </div>
-        {isCurrentWeek ? null : (
-          <button
-            type="button"
-            className="mx-auto mt-3 flex h-8 items-center rounded-full bg-surface-container px-3 text-label-sm tracking-wide text-on-surface"
-            onClick={() => {
-              onWeekChange(mondayOf(now));
-              if (todayId) onDayChange(todayId);
-            }}
-          >
-            This week
-          </button>
-        )}
       </div>
       {banner ? <div className="pt-3">{banner}</div> : null}
 

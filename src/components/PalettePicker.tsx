@@ -106,7 +106,13 @@ export function PalettePicker({
   const listId = useId();
   const current = PALETTE_OPTIONS.find((option) => option.id === palette);
 
-  useDismissible(wrapRef, () => setOpen(false), { escape: true });
+  useDismissible(
+    wrapRef,
+    () => {
+      if (!alwaysExpanded) setOpen(false);
+    },
+    { escape: !alwaysExpanded },
+  );
 
   const paletteList = (
     <ul
@@ -163,9 +169,51 @@ export function PalettePicker({
 
   if (alwaysExpanded) {
     return (
-      <div className={`flex flex-col gap-2 ${className ?? ""}`}>
-        {paletteList}
+      <div
+        ref={wrapRef}
+        className={`flex flex-col gap-2 ${className ?? ""}`}
+      >
         <LessonIconsToggle variant="menu" />
+        <div
+          role="listbox"
+          aria-label="Color palette"
+          className="grid grid-cols-3 gap-1.5"
+        >
+          {PALETTE_OPTIONS.map((option) => {
+            const selected = option.id === palette;
+            return (
+              <button
+                key={option.id}
+                type="button"
+                role="option"
+                aria-selected={selected}
+                className={`flex flex-col items-center gap-1.5 rounded-2xl px-1.5 py-2.5 text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 ${
+                  selected
+                    ? "bg-secondary-container text-on-secondary-container"
+                    : "bg-surface-container text-on-surface"
+                }`}
+                onClick={() => setPalette(option.id)}
+              >
+                <span className="flex -space-x-1">
+                  {option.swatches.slice(0, 3).map((swatch) => (
+                    <Swatch
+                      key={swatch}
+                      swatch={swatch}
+                      ring={
+                        selected
+                          ? "ring-secondary-container"
+                          : "ring-surface-container"
+                      }
+                    />
+                  ))}
+                </span>
+                <span className="text-[11px] font-medium tracking-wide">
+                  {option.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
       </div>
     );
   }
