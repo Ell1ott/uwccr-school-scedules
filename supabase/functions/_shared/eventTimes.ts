@@ -21,9 +21,17 @@ export function occurrenceStamps(
   allDay: boolean,
   freq: "none" | "daily" | "weekly",
   untilDate: string,
+  endDate = date,
 ): { starts: string[]; ends: string[] } {
   const start = allDay ? "00:00" : startTime;
   const end = allDay ? "23:59" : endTime;
+  const spanDays = Math.max(
+    0,
+    Math.round(
+      (parseISODate(endDate).getTime() - parseISODate(date).getTime()) /
+        86_400_000,
+    ),
+  );
   const step = freq === "daily" ? 1 : 7;
   const last = parseISODate(freq === "none" ? date : untilDate);
   const cursor = parseISODate(date);
@@ -33,7 +41,9 @@ export function occurrenceStamps(
   while (cursor.getTime() <= last.getTime() && n < 120) {
     const day = toISODate(cursor);
     starts.push(localToIso(day, start));
-    ends.push(localToIso(day, end));
+    const occurrenceEnd = parseISODate(day);
+    occurrenceEnd.setDate(occurrenceEnd.getDate() + spanDays);
+    ends.push(localToIso(toISODate(occurrenceEnd), end));
     if (freq === "none") break;
     cursor.setDate(cursor.getDate() + step);
     n += 1;

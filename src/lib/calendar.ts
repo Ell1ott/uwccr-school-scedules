@@ -36,6 +36,26 @@ export function toISODate(value: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+export function addDays(date: string, days: number): string {
+  const next = parseISODate(date);
+  next.setDate(next.getDate() + days);
+  return toISODate(next);
+}
+
+export function datesBetween(start: string, end: string): string[] {
+  if (end < start) return [];
+  const dates: string[] = [];
+  const cursor = parseISODate(start);
+  const last = parseISODate(end);
+  let n = 0;
+  while (cursor.getTime() <= last.getTime() && n < 400) {
+    dates.push(toISODate(cursor));
+    cursor.setDate(cursor.getDate() + 1);
+    n += 1;
+  }
+  return dates;
+}
+
 export function mondayOf(value: Date): string {
   const copy = new Date(value.getFullYear(), value.getMonth(), value.getDate());
   const jsDay = copy.getDay();

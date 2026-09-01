@@ -10,7 +10,7 @@ import type {
   Student,
 } from "../types";
 import { DAYS } from "../data/weekTemplate";
-import { dateForDay, parseISODate, toISODate } from "./calendar";
+import { addDays, dateForDay, datesBetween, parseISODate, toISODate } from "./calendar";
 import { offeringKey } from "./classCatalog";
 import { parseTime } from "./buildSchedule";
 import { SUPABASE_ANON_KEY, functionsUrl, supabase } from "./supabase";
@@ -127,9 +127,17 @@ export function occurrenceStamps(
   allDay: boolean,
   freq: "none" | "daily" | "weekly",
   untilDate: string,
+  endDate = date,
 ): { starts: string[]; ends: string[] } {
   const start = allDay ? "00:00" : startTime;
   const end = allDay ? "23:59" : endTime;
+  const spanDays = Math.max(
+    0,
+    Math.round(
+      (parseISODate(endDate).getTime() - parseISODate(date).getTime()) /
+        86_400_000,
+    ),
+  );
   const step = freq === "daily" ? 1 : 7;
   const last = parseISODate(freq === "none" ? date : untilDate);
   const cursor = parseISODate(date);
@@ -139,12 +147,58 @@ export function occurrenceStamps(
   while (cursor.getTime() <= last.getTime() && n < 120) {
     const day = toISODate(cursor);
     starts.push(localToIso(day, start));
-    ends.push(localToIso(day, end));
+    const occurrenceEnd = parseISODate(day);
+    occurrenceEnd.setDate(occurrenceEnd.getDate() + spanDays);
+    ends.push(localToIso(toISODate(occurrenceEnd), end));
     if (freq === "none") break;
     cursor.setDate(cursor.getDate() + step);
     n += 1;
   }
   return { starts, ends };
+}
+
+export function eventStartDate(event: SchoolEvent): string {
+  return crDate(event.startsAt);
+}
+
+export function eventEndDate(event: SchoolEvent): string {
+  return crDate(event.endsAt);
+}
+
+export function isMultiDayEvent(event: SchoolEvent): boolean {
+  return eventStartDate(event) !== eventEndDate(event);
+}
+
+export function eventCoversDate(event: SchoolEvent, date: string): boolean {
+  return eventStartDate(event) <= date && date <= eventEndDate(event);
+}
+
+export function eventDates(event: SchoolEvent): string[] {
+  return datesBetween(eventStartDate(event), eventEndDate(event));
+}
+
+export function eventDaySlice(
+  event: SchoolEvent,
+  date: string,
+): { start: string; end: string; allDay: boolean } | null {
+  if (!eventCoversDate(event, date)) return null;
+  const startDate = eventStartDate(event);
+  const endDate = eventEndDate(event);
+  if (event.allDay) return { start: "07:30", end: "21:00", allDay: true };
+  if (startDate === endDate) {
+    return {
+      start: crTime(event.startsAt),
+      end: crTime(event.endsAt),
+      allDay: false,
+    };
+  }
+  if (date === startDate) {
+    return { start: crTime(event.startsAt), end: "21:00", allDay: false };
+  }
+  if (date === endDate) {
+    return { start: "07:30", end: crTime(event.endsAt), allDay: false };
+  }
+  return { start: "07:30", end: "21:00", allDay: true };
 }
 
 export function expandAudience(
@@ -180,24 +234,33 @@ export function expandAudience(
   return [...ids];
 }
 
-export function formatEventWhen(event: SchoolEvent): string {
-  const date = formatInZone(event.startsAt, {
+function formatWhenDate(iso: string): string {
+  return formatInZone(iso, {
     weekday: "short",
     month: "short",
     day: "numeric",
   });
-  if (event.allDay) return `${date} · all day`;
-  const start = formatInZone(event.startsAt, {
+}
+
+function formatWhenClock(iso: string): string {
+  return formatInZone(iso, {
     hour: "numeric",
     minute: "2-digit",
     hour12: true,
   }).toLowerCase();
-  const end = formatInZone(event.endsAt, {
-    hour: "numeric",
-    minute: "2-digit",
-    hour12: true,
-  }).toLowerCase();
-  return `${date} · ${start} – ${end}`;
+}
+
+export function formatEventWhen(event: SchoolEvent): string {
+  const startDate = formatWhenDate(event.startsAt);
+  const endDate = formatWhenDate(event.endsAt);
+  if (event.allDay) {
+    if (!isMultiDayEvent(event)) return `${startDate} · all day`;
+    return `${startDate} – ${endDate} · all day`;
+  }
+  const start = formatWhenClock(event.startsAt);
+  const end = formatWhenClock(event.endsAt);
+  if (!isMultiDayEvent(event)) return `${startDate} · ${start} – ${end}`;
+  return `${startDate}, ${start} – ${endDate}, ${end}`;
 }
 
 export function formatEventDayHeading(iso: string): string {
@@ -215,12 +278,6 @@ function formatListClock(iso: string): string {
     minute: "2-digit",
     hour12: true,
   }).format(new Date(iso));
-}
-
-function addDays(date: string, days: number): string {
-  const next = parseISODate(date);
-  next.setDate(next.getDate() + days);
-  return toISODate(next);
 }
 
 export function formatEventListParts(iso: string): {
@@ -250,19 +307,33 @@ export function formatEventListHeading(iso: string): string {
   return `${dateLabel} ${weekdayLabel}`;
 }
 
-export function formatEventListTime(event: SchoolEvent): string {
-  if (event.allDay) return "All Day";
-  const start = formatListClock(event.startsAt);
-  const end = formatListClock(event.endsAt);
-  if (crDate(event.startsAt) === crDate(event.endsAt)) {
-    return `${start} · ${end}`;
-  }
-  const endDay = new Intl.DateTimeFormat("en-US", {
+function formatMonthDay(iso: string): string {
+  return new Intl.DateTimeFormat("en-US", {
     timeZone: SCHOOL_TZ,
     month: "short",
     day: "numeric",
-  }).format(new Date(event.endsAt));
-  return `${start} · ${endDay}, ${end}`;
+  }).format(new Date(iso));
+}
+
+export function formatInclusiveDateRange(startIso: string, endIso: string): string {
+  const start = formatMonthDay(startIso);
+  const end = formatMonthDay(endIso);
+  const startMonth = start.replace(/ \d+$/, "");
+  const endMonth = end.replace(/ \d+$/, "");
+  const endDay = end.match(/\d+$/)?.[0];
+  if (startMonth === endMonth && endDay) return `${start} – ${endDay}`;
+  return `${start} – ${end}`;
+}
+
+export function formatEventListTime(event: SchoolEvent): string {
+  if (event.allDay) {
+    if (!isMultiDayEvent(event)) return "All Day";
+    return formatInclusiveDateRange(event.startsAt, event.endsAt);
+  }
+  const start = formatListClock(event.startsAt);
+  const end = formatListClock(event.endsAt);
+  if (!isMultiDayEvent(event)) return `${start} · ${end}`;
+  return `${start} · ${formatMonthDay(event.endsAt)}, ${end}`;
 }
 
 export function formatMonthChipTime(iso: string): string {
@@ -372,7 +443,7 @@ export async function fetchSchoolEvents(
     .select(
       "id, series_id, created_by, title, description, location, starts_at, ends_at, all_day, mode, capacity, status, going_count, waitlisted_count, moderation_token",
     )
-    .gte("starts_at", since)
+    .gte("ends_at", since)
     .order("starts_at");
   if (error || !eventRows) return [];
 
@@ -662,31 +733,43 @@ export function applySchoolEvents(
     next[day.id] = [...week[day.id]];
   }
   for (const event of events) {
-    const date = crDate(event.startsAt);
-    const day = DAYS.find((item) => dateForDay(weekStart, item.id) === date);
-    if (!day) continue;
-    const start = event.allDay ? "07:30" : crTime(event.startsAt);
-    const end = event.allDay ? "21:00" : crTime(event.endsAt);
-    next[day.id].push({
-      id: `school-${event.id}`,
-      start,
-      end,
-      startMin: parseTime(start),
-      endMin: parseTime(end),
-      kind: "school_event",
-      title: event.title,
-      subtitle: event.location || rsvpLabel(event),
-      room: event.location || undefined,
-      level: rsvpLabel(event),
-      date,
-      cancelled: event.status === "cancelled" || event.status === "rejected",
-      icon: "sparkles",
-      schoolEventId: event.id,
-      eventMode: event.mode,
-      rsvpStatus: event.myStatus,
-      goingCount: event.goingCount,
-      capacity: event.capacity,
-    });
+    const startDate = eventStartDate(event);
+    const endDate = eventEndDate(event);
+    const multiDay = startDate !== endDate;
+    for (const day of DAYS) {
+      const date = dateForDay(weekStart, day.id);
+      const slice = eventDaySlice(event, date);
+      if (!slice) continue;
+      const spanHint = multiDay
+        ? formatInclusiveDateRange(event.startsAt, event.endsAt)
+        : null;
+      next[day.id].push({
+        id: `school-${event.id}-${date}`,
+        start: slice.start,
+        end: slice.end,
+        startMin: parseTime(slice.start),
+        endMin: parseTime(slice.end),
+        kind: "school_event",
+        title: event.title,
+        subtitle:
+          [event.location || null, spanHint].filter(Boolean).join(" · ") ||
+          rsvpLabel(event),
+        room: event.location || undefined,
+        level: rsvpLabel(event),
+        date,
+        cancelled: event.status === "cancelled" || event.status === "rejected",
+        icon: "sparkles",
+        schoolEventId: event.id,
+        eventMode: event.mode,
+        rsvpStatus: event.myStatus,
+        goingCount: event.goingCount,
+        capacity: event.capacity,
+        allDay: slice.allDay,
+        multiDay,
+        spanStartDate: startDate,
+        spanEndDate: endDate,
+      });
+    }
   }
   for (const day of DAYS) {
     next[day.id].sort(

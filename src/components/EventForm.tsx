@@ -13,7 +13,7 @@ import {
   type SchoolEvent,
   updateSchoolEvent,
 } from "../lib/schoolEvents";
-import { toISODate } from "../lib/calendar";
+import { datesBetween, toISODate } from "../lib/calendar";
 import { AudiencePicker } from "./AudiencePicker";
 
 const MODES: { id: EventMode; label: string; hint: string }[] = [
@@ -46,6 +46,9 @@ export function EventForm({
   const [date, setDate] = useState(() =>
     editing ? crDate(editing.startsAt) : todayStamp(),
   );
+  const [endDate, setEndDate] = useState(() =>
+    editing ? crDate(editing.endsAt) : todayStamp(),
+  );
   const [startTime, setStartTime] = useState(
     editing && !editing.allDay ? crTime(editing.startsAt) : "18:30",
   );
@@ -77,7 +80,11 @@ export function EventForm({
       setError("Give the event a title.");
       return;
     }
-    if (!allDay && endTime <= startTime) {
+    if (endDate < date) {
+      setError("The last day needs to be on or after the first.");
+      return;
+    }
+    if (!allDay && endDate === date && endTime <= startTime) {
       setError("End time needs to be after the start.");
       return;
     }
@@ -88,7 +95,7 @@ export function EventForm({
         description: description.trim(),
         location: location.trim(),
         startsAt: localToIso(date, allDay ? "00:00" : startTime),
-        endsAt: localToIso(date, allDay ? "23:59" : endTime),
+        endsAt: localToIso(endDate, allDay ? "23:59" : endTime),
         allDay,
       });
       setBusy(false);
@@ -108,6 +115,7 @@ export function EventForm({
       allDay,
       freq,
       untilDate,
+      endDate,
     );
     if (stamps.starts.length === 0) {
       setBusy(false);
@@ -208,39 +216,64 @@ export function EventForm({
         />
         All day
       </label>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
         <label className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
-          Date
+          From
           <input
             type="date"
             value={date}
-            onChange={(event) => setDate(event.target.value)}
+            onChange={(event) => {
+              const next = event.target.value;
+              const nextEnd = endDate < next || endDate === date ? next : endDate;
+              setDate(next);
+              setEndDate(nextEnd);
+              if (nextEnd > next && freq === "daily") setFreq("none");
+            }}
             className="mt-2 h-12 w-full rounded-2xl bg-surface-container px-3 text-body-md outline-none"
           />
         </label>
-        {allDay ? null : (
-          <>
-            <label className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
-              Starts
-              <input
-                type="time"
-                value={startTime}
-                onChange={(event) => setStartTime(event.target.value)}
-                className="mt-2 h-12 w-full rounded-2xl bg-surface-container px-3 text-body-md outline-none"
-              />
-            </label>
-            <label className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
-              Ends
-              <input
-                type="time"
-                value={endTime}
-                onChange={(event) => setEndTime(event.target.value)}
-                className="mt-2 h-12 w-full rounded-2xl bg-surface-container px-3 text-body-md outline-none"
-              />
-            </label>
-          </>
-        )}
+        <label className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
+          Until
+          <input
+            type="date"
+            value={endDate}
+            min={date}
+            onChange={(event) => {
+              const next = event.target.value;
+              setEndDate(next);
+              if (next > date && freq === "daily") setFreq("none");
+            }}
+            className="mt-2 h-12 w-full rounded-2xl bg-surface-container px-3 text-body-md outline-none"
+          />
+        </label>
       </div>
+      {allDay ? null : (
+        <div className="grid grid-cols-2 gap-3">
+          <label className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
+            Starts
+            <input
+              type="time"
+              value={startTime}
+              onChange={(event) => setStartTime(event.target.value)}
+              className="mt-2 h-12 w-full rounded-2xl bg-surface-container px-3 text-body-md outline-none"
+            />
+          </label>
+          <label className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
+            Ends
+            <input
+              type="time"
+              value={endTime}
+              onChange={(event) => setEndTime(event.target.value)}
+              className="mt-2 h-12 w-full rounded-2xl bg-surface-container px-3 text-body-md outline-none"
+            />
+          </label>
+        </div>
+      )}
+      {endDate > date ? (
+        <p className="text-body-md text-on-surface-variant">
+          Stretches {datesBetween(date, endDate).length} days.
+        </p>
+      ) : null}
 
       {editing ? null : (
         <>
@@ -249,7 +282,11 @@ export function EventForm({
               Repeat
             </p>
             <div className="mt-2 flex flex-wrap gap-2">
-              {(["none", "weekly", "daily"] as const).map((id) => (
+              {(
+                endDate > date
+                  ? (["none", "weekly"] as const)
+                  : (["none", "weekly", "daily"] as const)
+              ).map((id) => (
                 <button
                   key={id}
                   type="button"

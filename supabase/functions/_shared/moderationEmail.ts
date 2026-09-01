@@ -29,12 +29,21 @@ function formatStamp(iso: string, options: Intl.DateTimeFormatOptions) {
 }
 
 function formatWhen(event: ModerationEventRow) {
-  const date = formatStamp(event.starts_at, {
+  const startDate = formatStamp(event.starts_at, {
     weekday: "short",
     month: "short",
     day: "numeric",
   });
-  if (event.all_day) return `${date} · all day`;
+  const endDate = formatStamp(event.ends_at, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+  const sameDay = startDate === endDate;
+  if (event.all_day) {
+    if (sameDay) return `${startDate} · all day`;
+    return `${startDate} – ${endDate} · all day`;
+  }
   const start = formatStamp(event.starts_at, {
     hour: "numeric",
     minute: "2-digit",
@@ -45,7 +54,8 @@ function formatWhen(event: ModerationEventRow) {
     minute: "2-digit",
     hour12: true,
   }).toLowerCase();
-  return `${date} · ${start} – ${end}`;
+  if (sameDay) return `${startDate} · ${start} – ${end}`;
+  return `${startDate}, ${start} – ${endDate}, ${end}`;
 }
 
 function escapeHtml(value: string) {

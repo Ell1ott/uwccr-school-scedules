@@ -81,6 +81,9 @@ export function DayTimeline({
     };
   }, [dayId, events, paused, menuOpen, weekStart]);
 
+  const allDayEvents = events.filter((event) => event.allDay);
+  const timedEvents = events.filter((event) => !event.allDay);
+
   return (
     <div className="flex flex-col">
       <div className="sticky top-0 z-40 bg-surface-container-lowest/80 px-container-padding-mobile pt-[calc(env(safe-area-inset-top,0px)+1rem)] pb-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)] backdrop-blur-md">
@@ -158,7 +161,22 @@ export function DayTimeline({
 
       <div className="mt-2 px-container-padding-mobile pb-16">
         <div ref={listRef} className="relative flex flex-col gap-3">
-          {events.map((event) => (
+          {allDayEvents.length > 0 ? (
+            <div className="mb-1 flex flex-col gap-1.5">
+              {allDayEvents.map((event) => (
+                <EventCard
+                  key={event.id}
+                  event={event}
+                  dayId={dayId}
+                  weekStart={weekStart}
+                  compact
+                  fill
+                  onOpen={onClassClick}
+                />
+              ))}
+            </div>
+          ) : null}
+          {timedEvents.map((event) => (
             <div
               key={event.id}
               data-start={event.startMin}

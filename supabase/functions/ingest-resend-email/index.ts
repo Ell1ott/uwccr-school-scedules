@@ -35,6 +35,7 @@ type ExtractedEvent = {
   description: string;
   location: string;
   date: string | null;
+  end_date: string | null;
   start_time: string | null;
   end_time: string | null;
   all_day: boolean;
@@ -68,6 +69,7 @@ const EVENT_SCHEMA = {
     description: { type: "string" },
     location: { type: "string" },
     date: { type: ["string", "null"] },
+    end_date: { type: ["string", "null"] },
     start_time: { type: ["string", "null"] },
     end_time: { type: ["string", "null"] },
     all_day: { type: "boolean" },
@@ -102,6 +104,7 @@ const EVENT_SCHEMA = {
     "description",
     "location",
     "date",
+    "end_date",
     "start_time",
     "end_time",
     "all_day",
@@ -291,7 +294,7 @@ async function extractEvent(input: {
           content:
             "You extract school calendar events from emails for UWC Costa Rica. Timezone is America/Costa_Rica. Today is " +
             today +
-            ". Set is_event false for newsletters, reminders without a new dated gathering, personal mail, spam, replies that are not announcing an event, and anything without a usable date. Dates must be YYYY-MM-DD. Times must be 24-hour HH:MM. If times are missing, all_day true. If audience is unclear, targets=[{kind:all_students,cohort:null,student_query:null}]. If participation is unclear, mode=info. Do not invent a date.",
+            ". Set is_event false for newsletters, reminders without a new dated gathering, personal mail, spam, replies that are not announcing an event, and anything without a usable date. Dates must be YYYY-MM-DD. Times must be 24-hour HH:MM. If times are missing, all_day true. If the gathering lasts more than one day, set end_date to the last inclusive day; otherwise end_date equals date. If audience is unclear, targets=[{kind:all_students,cohort:null,student_query:null}]. If participation is unclear, mode=info. Do not invent a date.",
         },
         {
           role: "user",
@@ -516,13 +519,17 @@ Deno.serve(async (req) => {
       return json({ ok: true, skipped: "no usable date" });
     }
 
+    const endDate =
+      isDate(extracted.end_date) && extracted.end_date >= extracted.date
+        ? extracted.end_date
+        : extracted.date;
     const allDay =
       extracted.all_day ||
       !isClock(extracted.start_time) ||
       !isClock(extracted.end_time);
     const startTime = allDay ? "00:00" : extracted.start_time!;
     const endTime = allDay ? "23:59" : extracted.end_time!;
-    if (!allDay && endTime <= startTime) {
+    if (!allDay && endDate === extracted.date && endTime <= startTime) {
       await updateLog(admin, emailId, {
         decision: "skipped",
         reason: "end time is not after start",
@@ -547,6 +554,7 @@ Deno.serve(async (req) => {
       allDay,
       freq,
       untilDate,
+      endDate,
     );
     if (stamps.starts.length === 0) {
       await updateLog(admin, emailId, {

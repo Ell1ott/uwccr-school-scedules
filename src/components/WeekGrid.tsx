@@ -1,7 +1,9 @@
 import { DAYS } from "../data/weekTemplate";
 import { formatTime, parseTime, todayDayId } from "../lib/buildSchedule";
-import { formatDayDate, mondayOf } from "../lib/calendar";
-import { isBandKind } from "../lib/tones";
+import { dateForDay, formatDayDate, mondayOf } from "../lib/calendar";
+import { EventIcon } from "../lib/icons";
+import { usePalette } from "../lib/palette";
+import { isBandKind, toneForEvent } from "../lib/tones";
 import type { DayId, ScheduleEvent } from "../types";
 import { EventCard } from "./EventCard";
 
@@ -31,6 +33,93 @@ function eventAt(
       event.startMin < slotEnd &&
       event.endMin > slotStart,
   );
+}
+
+type DaySpan = {
+  event: ScheduleEvent;
+  start: number;
+  end: number;
+  continuesLeft: boolean;
+  continuesRight: boolean;
+};
+
+function isAllDayLaneEvent(event: ScheduleEvent, weekStart: string): boolean {
+  if (event.kind !== "school_event") return false;
+  if (event.allDay) return true;
+  if (!event.multiDay) return false;
+  const start = event.spanStartDate ?? event.date ?? "";
+  const end = event.spanEndDate ?? event.date ?? "";
+  const covered = DAYS.filter((day) => {
+    const date = dateForDay(weekStart, day.id);
+    return date >= start && date <= end;
+  });
+  return covered.length >= 2;
+}
+
+function timedWeek(
+  week: Record<DayId, ScheduleEvent[]>,
+  weekStart: string,
+): Record<DayId, ScheduleEvent[]> {
+  const next = {} as Record<DayId, ScheduleEvent[]>;
+  for (const day of DAYS) {
+    next[day.id] = week[day.id].filter(
+      (event) => !isAllDayLaneEvent(event, weekStart),
+    );
+  }
+  return next;
+}
+
+function allDaySpans(
+  week: Record<DayId, ScheduleEvent[]>,
+  weekStart: string,
+): DaySpan[] {
+  const seen = new Set<string>();
+  const spans: DaySpan[] = [];
+  const weekStartDate = dateForDay(weekStart, "mon");
+  const weekEndDate = dateForDay(weekStart, "fri");
+  for (const day of DAYS) {
+    for (const event of week[day.id]) {
+      if (!isAllDayLaneEvent(event, weekStart)) continue;
+      const key = event.schoolEventId ?? event.id;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      const startDate = event.spanStartDate ?? event.date ?? dateForDay(weekStart, day.id);
+      const endDate = event.spanEndDate ?? event.date ?? startDate;
+      let start = -1;
+      let end = -1;
+      DAYS.forEach((item, index) => {
+        const date = dateForDay(weekStart, item.id);
+        if (date >= startDate && date <= endDate) {
+          if (start === -1) start = index;
+          end = index;
+        }
+      });
+      if (start === -1) continue;
+      spans.push({
+        event,
+        start,
+        end,
+        continuesLeft: startDate < weekStartDate,
+        continuesRight: endDate > weekEndDate,
+      });
+    }
+  }
+  return spans;
+}
+
+function packSpans(spans: DaySpan[]): DaySpan[][] {
+  const lanes: DaySpan[][] = [];
+  const sorted = [...spans].sort(
+    (a, b) => a.start - b.start || b.end - a.end,
+  );
+  for (const span of sorted) {
+    const lane = lanes.find((items) =>
+      items.every((other) => other.end < span.start || span.end < other.start),
+    );
+    if (lane) lane.push(span);
+    else lanes.push([span]);
+  }
+  return lanes;
 }
 
 function afternoonEvents(events: ScheduleEvent[]): ScheduleEvent[] {
@@ -142,6 +231,66 @@ function Slot({
   );
 }
 
+function AllDayLane({
+  week,
+  weekStart,
+  onClassClick,
+}: {
+  week: Record<DayId, ScheduleEvent[]>;
+  weekStart: string;
+  onClassClick?: (event: ScheduleEvent) => void;
+}) {
+  const { palette } = usePalette();
+  const lanes = packSpans(allDaySpans(week, weekStart));
+  if (lanes.length === 0) return null;
+
+  return (
+    <div className="mb-3 flex flex-col gap-1">
+      {lanes.map((lane, index) => (
+        <div key={index} className={`grid ${COLS} gap-x-4`}>
+          <div className="flex items-start justify-end pr-0 pt-1">
+            {index === 0 ? (
+              <div className="text-[11px] leading-4 font-medium text-on-surface-variant/45">
+                All day
+              </div>
+            ) : null}
+          </div>
+          <div
+            className="col-span-5 grid gap-x-4"
+            style={{ gridTemplateColumns: "repeat(5, minmax(0, 1fr))" }}
+          >
+            {lane.map((span) => {
+              const tone = toneForEvent(span.event, palette);
+              return (
+                <button
+                  key={span.event.schoolEventId ?? span.event.id}
+                  type="button"
+                  className={`flex h-8 min-w-0 items-center gap-1.5 overflow-hidden px-2.5 text-left text-[13px] font-semibold ${tone.bg} ${tone.text} ${
+                    span.continuesLeft ? "rounded-l-none" : "rounded-l-lg"
+                  } ${span.continuesRight ? "rounded-r-none" : "rounded-r-lg"} ${
+                    span.event.cancelled ? "opacity-70" : ""
+                  } hover:brightness-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30`}
+                  style={{
+                    gridColumn: `${span.start + 1} / span ${span.end - span.start + 1}`,
+                    ...(tone.bgColor ? { backgroundColor: tone.bgColor } : {}),
+                  }}
+                  aria-label={`${span.event.title} details`}
+                  onClick={() => onClassClick?.(span.event)}
+                >
+                  <EventIcon name="sparkles" size={14} />
+                  <span className={`min-w-0 truncate ${span.event.cancelled ? "line-through" : ""}`}>
+                    {span.event.title}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
 export function WeekGrid({
   week,
   weekStart,
@@ -152,6 +301,7 @@ export function WeekGrid({
   onClassClick?: (event: ScheduleEvent) => void;
 }) {
   const todayId = weekStart === mondayOf(new Date()) ? todayDayId() : null;
+  const timed = timedWeek(week, weekStart);
   return (
     <div className="px-container-padding-desktop pb-16">
       <div className={`sticky top-[calc(3rem+env(safe-area-inset-top,0px))] z-30 grid ${COLS} gap-x-4 bg-surface-container-lowest/90 py-3 backdrop-blur-md`}>
@@ -180,12 +330,14 @@ export function WeekGrid({
         ))}
       </div>
 
+      <AllDayLane week={week} weekStart={weekStart} onClassClick={onClassClick} />
+
       <div className={`grid ${COLS} items-start gap-x-4 gap-y-3`}>
         {MORNING_STARTS.map((start) => (
           <TimeRow
             key={start}
             start={start}
-            week={week}
+            week={timed}
             weekStart={weekStart}
             onClassClick={onClassClick}
           />
@@ -193,7 +345,7 @@ export function WeekGrid({
       </div>
 
       <AfternoonGrid
-        week={week}
+        week={timed}
         weekStart={weekStart}
         onClassClick={onClassClick}
       />

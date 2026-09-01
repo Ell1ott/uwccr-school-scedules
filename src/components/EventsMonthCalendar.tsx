@@ -3,7 +3,9 @@ import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { parseISODate, toISODate } from "../lib/calendar";
 import {
   crDate,
+  eventDates,
   formatMonthChipTime,
+  isMultiDayEvent,
   type SchoolEvent,
 } from "../lib/schoolEvents";
 
@@ -53,9 +55,47 @@ function chipClass(event: SchoolEvent): string {
   return "bg-[#ececec] text-[#444]";
 }
 
-function chipLabel(event: SchoolEvent): string {
-  if (event.allDay) return event.title;
+function chipLabel(event: SchoolEvent, date: string): string {
+  const start = crDate(event.startsAt);
+  if (event.allDay || date !== start) return event.title;
   return `${formatMonthChipTime(event.startsAt)} ${event.title}`;
+}
+
+function assignLanes(events: SchoolEvent[]): Map<string, number> {
+  const sorted = [...events].sort((a, b) => {
+    const as = crDate(a.startsAt);
+    const bs = crDate(b.startsAt);
+    if (as !== bs) return as.localeCompare(bs);
+    return crDate(b.endsAt).localeCompare(crDate(a.endsAt));
+  });
+  const laneEnd: string[] = [];
+  const lanes = new Map<string, number>();
+  for (const event of sorted) {
+    const start = crDate(event.startsAt);
+    const end = crDate(event.endsAt);
+    let lane = laneEnd.findIndex((occupied) => occupied < start);
+    if (lane === -1) {
+      lane = laneEnd.length;
+      laneEnd.push(end);
+    } else {
+      laneEnd[lane] = end;
+    }
+    lanes.set(event.id, lane);
+  }
+  return lanes;
+}
+
+function chipShape(event: SchoolEvent, date: string, index: number): string {
+  const start = crDate(event.startsAt);
+  const end = crDate(event.endsAt);
+  const weekStart = index % 7 === 0;
+  const weekEnd = index % 7 === 6;
+  const roundLeft = start === date || weekStart || !isMultiDayEvent(event);
+  const roundRight = end === date || weekEnd || !isMultiDayEvent(event);
+  return [
+    roundLeft ? "rounded-l-[4px] ml-px" : "rounded-l-none",
+    roundRight ? "rounded-r-[4px] mr-px" : "rounded-r-none",
+  ].join(" ");
 }
 
 export function EventsMonthCalendar({
@@ -85,13 +125,16 @@ export function EventsMonthCalendar({
   const byDate = useMemo(() => {
     const map = new Map<string, SchoolEvent[]>();
     for (const event of events) {
-      const date = crDate(event.startsAt);
-      const list = map.get(date);
-      if (list) list.push(event);
-      else map.set(date, [event]);
+      for (const date of eventDates(event)) {
+        const list = map.get(date);
+        if (list) list.push(event);
+        else map.set(date, [event]);
+      }
     }
     return map;
   }, [events]);
+
+  const lanes = useMemo(() => assignLanes(events), [events]);
 
   useLayoutEffect(() => {
     const box = eventsRef.current;
@@ -170,7 +213,9 @@ export function EventsMonthCalendar({
             </div>
           ))}
           {cells.map((date, index) => {
-            const dayEvents = byDate.get(date) ?? [];
+            const dayEvents = [...(byDate.get(date) ?? [])].sort(
+              (a, b) => (lanes.get(a.id) ?? 0) - (lanes.get(b.id) ?? 0),
+            );
             const outside = !inMonth(date, viewYear, viewMonth);
             const isToday = date === today;
             const isSelected = date === selected;
@@ -180,6 +225,18 @@ export function EventsMonthCalendar({
               : dayEvents.slice(0, fit);
             const more = dayEvents.length - visible.length;
             const dayNum = parseISODate(date).getDate();
+            const chips: ({ kind: "chip"; event: SchoolEvent } | { kind: "gap" })[] =
+              [];
+            for (let i = 0; i < visible.length; i += 1) {
+              if (i > 0) {
+                const prevLane = lanes.get(visible[i - 1].id) ?? 0;
+                const lane = lanes.get(visible[i].id) ?? 0;
+                for (let gap = prevLane + 1; gap < lane; gap += 1) {
+                  chips.push({ kind: "gap" });
+                }
+              }
+              chips.push({ kind: "chip", event: visible[i] });
+            }
 
             return (
               <div
@@ -193,7 +250,7 @@ export function EventsMonthCalendar({
                   month: "long",
                   day: "numeric",
                 })}${dayEvents.length ? `, ${dayEvents.length} events` : ""}`}
-                className={`month-cal-cell flex min-h-0 cursor-pointer flex-col bg-white px-1 pt-1 pb-0.5 ${
+                className={`month-cal-cell flex min-h-0 cursor-pointer flex-col bg-white pt-1 pb-0.5 ${
                   outside ? "bg-[#fafafa]" : ""
                 } ${isSelected ? "bg-[#f3f6f9]" : ""}`}
                 onClick={() => chooseDay(date)}
@@ -204,7 +261,7 @@ export function EventsMonthCalendar({
                   }
                 }}
               >
-                <div className="mb-0.5 flex justify-end">
+                <div className="mb-0.5 flex justify-end px-1">
                   <span
                     className={`flex size-[22px] items-center justify-center text-[12px] leading-none ${
                       isToday
@@ -222,20 +279,24 @@ export function EventsMonthCalendar({
                   data-cal-events
                   className="flex min-h-0 flex-1 flex-col gap-px overflow-hidden"
                 >
-                  {visible.map((event) => (
-                    <button
-                      key={event.id}
-                      type="button"
-                      title={chipLabel(event)}
-                      className={`h-[17px] min-w-0 truncate rounded-[4px] px-1 text-left text-[11px] leading-[17px] ${chipClass(event)}`}
-                      onClick={(click) => {
-                        click.stopPropagation();
-                        onOpenEvent(event);
-                      }}
-                    >
-                      {chipLabel(event)}
-                    </button>
-                  ))}
+                  {chips.map((item, chipIndex) =>
+                    item.kind === "gap" ? (
+                      <div key={`gap-${chipIndex}`} className="h-[17px]" />
+                    ) : (
+                      <button
+                        key={item.event.id}
+                        type="button"
+                        title={chipLabel(item.event, date)}
+                        className={`h-[17px] min-w-0 truncate px-1 text-left text-[11px] leading-[17px] ${chipClass(item.event)} ${chipShape(item.event, date, index)}`}
+                        onClick={(click) => {
+                          click.stopPropagation();
+                          onOpenEvent(item.event);
+                        }}
+                      >
+                        {chipLabel(item.event, date)}
+                      </button>
+                    ),
+                  )}
                   {more > 0 ? (
                     <button
                       type="button"

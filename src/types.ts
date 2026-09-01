@@ -113,4 +113,8 @@ export type ScheduleEvent = {
   rsvpStatus?: RsvpStatus | null;
   goingCount?: number;
   capacity?: number | null;
+  allDay?: boolean;
+  multiDay?: boolean;
+  spanStartDate?: string;
+  spanEndDate?: string;
 };

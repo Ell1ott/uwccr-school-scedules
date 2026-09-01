@@ -3,6 +3,8 @@ import { useMemo, useState } from "react";
 import { useAuth } from "../lib/auth";
 import {
   EVENT_FILTERS,
+  crDate,
+  eventCoversDate,
   groupEventsByDay,
   matchesEventFilter,
   type EventFilterId,
@@ -104,10 +106,16 @@ export function EventsPage({
   const empty = emptyCopy(filter, auth.role === "staff");
 
   function scrollToDay(date: string) {
-    document.getElementById(`event-day-${date}`)?.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
+    const direct = document.getElementById(`event-day-${date}`);
+    if (direct) {
+      direct.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    const covering = filtered.find((event) => eventCoversDate(event, date));
+    if (!covering) return;
+    document
+      .getElementById(`event-day-${crDate(covering.startsAt)}`)
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   return (
