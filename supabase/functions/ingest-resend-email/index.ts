@@ -128,22 +128,48 @@ function json(body: unknown, status = 200) {
   });
 }
 
-function htmlToText(html: string) {
-  return html
-    .replace(/<style[\s\S]*?<\/style>/gi, " ")
-    .replace(/<script[\s\S]*?<\/script>/gi, " ")
-    .replace(/<br\s*\/?>/gi, "\n")
-    .replace(/<\/p>/gi, "\n\n")
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&nbsp;/gi, " ")
+function decodeEntities(value: string) {
+  return value
     .replace(/&amp;/gi, "&")
+    .replace(/&quot;/gi, '"')
+    .replace(/&#39;/gi, "'")
     .replace(/&lt;/gi, "<")
     .replace(/&gt;/gi, ">")
-    .replace(/&#39;/gi, "'")
-    .replace(/&quot;/gi, '"')
+    .replace(/&nbsp;/gi, " ");
+}
+
+function htmlToText(html: string) {
+  return decodeEntities(
+    html
+      .replace(/<style[\s\S]*?<\/style>/gi, " ")
+      .replace(/<script[\s\S]*?<\/script>/gi, " ")
+      .replace(/<br\s*\/?>/gi, "\n")
+      .replace(/<\/p>/gi, "\n\n")
+      .replace(/<[^>]+>/g, " "),
+  )
     .replace(/[ \t]+\n/g, "\n")
     .replace(/[ \t]{2,}/g, " ")
     .trim();
+}
+
+function extractLinks(html: string, text: string): string[] {
+  const found: string[] = [];
+  const push = (raw: string) => {
+    let url = decodeEntities(raw.trim()).replace(/^<|>$/g, "");
+    url = url.replace(/[),.;!?]+$/g, "");
+    if (!/^https?:\/\//i.test(url)) return;
+    if (/^(mailto|cid|javascript|data):/i.test(url)) return;
+    if (!found.includes(url)) found.push(url);
+  };
+  const hrefRe = /href\s*=\s*(?:"([^"]+)"|'([^']+)'|([^\s>]+))/gi;
+  for (const match of html.matchAll(hrefRe)) {
+    push(match[1] ?? match[2] ?? match[3] ?? "");
+  }
+  const textRe = /\bhttps?:\/\/[^\s<>"']+/gi;
+  for (const match of `${html}\n${text}`.matchAll(textRe)) {
+    push(match[0]);
+  }
+  return found;
 }
 
 function parseAddress(value: string) {
@@ -294,7 +320,8 @@ async function extractEvent(input: {
           content:
             "You extract school calendar events from emails for UWC Costa Rica. Timezone is America/Costa_Rica. Today is " +
             today +
-            ". Set is_event false for newsletters, reminders without a new dated gathering, personal mail, spam, replies that are not announcing an event, and anything without a usable date. Dates must be YYYY-MM-DD. Times must be 24-hour HH:MM. If times are missing, all_day true. If the gathering lasts more than one day, set end_date to the last inclusive day; otherwise end_date equals date. If audience is unclear, targets=[{kind:all_students,cohort:null,student_query:null}]. If participation is unclear, mode=info. Do not invent a date.",
+            ". Set is_event false for newsletters, reminders without a new dated gathering, personal mail, spam, replies that are not announcing an event, and anything without a usable date. Dates must be YYYY-MM-DD. Times must be 24-hour HH:MM. If times are missing, all_day true. If the gathering lasts more than one day, set end_date to the last inclusive day; otherwise end_date equals date. If audience is unclear, targets=[{kind:all_students,cohort:null,student_query:null}]. If participation is unclear, mode=info. Do not invent a date. " +
+            "For description, convert the email into a clean event description. Keep all of the information from the email. Do not invent details or write it as a first-person invitation.",
         },
         {
           role: "user",
@@ -586,9 +613,14 @@ Deno.serve(async (req) => {
     }
 
     const fromLabel = parsed.from.trim() || envelopeFrom;
+    const already = extracted.description.toLowerCase();
+    const links = extractLinks(received.html ?? "", parsed.body).filter(
+      (url) => !already.includes(url.toLowerCase()),
+    );
     const description = [
       extracted.description.trim(),
       `Imported from email by ${fromLabel} (${parsed.subject.trim() || envelopeSubject}).`,
+      links.join("\n"),
     ]
       .filter(Boolean)
       .join("\n\n");
