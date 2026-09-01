@@ -60,7 +60,7 @@ export function ScheduleMenu({
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0">
                 <h2 id={titleId} className="text-title-md tracking-tight">
-                  Week View
+                  UWCCR Schedule
                 </h2>
                 <p className="mt-0.5 text-label-sm text-on-surface-variant">
                   {caption}

@@ -71,7 +71,7 @@ export function PushOptIn({ studentId }: { studentId: string }) {
   async function enable() {
     if (isIos() && !isStandalone()) {
       const message =
-        "On iPhone, add Week View to your Home Screen first, then enable notifications.";
+        "On iPhone, add UWCCR Schedule to your Home Screen first, then enable notifications.";
       track("push_opt_in_failed", {
         student_id: studentId,
         error: message,
@@ -140,7 +140,7 @@ export function PushOptIn({ studentId }: { studentId: string }) {
           <p className="text-body-md font-medium">Get class cancellations</p>
           <p className="text-label-sm text-on-surface-variant">
             {iosHint
-              ? "Add Week View to your Home Screen, then turn on notifications."
+              ? "Add UWCCR Schedule to your Home Screen, then turn on notifications."
               : "We’ll ping this phone if one of your classes is cancelled."}
           </p>
           {error ? (

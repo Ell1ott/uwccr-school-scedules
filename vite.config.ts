@@ -41,9 +41,9 @@ export default defineConfig({
         ],
       manifest: {
         id: '/',
-        name: 'IB Week View',
-        short_name: 'Week View',
-        description: 'IB class schedules',
+        name: 'UWCCR Schedule',
+        short_name: 'Schedule',
+        description: 'UWCCR class schedules and events',
         theme_color: '#fbf9fa',
         background_color: '#fbf9fa',
         display: 'standalone',

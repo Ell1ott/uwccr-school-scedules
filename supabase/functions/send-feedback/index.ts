@@ -100,7 +100,7 @@ Deno.serve(async (req) => {
       return json({ error: "Keep it under 4,000 characters." }, 400);
     }
 
-    let fromName = "Someone browsing Week View";
+    let fromName = "Someone browsing UWCCR Schedule";
     let fromEmail: string | null = null;
     let role: string | null = null;
 
@@ -132,7 +132,7 @@ Deno.serve(async (req) => {
     }
 
     const kindLabel = KIND_LABEL[body.kind];
-    const subject = `[Week View] ${kindLabel}`;
+    const subject = `[UWCCR Schedule] ${kindLabel}`;
     const html = `
       <div style="font-family:Inter,system-ui,sans-serif;color:#1b1c1d;line-height:1.5;max-width:560px">
         <p><strong>${escapeHtml(kindLabel)}</strong> from ${escapeHtml(fromName)}${

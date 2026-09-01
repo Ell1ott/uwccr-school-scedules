@@ -43,7 +43,7 @@ export async function subscribeToClassPush(studentId: string): Promise<string | 
     return "This browser cannot receive notifications.";
   }
   if (isIos() && !isStandalone()) {
-    return "On iPhone, add Week View to your Home Screen first, then enable notifications.";
+    return "On iPhone, add UWCCR Schedule to your Home Screen first, then enable notifications.";
   }
 
   try {

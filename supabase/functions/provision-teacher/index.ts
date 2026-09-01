@@ -92,9 +92,9 @@ function loginEmailHtml(input: {
   const loginUrl = `${input.appUrl.replace(/\/$/, "")}/login`;
   const intro =
     input.role === "student"
-      ? `<p>Week View now has events on the site. You can see what's on, accept invitations, and join what is open.</p>
+      ? `<p>Your UWCCR Schedule now has events on the site. You can see what's on, accept invitations, and join what is open.</p>
       <p>You'll need to log in for that. Here is your login:</p>`
-      : `<p>You can log in to Week View to create events for students. If you teach, you can still cancel only your own classes.</p>`;
+      : `<p>You can log in to your UWCCR Schedule to create events for students. If you teach, you can still cancel only your own classes.</p>`;
   return `
     <div style="font-family:Inter,system-ui,sans-serif;color:#1b1c1d;line-height:1.5">
       <p>Hi ${input.name},</p>
@@ -160,8 +160,8 @@ async function sendLoginEmail(
         to: [input.email],
         subject:
           input.role === "student"
-            ? "Week View now has events — your login"
-            : "Your UWCCR Week View login",
+            ? "Your UWCCR Schedule now has events"
+            : "Your UWCCR Schedule login",
         html: loginEmailHtml(input),
       }),
     });

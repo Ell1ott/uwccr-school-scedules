@@ -19,7 +19,7 @@ function loadEnv() {
 loadEnv();
 
 const studentId = process.argv[2] ?? "elliot-friedrich";
-const title = process.argv[3] ?? "Week View";
+const title = process.argv[3] ?? "UWCCR Schedule";
 const body = process.argv[4] ?? "just a test ping";
 
 const supabaseUrl = process.env.VITE_SUPABASE_URL;

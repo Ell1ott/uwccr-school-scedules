@@ -288,12 +288,12 @@ export function TeacherAdmin({
     const intro =
       tab === "students"
         ? [
-            "Week View now has events on the site. You can see what's on, accept invitations, and join what is open.",
+            "Your UWCCR Schedule now has events on the site. You can see what's on, accept invitations, and join what is open.",
             "",
             "You'll need to log in for that. Here is your login:",
           ]
         : [
-            "Here is your Week View login. Use it for events and, if you teach, to cancel your own classes.",
+            "Here is your UWCCR Schedule login. Use it for events and, if you teach, to cancel your own classes.",
           ];
     return [
       `Hi ${name},`,
