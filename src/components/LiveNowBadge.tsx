@@ -30,7 +30,7 @@ export function LiveNowBadge({
 
   return (
     <div
-      className="pointer-events-none absolute right-2 bottom-2 z-10 hidden items-center gap-1.5 text-current/35 md:flex"
+      className="pointer-events-none absolute right-2 bottom-2 z-10 flex items-center gap-1.5 text-current/35"
       aria-label={`In progress, ${label} left`}
     >
       <span className="text-[12px] leading-4 tabular-nums">
