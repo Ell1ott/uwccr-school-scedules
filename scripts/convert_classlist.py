@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Refresh students.json from the live IB1 Google Sheet, keeping IB2 as-is."""
+"""Refresh students.json from the live IB1 Google Sheet and local IB2 spreadsheet."""
 
 from __future__ import annotations
 
@@ -20,7 +20,7 @@ ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "src" / "data" / "students.json"
 CACHE_DIR = ROOT / "tmp"
 IB1_CACHE = CACHE_DIR / "ib1-class-list.xlsx"
-IB2_XLSX = ROOT / "IB1 Class list 2025-2026.xlsx"
+IB2_XLSX = ROOT / "IB2 Class list 2025-2026.xlsx"
 
 # Public IB1 class list. gid=0 is the first sheet.
 IB1_SHEET_ID = "1pGFqN1XrL4T_NDr_a9fkAmuwMf5ob3e_0_f6_uFDC8c"
@@ -380,22 +380,22 @@ def print_cohort_report(result: dict) -> None:
         print(f"    ... {len(notable_missing) - 20} more")
 
 
-def download_ib1_sheet(dest: Path) -> Path:
+def download_sheet(url: str, dest: Path, label: str) -> Path:
     dest.parent.mkdir(parents=True, exist_ok=True)
     partial = dest.with_suffix(dest.suffix + ".part")
     request = urllib.request.Request(
-        IB1_EXPORT_URL,
+        url,
         headers={"User-Agent": "Mozilla/5.0 (compatible; uwccr-school-schedules)"},
     )
     try:
         with urllib.request.urlopen(request, timeout=60) as response:
             data = response.read()
     except urllib.error.URLError as exc:
-        raise SystemExit(f"Failed to download IB1 class list: {exc}") from exc
+        raise SystemExit(f"Failed to download {label} class list: {exc}") from exc
 
     if not data.startswith(b"PK"):
         raise SystemExit(
-            "Downloaded IB1 file is not an Excel workbook. "
+            f"Downloaded {label} file is not an Excel workbook. "
             "Is the Google Sheet still shared with anyone who has the link?"
         )
     partial.write_bytes(data)
@@ -403,34 +403,9 @@ def download_ib1_sheet(dest: Path) -> Path:
     return dest
 
 
-def load_existing_ib2() -> list[dict]:
-    if not OUT.exists():
-        return []
-    payload = json.loads(OUT.read_text(encoding="utf-8"))
-    return [
-        student
-        for student in payload.get("students", [])
-        if student.get("cohort") == "IB2"
-    ]
-
-
-def ib2_students() -> tuple[list[dict], str]:
-    existing = load_existing_ib2()
-    if existing:
-        return existing, f"{OUT.name} (IB2 unchanged)"
-    if IB2_XLSX.exists():
-        result = convert_source(IB2_XLSX, "IB2", "ib2-")
-        print_cohort_report(result)
-        return result["students"], IB2_XLSX.name
-    raise SystemExit(
-        "No IB2 students found in students.json and the local IB2 spreadsheet "
-        f"is missing: {IB2_XLSX.name}"
-    )
-
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
-        description="Update IB1 from the public Google Sheet without replacing IB2."
+        description="Update IB1 from the public Google Sheet and IB2 from a local file."
     )
     parser.add_argument(
         "--offline",
@@ -442,23 +417,35 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
+
+    # --- IB1 ---
     if args.offline:
         if not IB1_CACHE.exists():
             raise SystemExit(f"No cached IB1 spreadsheet at {IB1_CACHE}")
         ib1_xlsx = IB1_CACHE
         print(f"Using cached IB1 spreadsheet: {ib1_xlsx.relative_to(ROOT)}")
     else:
-        ib1_xlsx = download_ib1_sheet(IB1_CACHE)
+        ib1_xlsx = download_sheet(IB1_EXPORT_URL, IB1_CACHE, "IB1")
         print(f"Downloaded IB1 class list ({ib1_xlsx.stat().st_size} bytes)")
 
-    ib1 = convert_source(ib1_xlsx, "IB1", "")
-    ib2, ib2_source = ib2_students()
+    # --- IB2 (local file; sheet requires auth to download) ---
+    if not IB2_XLSX.exists():
+        raise SystemExit(
+            f"Missing IB2 spreadsheet: {IB2_XLSX.name}\n"
+            f"Export the IB2 class list from Google Sheets and save it as:\n"
+            f"  {IB2_XLSX.relative_to(ROOT)}"
+        )
+    ib2_xlsx = IB2_XLSX
+    print(f"Using IB2 spreadsheet: {ib2_xlsx.relative_to(ROOT)}")
 
-    payload_students = [*ib1["students"], *ib2]
+    ib1 = convert_source(ib1_xlsx, "IB1", "")
+    ib2 = convert_source(ib2_xlsx, "IB2", "ib2-")
+
+    payload_students = [*ib1["students"], *ib2["students"]]
     OUT.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "generatedAt": datetime.now(timezone.utc).isoformat(),
-        "source": f"{IB1_EXPORT_URL} + {ib2_source}",
+        "source": f"{IB1_EXPORT_URL} + {IB2_XLSX.name}",
         "students": payload_students,
     }
     OUT.write_text(
@@ -466,12 +453,10 @@ def main() -> None:
         encoding="utf-8",
     )
 
-    print(f"Wrote {OUT.relative_to(ROOT)}")
+    print(f"\nWrote {OUT.relative_to(ROOT)}")
     print(f"Students: {len(payload_students)}")
     print_cohort_report(ib1)
-    if ib2_source.endswith("(IB2 unchanged)"):
-        print(f"\nIB2  ({ib2_source})")
-        print(f"  Students: {len(ib2)}")
+    print_cohort_report(ib2)
 
 
 if __name__ == "__main__":
