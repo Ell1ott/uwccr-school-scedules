@@ -21,8 +21,8 @@ export const FIRST_DAY_OF_CLASSES = annual.firstDayOfClasses;
 export const CALENDAR_EVENTS = annual.events;
 export const WEEK_THEMES = annual.themes;
 
-const MIN_WEEK = mondayOf(parseISODate("2026-08-03"));
-const MAX_WEEK = mondayOf(parseISODate("2027-05-28"));
+export const MIN_WEEK = mondayOf(parseISODate("2026-08-03"));
+export const MAX_WEEK = mondayOf(parseISODate("2027-05-28"));
 
 export function parseISODate(value: string): Date {
   const [year, month, day] = value.split("-").map(Number);
@@ -64,10 +64,51 @@ export function mondayOf(value: Date): string {
   return toISODate(copy);
 }
 
+export function isWeekInRange(weekStart: string): boolean {
+  return weekStart >= MIN_WEEK && weekStart <= MAX_WEEK;
+}
+
 export function clampWeekStart(weekStart: string): string {
   if (weekStart < MIN_WEEK) return MIN_WEEK;
   if (weekStart > MAX_WEEK) return MAX_WEEK;
   return weekStart;
+}
+
+export function monthLabel(year: number, month: number): string {
+  return new Date(year, month - 1, 1).toLocaleString("en-US", {
+    month: "long",
+    year: "numeric",
+  });
+}
+
+export function shiftMonth(
+  year: number,
+  month: number,
+  delta: number,
+): { year: number; month: number } {
+  const next = new Date(year, month - 1 + delta, 1);
+  return { year: next.getFullYear(), month: next.getMonth() + 1 };
+}
+
+export function monthCells(year: number, month: number): string[] {
+  const first = new Date(year, month - 1, 1);
+  const mondayOffset = (first.getDay() + 6) % 7;
+  const start = new Date(year, month - 1, 1 - mondayOffset);
+  return Array.from({ length: 42 }, (_, index) =>
+    toISODate(
+      new Date(start.getFullYear(), start.getMonth(), start.getDate() + index),
+    ),
+  );
+}
+
+export function inMonth(date: string, year: number, month: number): boolean {
+  const parsed = parseISODate(date);
+  return parsed.getFullYear() === year && parsed.getMonth() + 1 === month;
+}
+
+export function monthOf(date: string): { year: number; month: number } {
+  const parsed = parseISODate(date);
+  return { year: parsed.getFullYear(), month: parsed.getMonth() + 1 };
 }
 
 export function shiftWeek(weekStart: string, delta: number): string {

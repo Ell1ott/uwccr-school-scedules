@@ -1,6 +1,12 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
-import { parseISODate, toISODate } from "../lib/calendar";
+import {
+  inMonth,
+  monthCells,
+  monthLabel,
+  parseISODate,
+  shiftMonth,
+} from "../lib/calendar";
 import {
   crDate,
   eventDates,
@@ -11,38 +17,6 @@ import {
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const CHIP_ROW = 18;
-
-function monthLabel(year: number, month: number): string {
-  return new Date(year, month - 1, 1).toLocaleString("en-US", {
-    month: "long",
-    year: "numeric",
-  });
-}
-
-function shiftMonth(
-  year: number,
-  month: number,
-  delta: number,
-): { year: number; month: number } {
-  const next = new Date(year, month - 1 + delta, 1);
-  return { year: next.getFullYear(), month: next.getMonth() + 1 };
-}
-
-function monthCells(year: number, month: number): string[] {
-  const first = new Date(year, month - 1, 1);
-  const mondayOffset = (first.getDay() + 6) % 7;
-  const start = new Date(year, month - 1, 1 - mondayOffset);
-  return Array.from({ length: 42 }, (_, index) =>
-    toISODate(
-      new Date(start.getFullYear(), start.getMonth(), start.getDate() + index),
-    ),
-  );
-}
-
-function inMonth(date: string, year: number, month: number): boolean {
-  const parsed = parseISODate(date);
-  return parsed.getFullYear() === year && parsed.getMonth() + 1 === month;
-}
 
 function chipClass(event: SchoolEvent): string {
   if (event.status === "cancelled" || event.status === "rejected") {

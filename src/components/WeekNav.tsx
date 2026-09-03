@@ -1,22 +1,18 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import {
-  clampWeekStart,
-  formatWeekRange,
-  mondayOf,
-  shiftWeek,
-} from "../lib/calendar";
+import { useState } from "react";
+import { Popover } from "radix-ui";
+import { formatWeekRange, mondayOf, shiftWeek } from "../lib/calendar";
+import { WeekPickerCalendar } from "./WeekPickerCalendar";
 
 export function WeekNav({
   weekStart,
   onChange,
-  onLabelClick,
   showLabel,
   className,
   variant = "pill",
 }: {
   weekStart: string;
   onChange: (weekStart: string) => void;
-  onLabelClick?: () => void;
   showLabel?: boolean;
   className?: string;
   variant?: "pill" | "bare" | "float";
@@ -25,15 +21,16 @@ export function WeekNav({
   const isThisWeek = weekStart === thisWeek;
   const float = variant === "float";
   const bare = variant === "bare";
+  const [open, setOpen] = useState(false);
 
   return (
     <div
       className={
         float
-          ? `flex h-8 min-w-0 items-center ${className ?? ""}`
+          ? `relative flex h-8 min-w-0 items-center ${open ? "z-50" : ""} ${className ?? ""}`
           : bare
-            ? `flex h-full items-center ${className ?? ""}`
-            : `flex h-10 flex-shrink-0 items-center gap-1 rounded-full bg-surface-container px-1 ${className ?? ""}`
+            ? `relative flex h-full items-center ${open ? "z-50" : ""} ${className ?? ""}`
+            : `relative flex h-10 flex-shrink-0 items-center gap-1 rounded-full bg-surface-container px-1 ${open ? "z-50" : ""} ${className ?? ""}`
       }
     >
       <button
@@ -48,32 +45,43 @@ export function WeekNav({
       >
         <ChevronLeft size={16} strokeWidth={1.75} aria-hidden />
       </button>
-      <button
-        type="button"
-        className={`${showLabel ? "flex-1" : ""} min-w-0 rounded-full px-1.5 py-1 text-label-sm tracking-wide tabular-nums focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 ${
-          float
-            ? "max-w-[4.75rem] font-medium sm:max-w-[8.5rem]"
-            : bare
-              ? "max-w-[8.5rem] font-medium sm:max-w-none"
-              : "text-on-surface-variant"
-        }`}
-        aria-label={
-          onLabelClick
-            ? `Week ${formatWeekRange(weekStart)}`
-            : isThisWeek
-              ? formatWeekRange(weekStart)
-              : "Jump to this week"
-        }
-        onClick={() => {
-          if (onLabelClick) onLabelClick();
-          else onChange(clampWeekStart(thisWeek));
-        }}
-      >
-        <span className="block truncate tabular-nums">
-          {showLabel && isThisWeek ? "This week · " : null}
-          {formatWeekRange(weekStart)}
-        </span>
-      </button>
+      <Popover.Root open={open} onOpenChange={setOpen}>
+        <Popover.Trigger asChild>
+          <button
+            type="button"
+            className={`${showLabel ? "flex-1" : ""} min-w-0 rounded-full px-1.5 py-1 text-label-sm tracking-wide tabular-nums focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 ${
+              float
+                ? "max-w-[4.75rem] font-medium sm:max-w-[8.5rem]"
+                : bare
+                  ? "max-w-[8.5rem] font-medium sm:max-w-none"
+                  : "text-on-surface-variant"
+            }`}
+            aria-label={`Choose week, ${formatWeekRange(weekStart)}`}
+          >
+            <span className="block truncate tabular-nums">
+              {showLabel && isThisWeek ? "This week · " : null}
+              {formatWeekRange(weekStart)}
+            </span>
+          </button>
+        </Popover.Trigger>
+        <Popover.Portal>
+          <Popover.Content
+            align="start"
+            sideOffset={8}
+            collisionPadding={12}
+            aria-label="Choose a week"
+            className="menu-panel z-50 outline-none"
+          >
+            <WeekPickerCalendar
+              weekStart={weekStart}
+              onSelectWeek={(next) => {
+                onChange(next);
+                setOpen(false);
+              }}
+            />
+          </Popover.Content>
+        </Popover.Portal>
+      </Popover.Root>
       <button
         type="button"
         className={

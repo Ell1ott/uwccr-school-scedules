@@ -1,5 +1,6 @@
 import { Check, ChevronDown, ChevronUp } from "lucide-react";
 import { useId, useRef, useState } from "react";
+import { Popover } from "radix-ui";
 import { useDismissible } from "../hooks/useDismissible";
 import { LESSON_ICON_PREVIEWS, LessonIcon } from "../lib/icons";
 import { usePalette } from "../lib/palette";
@@ -109,9 +110,9 @@ export function PalettePicker({
   useDismissible(
     wrapRef,
     () => {
-      if (!alwaysExpanded) setOpen(false);
+      if (inlineList) setOpen(false);
     },
-    { escape: !alwaysExpanded },
+    { escape: Boolean(inlineList) },
   );
 
   const paletteList = (
@@ -169,10 +170,7 @@ export function PalettePicker({
 
   if (alwaysExpanded) {
     return (
-      <div
-        ref={wrapRef}
-        className={`flex flex-col gap-2 ${className ?? ""}`}
-      >
+      <div className={`flex flex-col gap-2 ${className ?? ""}`}>
         <LessonIconsToggle variant="menu" />
         <div
           role="listbox"
@@ -218,55 +216,85 @@ export function PalettePicker({
     );
   }
 
-  return (
-    <div
-      ref={wrapRef}
-      className={`relative flex flex-shrink-0 flex-col ${inlineList ? "gap-2" : ""} ${className ?? ""}`}
-    >
-      <button
-        type="button"
-        aria-label="Color palette"
-        aria-expanded={open}
-        aria-controls={listId}
-        className={`flex items-center gap-1.5 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 ${buttonClassName ?? "h-8.5 bg-surface-container-lowest px-2.5"}`}
-        onClick={() => setOpen((value) => !value)}
-      >
-        <span className="flex min-w-0 items-center gap-2">
-          <span className="flex items-center -space-x-1">
-            {(current?.swatches ?? []).slice(0, 4).map((swatch) => (
-              <Swatch key={swatch} swatch={swatch} ring="ring-surface-container" />
-            ))}
-          </span>
-          <span
-            className={`${showLabel ? "inline" : "hidden sm:inline"} truncate text-label-sm tracking-wide text-on-surface-variant`}
-          >
-            {current?.label}
-          </span>
+  const triggerClass = `flex items-center gap-1.5 rounded-full focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 ${buttonClassName ?? "h-8.5 bg-surface-container-lowest px-2.5"}`;
+  const triggerInner = (
+    <>
+      <span className="flex min-w-0 items-center gap-2">
+        <span className="flex items-center -space-x-1">
+          {(current?.swatches ?? []).slice(0, 4).map((swatch) => (
+            <Swatch key={swatch} swatch={swatch} ring="ring-surface-container" />
+          ))}
         </span>
-        {open ? (
-          <ChevronUp
-            size={14}
-            strokeWidth={1.75}
-            className="shrink-0 text-on-surface-variant"
-            aria-hidden
-          />
-        ) : (
-          <ChevronDown
-            size={14}
-            strokeWidth={1.75}
-            className="shrink-0 text-on-surface-variant"
-            aria-hidden
-          />
-        )}
-      </button>
-      {open && inlineList ? paletteList : null}
-      {open && !inlineList ? (
-        <div className="menu-panel absolute right-0 z-50 mt-2 w-64 overflow-hidden">
-          {paletteList}
-          <LessonIconsToggle variant="popover" />
-        </div>
-      ) : null}
-      {inlineList ? <LessonIconsToggle variant="menu" /> : null}
-    </div>
+        <span
+          className={`${showLabel ? "inline" : "hidden sm:inline"} truncate text-label-sm tracking-wide text-on-surface-variant`}
+        >
+          {current?.label}
+        </span>
+      </span>
+      {open ? (
+        <ChevronUp
+          size={14}
+          strokeWidth={1.75}
+          className="shrink-0 text-on-surface-variant"
+          aria-hidden
+        />
+      ) : (
+        <ChevronDown
+          size={14}
+          strokeWidth={1.75}
+          className="shrink-0 text-on-surface-variant"
+          aria-hidden
+        />
+      )}
+    </>
+  );
+
+  if (inlineList) {
+    return (
+      <div
+        ref={wrapRef}
+        className={`relative flex flex-shrink-0 flex-col gap-2 ${className ?? ""}`}
+      >
+        <button
+          type="button"
+          aria-label="Color palette"
+          aria-expanded={open}
+          aria-controls={listId}
+          className={triggerClass}
+          onClick={() => setOpen((value) => !value)}
+        >
+          {triggerInner}
+        </button>
+        {open ? paletteList : null}
+        <LessonIconsToggle variant="menu" />
+      </div>
+    );
+  }
+
+  return (
+    <Popover.Root open={open} onOpenChange={setOpen}>
+      <div className={`relative flex flex-shrink-0 flex-col ${className ?? ""}`}>
+        <Popover.Trigger asChild>
+          <button
+            type="button"
+            aria-label="Color palette"
+            className={triggerClass}
+          >
+            {triggerInner}
+          </button>
+        </Popover.Trigger>
+        <Popover.Portal>
+          <Popover.Content
+            align="end"
+            sideOffset={8}
+            collisionPadding={12}
+            className="menu-panel z-50 w-64 overflow-hidden outline-none"
+          >
+            {paletteList}
+            <LessonIconsToggle variant="popover" />
+          </Popover.Content>
+        </Popover.Portal>
+      </div>
+    </Popover.Root>
   );
 }

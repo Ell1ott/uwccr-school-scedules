@@ -1,12 +1,24 @@
 import { X } from "lucide-react";
+import { Dialog, VisuallyHidden } from "radix-ui";
 import type { CSSProperties, ReactNode, RefObject } from "react";
-import { createPortal } from "react-dom";
-import { useOverlayLock } from "../hooks/useOverlayLock";
+import { useRef } from "react";
+import { Drawer } from "vaul";
+import { useIsDesktop } from "../hooks/useMediaQuery";
 import type { Tone } from "../lib/tones";
 
 const DETAIL_SHELL = "md:items-center md:p-6";
 const DETAIL_PANEL =
   "max-w-lg md:max-h-[min(40rem,85vh)] md:rounded-[28px]";
+
+const PANEL =
+  "flex w-full flex-col overflow-hidden bg-surface-container-lowest outline-none";
+const PANEL_SHADOW = "shadow-[0_-12px_48px_rgba(4,22,39,0.18)]";
+
+function handleOpenChange(onClose: () => void) {
+  return (open: boolean) => {
+    if (!open) onClose();
+  };
+}
 
 export function BottomSheet({
   labelledBy,
@@ -23,35 +35,63 @@ export function BottomSheet({
   className?: string;
   panelClassName?: string;
 }) {
-  const closeRef = useOverlayLock(onClose);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const desktop = useIsDesktop();
 
-  return createPortal(
-    <div
-      className={`fixed inset-0 z-[90] flex items-end justify-center ${className ?? ""}`}
+  if (desktop) {
+    return (
+      <Dialog.Root open onOpenChange={handleOpenChange(onClose)}>
+        <Dialog.Portal>
+          <Dialog.Overlay
+            className={`fixed inset-0 z-[90] grid place-items-center bg-primary/45 p-6 ${className ?? ""}`}
+          >
+            <Dialog.Content
+              aria-labelledby={labelledBy}
+              aria-describedby={undefined}
+              className={`sheet-dialog ${PANEL} ${PANEL_SHADOW} z-[91] max-h-[min(40rem,85vh)] rounded-[28px] ${panelClassName ?? ""}`}
+            >
+              <VisuallyHidden.Root>
+                <Dialog.Title>{overlayLabel}</Dialog.Title>
+              </VisuallyHidden.Root>
+              {children(closeRef)}
+            </Dialog.Content>
+          </Dialog.Overlay>
+        </Dialog.Portal>
+      </Dialog.Root>
+    );
+  }
+
+  return (
+    <Drawer.Root
+      open
+      onOpenChange={handleOpenChange(onClose)}
+      shouldScaleBackground={false}
     >
-      <button
-        type="button"
-        className="sheet-overlay absolute inset-0 bg-primary/45"
-        aria-label={overlayLabel}
-        onClick={onClose}
-      />
-      <div
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby={labelledBy}
-        className={`sheet-panel relative z-10 flex max-h-[88dvh] w-full flex-col overflow-hidden rounded-t-[28px] bg-surface-container-lowest shadow-[0_-12px_48px_rgba(4,22,39,0.18)] ${panelClassName ?? ""}`}
-      >
-        {children(closeRef)}
-      </div>
-    </div>,
-    document.body,
+      <Drawer.Portal>
+        <Drawer.Overlay
+          className={`fixed inset-0 z-[90] bg-primary/45 ${className ?? ""}`}
+        />
+        <Drawer.Content
+          aria-labelledby={labelledBy}
+          aria-describedby={undefined}
+          className={`${PANEL} ${PANEL_SHADOW} fixed right-0 bottom-0 left-0 z-[91] mx-auto max-h-[88dvh] rounded-t-[28px] ${panelClassName ?? ""}`}
+        >
+          <VisuallyHidden.Root>
+            <Drawer.Title>{overlayLabel}</Drawer.Title>
+          </VisuallyHidden.Root>
+          {children(closeRef)}
+        </Drawer.Content>
+      </Drawer.Portal>
+    </Drawer.Root>
   );
 }
 
 export function SheetHandle({ className }: { className?: string }) {
+  const desktop = useIsDesktop();
+  if (desktop) return null;
   return (
-    <div
-      className={`mx-auto mb-3 h-1 w-10 rounded-full md:hidden ${className ?? "bg-on-surface/20"}`}
+    <Drawer.Handle
+      className={`mx-auto mb-3 h-1.5 w-10 rounded-full ${className ?? "bg-on-surface/20"}`}
     />
   );
 }
@@ -174,4 +214,3 @@ export function SheetFact({
     <div className="rounded-2xl bg-surface-container px-3 py-3">{inner}</div>
   );
 }
-

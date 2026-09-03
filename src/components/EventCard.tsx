@@ -111,6 +111,14 @@ export function EventCard({
           : event.cohorts && event.cohorts.length === 1
             ? event.cohorts[0]
             : null;
+  const hasNote = Boolean(event.note);
+  const ariaLabel = [
+    `${event.title} details`,
+    event.cancelled ? "cancelled" : null,
+    hasNote ? "has a note" : null,
+  ]
+    .filter(Boolean)
+    .join(", ");
 
   const interactive =
     (event.kind === "class" || event.kind === "school_event") && Boolean(onOpen);
@@ -138,13 +146,31 @@ export function EventCard({
           ) : null}
           <span className={event.cancelled ? "line-through" : ""}>{event.title}</span>
         </h3>
-        {chipLabel ? (
-          <div
-            className={`flex-shrink-0 rounded-full px-1.5 py-px text-[10px] font-medium tracking-wide ${tone.chip} ${
-              event.cancelled || event.extras ? "bg-error-container text-black" : ""
-            }`}
-          >
-            {chipLabel}
+        {hasNote || chipLabel ? (
+          <div className="flex shrink-0 items-start gap-1">
+            {hasNote ? (
+              <div
+                className={`inline-flex items-center rounded-full bg-inverse-surface text-inverse-on-surface ${
+                  compact ? "p-1" : "gap-0.5 px-1.5 py-px"
+                }`}
+              >
+                <EventIcon name="sticky-note" size={10} />
+                {compact ? (
+                  <span className="sr-only">Note</span>
+                ) : (
+                  <span className="text-[10px] font-medium tracking-wide">Note</span>
+                )}
+              </div>
+            ) : null}
+            {chipLabel ? (
+              <div
+                className={`flex-shrink-0 rounded-full px-1.5 py-px text-[10px] font-medium tracking-wide ${tone.chip} ${
+                  event.cancelled || event.extras ? "bg-error-container text-black" : ""
+                }`}
+              >
+                {chipLabel}
+              </div>
+            ) : null}
           </div>
         ) : null}
       </div>
@@ -191,14 +217,6 @@ export function EventCard({
             {event.studentCount == null ? ` · ${extra.teacher}` : extra.room ? ` · Rm ${extra.room}` : ""}
           </p>
         ))}
-        {event.note ? (
-          <p className="flex items-start gap-1 text-current/70">
-            <EventIcon name="sticky-note" className="mt-0.5" />
-            <span className={compact ? "line-clamp-1" : "line-clamp-2"}>
-              {event.note}
-            </span>
-          </p>
-        ) : null}
       </div>
       {live}
     </>
@@ -211,7 +229,7 @@ export function EventCard({
         className={className}
         style={style}
         aria-haspopup="dialog"
-        aria-label={`${event.title} details`}
+        aria-label={ariaLabel}
         onClick={() => onOpen?.(event)}
       >
         {body}

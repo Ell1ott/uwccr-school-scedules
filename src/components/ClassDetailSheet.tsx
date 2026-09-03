@@ -20,6 +20,7 @@ import { toneForEvent } from "../lib/tones";
 import type { CohortId, PersonKind, ScheduleEvent, Student } from "../types";
 import { DetailSheet, SheetFact } from "./BottomSheet";
 import { FloatingTabs } from "./FloatingTabs";
+import { NoteField } from "./NoteField";
 
 export function ClassDetailSheet({
   event,
@@ -156,7 +157,7 @@ export function ClassDetailSheet({
       chip={chip}
       banner={
         event.cancelled ? (
-          <p className="mt-2 text-body-md text-current/80">
+          <p className="mt-2 whitespace-pre-wrap break-words text-body-md text-current/80">
             {event.cancelReason
               ? event.cancelReason
               : "This class is cancelled."}
@@ -175,12 +176,11 @@ export function ClassDetailSheet({
               </p>
               <label className="mt-3 block text-label-sm text-on-surface-variant">
                 Class note
-                <textarea
+                <NoteField
                   value={noteBody}
-                  onChange={(change) => setNoteBody(change.target.value)}
-                  rows={2}
+                  onChange={setNoteBody}
                   placeholder="Homework, room change, bring a calculator…"
-                  className="mt-1 w-full rounded-xl bg-surface-container-lowest px-3 py-2 text-body-md outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+                  disabled={Boolean(noteBusy) || busy}
                 />
               </label>
               <div className="mt-3 flex flex-col gap-2">
@@ -256,11 +256,11 @@ export function ClassDetailSheet({
                 <>
                   <label className="mt-3 block text-label-sm text-on-surface-variant">
                     Optional note
-                    <textarea
+                    <NoteField
                       value={reason}
-                      onChange={(event) => setReason(event.target.value)}
-                      rows={2}
-                      className="mt-1 w-full rounded-xl bg-surface-container-lowest px-3 py-2 text-body-md outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+                      onChange={setReason}
+                      placeholder="Why this class is cancelled…"
+                      disabled={busy || Boolean(noteBusy)}
                     />
                   </label>
                   <button
