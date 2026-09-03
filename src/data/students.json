@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-01T04:50:19.612142+00:00",
+  "generatedAt": "2026-09-03T15:47:48.761447+00:00",
   "source": "https://docs.google.com/spreadsheets/d/1pGFqN1XrL4T_NDr_a9fkAmuwMf5ob3e_0_f6_uFDC8c/export?format=xlsx&gid=0 + students.json (IB2 unchanged)",
   "students": [
     {
@@ -2257,6 +2257,55 @@
       }
     },
     {
+      "id": "kaiyi-xu-austin",
+      "name": "Kaiyi Xu (Austin)",
+      "cohort": "IB1",
+      "blocks": {
+        "A": {
+          "subject": "English Lang & Lit",
+          "level": "HL",
+          "teacher": "Christine",
+          "room": "17"
+        },
+        "B": {
+          "subject": "Visual Arts",
+          "level": "HL",
+          "teacher": "Melissa",
+          "room": "3"
+        },
+        "C": {
+          "subject": "ESS",
+          "level": "HL",
+          "teacher": "Heidy",
+          "room": "9"
+        },
+        "E": {
+          "subject": "Physics",
+          "level": "SL",
+          "teacher": "Erick",
+          "room": "14"
+        },
+        "F": {
+          "subject": "Math Analysis and Approaches",
+          "level": "SL",
+          "teacher": "JD",
+          "room": "10"
+        },
+        "G": {
+          "subject": "TOK",
+          "level": "TOK",
+          "teacher": "QQ",
+          "room": "4"
+        },
+        "H": {
+          "subject": "SSST",
+          "level": "SL",
+          "teacher": "Rolando",
+          "room": "5"
+        }
+      }
+    },
+    {
       "id": "katalina-segura-alfaro",
       "name": "Katalina Segura Alfaro",
       "cohort": "IB1",
@@ -2629,10 +2678,10 @@
           "room": "3"
         },
         "F": {
-          "subject": "Spanish AB",
+          "subject": "Spanish B",
           "level": "SL",
-          "teacher": "QQ",
-          "room": "4"
+          "teacher": "Paula",
+          "room": "2"
         },
         "G": {
           "subject": "Math Analysis and Approaches",
