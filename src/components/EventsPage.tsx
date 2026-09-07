@@ -1,11 +1,13 @@
 import { CalendarPlus, Sparkles } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../lib/auth";
+import { useNow } from "../lib/now";
 import {
   EVENT_FILTERS,
   crDate,
   eventCoversDate,
   groupEventsByDay,
+  isSchoolEventPast,
   matchesEventFilter,
   type EventFilterId,
   type SchoolEvent,
@@ -58,14 +60,43 @@ export function EventsPage({
   onOpenHub?: () => void;
 }) {
   const auth = useAuth();
+  const now = useNow();
+  const nowMs = Math.floor(now.getTime() / 60_000) * 60_000;
   const [filter, setFilter] = useState<EventFilterId>("all");
+  const [showPast, setShowPast] = useState(false);
+  const pendingDay = useRef<string | null>(null);
   const composing = draft;
   const filtered = useMemo(
     () => events.filter((event) => matchesEventFilter(event, filter)),
     [events, filter],
   );
-  const groups = useMemo(() => groupEventsByDay(filtered), [filtered]);
+  const { past, upcoming } = useMemo(() => {
+    const past: SchoolEvent[] = [];
+    const upcoming: SchoolEvent[] = [];
+    for (const event of filtered) {
+      if (isSchoolEventPast(event, nowMs)) past.push(event);
+      else upcoming.push(event);
+    }
+    return { past, upcoming };
+  }, [filtered, nowMs]);
+  const groups = useMemo(
+    () => groupEventsByDay(showPast ? filtered : upcoming),
+    [filtered, upcoming, showPast],
+  );
   const loggedOut = !auth.session || !auth.role;
+
+  useLayoutEffect(() => {
+    const date = pendingDay.current;
+    if (!date || !showPast) return;
+    pendingDay.current = null;
+    const covering = filtered.find((event) => eventCoversDate(event, date));
+    const section =
+      document.getElementById(`event-day-${date}`) ??
+      (covering
+        ? document.getElementById(`event-day-${crDate(covering.startsAt)}`)
+        : null);
+    section?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [filtered, groups, showPast]);
 
   if (composing) {
     return (
@@ -100,9 +131,15 @@ export function EventsPage({
     }
     const covering = filtered.find((event) => eventCoversDate(event, date));
     if (!covering) return;
-    document
-      .getElementById(`event-day-${crDate(covering.startsAt)}`)
-      ?.scrollIntoView({ behavior: "smooth", block: "start" });
+    const section = document.getElementById(
+      `event-day-${crDate(covering.startsAt)}`,
+    );
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    pendingDay.current = date;
+    setShowPast(true);
   }
 
   return (
@@ -168,7 +205,7 @@ export function EventsPage({
                   Log in
                 </button>
               </div>
-            ) : groups.length === 0 ? (
+            ) : filtered.length === 0 ? (
               <div className="mx-auto flex w-full max-w-sm flex-1 flex-col items-center justify-center px-4 text-center">
                 <span
                   className="flex size-14 items-center justify-center rounded-full bg-[oklch(0.93_0.055_78)] text-black/55"
@@ -185,35 +222,74 @@ export function EventsPage({
               </div>
             ) : (
               <div className="luma-timeline mx-auto w-full max-w-2xl md:mx-0 lg:max-w-none">
-                {groups.map((group, index) => (
+                {past.length > 0 ? (
                   <section
-                    key={group.date}
-                    id={`event-day-${group.date}`}
-                    className={`luma-day scroll-mt-24 md:scroll-mt-16${index === 0 ? " is-first" : ""}${
-                      index === groups.length - 1 ? " is-last" : ""
-                    }`}
+                    className={`luma-day is-toggle is-first${groups.length === 0 ? " is-last" : ""}`}
                   >
                     <div className="luma-day-line" aria-hidden />
                     <div className="luma-day-head">
-                      <h2 className="luma-day-title">
-                        <span className="luma-day-date">{group.dateLabel}</span>
-                        <span className="luma-day-weekday">{group.weekdayLabel}</span>
-                      </h2>
+                      <button
+                        type="button"
+                        className="luma-day-title"
+                        aria-expanded={showPast}
+                        onClick={() => setShowPast((open) => !open)}
+                      >
+                        <span className="luma-day-date">Past</span>
+                        <span className="luma-day-weekday">
+                          {showPast
+                            ? "Hide"
+                            : past.length === 1
+                              ? "1 event"
+                              : `${past.length} events`}
+                        </span>
+                      </button>
                       <span className="luma-day-dot" aria-hidden />
                     </div>
-                    <ul className="luma-day-cards">
-                      {group.events.map((event) => (
-                        <li key={event.id}>
-                          <EventListCard
-                            event={event}
-                            students={students}
-                            onOpen={() => onOpenEvent(event)}
-                          />
-                        </li>
-                      ))}
-                    </ul>
+                    {groups.length === 0 ? (
+                      <p className="text-body-md text-on-surface-variant">
+                        Nothing upcoming right now.
+                      </p>
+                    ) : null}
                   </section>
-                ))}
+                ) : null}
+                {groups.map((group, index) => {
+                  const groupPast = group.events.every((event) =>
+                    isSchoolEventPast(event, nowMs),
+                  );
+                  return (
+                    <section
+                      key={group.date}
+                      id={`event-day-${group.date}`}
+                      className={`luma-day scroll-mt-24 md:scroll-mt-16${
+                        index === 0 && past.length === 0 ? " is-first" : ""
+                      }${index === groups.length - 1 ? " is-last" : ""}${
+                        groupPast ? " is-past" : ""
+                      }`}
+                    >
+                      <div className="luma-day-line" aria-hidden />
+                      <div className="luma-day-head">
+                        <h2 className="luma-day-title">
+                          <span className="luma-day-date">{group.dateLabel}</span>
+                          <span className="luma-day-weekday">
+                            {group.weekdayLabel}
+                          </span>
+                        </h2>
+                        <span className="luma-day-dot" aria-hidden />
+                      </div>
+                      <ul className="luma-day-cards">
+                        {group.events.map((event) => (
+                          <li key={event.id}>
+                            <EventListCard
+                              event={event}
+                              students={students}
+                              onOpen={() => onOpenEvent(event)}
+                            />
+                          </li>
+                        ))}
+                      </ul>
+                    </section>
+                  );
+                })}
               </div>
             )}
           </div>

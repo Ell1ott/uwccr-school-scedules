@@ -6,6 +6,7 @@ import {
   eventIsSoldOut,
   formatEventListTime,
   isSchoolEventLive,
+  isSchoolEventPast,
   type SchoolEvent,
 } from "../lib/schoolEvents";
 import type { Student } from "../types";
@@ -155,7 +156,11 @@ export function EventListCard({
   onOpen: () => void;
 }) {
   const now = useNow();
-  const live = isSchoolEventLive(event, now.getTime());
+  const nowMs = now.getTime();
+  const live = isSchoolEventLive(event, nowMs);
+  const past = isSchoolEventPast(event, nowMs);
+  const faded =
+    past || event.status === "cancelled" || event.status === "rejected";
   const host = event.hostName?.trim() || null;
   const guests = event.goingIds
     .map((id) => findById(students, id))
@@ -168,9 +173,7 @@ export function EventListCard({
     <button
       type="button"
       className={`flex w-full items-center gap-3 rounded-[16px] bg-[#f4f4f4] p-3 text-left text-[#171717] ring-1 ring-black/[0.04] transition-colors hover:bg-[#ececec] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/25 md:gap-4 md:rounded-[18px] md:p-4 ${
-        event.status === "cancelled" || event.status === "rejected"
-          ? "opacity-60"
-          : ""
+        faded ? "opacity-55" : ""
       }`}
       onClick={onOpen}
     >
@@ -181,6 +184,8 @@ export function EventListCard({
               <span className="size-1.5 rounded-full bg-[#e85d2c]" />
               Live
             </span>
+          ) : past ? (
+            <span className="font-medium text-[#a3a3a3]">Ended</span>
           ) : null}
           <span>{formatEventListTime(event)}</span>
         </p>
@@ -242,7 +247,11 @@ export function EventListCard({
           </div>
         ) : null}
       </div>
-      <div className="size-[72px] shrink-0 overflow-hidden rounded-[12px] ring-1 ring-black/5 sm:size-[88px] md:size-[104px] md:rounded-[14px]">
+      <div
+        className={`size-[72px] shrink-0 overflow-hidden rounded-[12px] ring-1 ring-black/5 sm:size-[88px] md:size-[104px] md:rounded-[14px] ${
+          past ? "grayscale" : ""
+        }`}
+      >
         <EventPoster event={event} />
       </div>
     </button>

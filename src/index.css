@@ -305,6 +305,35 @@
   padding-bottom: 0;
 }
 
+.luma-day.is-toggle:not(.is-last) {
+  padding-bottom: 0.25rem;
+}
+
+.luma-day.is-toggle:not(.is-last) .luma-day-title {
+  margin-bottom: 0;
+}
+
+.luma-day.is-toggle .luma-day-title {
+  background: transparent;
+}
+
+.luma-day.is-toggle .luma-day-date {
+  font-weight: 400;
+  color: rgba(21, 21, 21, 0.26);
+}
+
+.luma-day.is-toggle .luma-day-weekday {
+  color: rgba(21, 21, 21, 0.18);
+}
+
+.luma-day.is-toggle .luma-day-dot {
+  background: rgba(21, 21, 21, 0.1);
+}
+
+.luma-day.is-toggle .luma-day-line {
+  border-left-color: rgba(21, 21, 21, 0.07);
+}
+
 .luma-day-line {
   position: absolute;
   top: 1rem;
@@ -362,6 +391,26 @@
   backdrop-filter: blur(16px);
 }
 
+button.luma-day-title {
+  cursor: pointer;
+  font: inherit;
+  letter-spacing: inherit;
+}
+
+button.luma-day-title:hover .luma-day-date {
+  color: rgba(21, 21, 21, 0.42);
+}
+
+button.luma-day-title:hover .luma-day-weekday {
+  color: rgba(21, 21, 21, 0.32);
+}
+
+button.luma-day-title:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px
+    color-mix(in srgb, var(--color-primary) 25%, transparent);
+}
+
 @media (max-width: 450px) {
   .luma-day-title {
     margin-bottom: 0.375rem;
@@ -373,9 +422,21 @@
   color: #151515;
 }
 
+.luma-day.is-past .luma-day-date {
+  color: rgba(21, 21, 21, 0.4);
+}
+
 .luma-day-weekday {
   font-weight: 400;
   color: rgba(21, 21, 21, 0.36);
+}
+
+.luma-day.is-past .luma-day-weekday {
+  color: rgba(21, 21, 21, 0.28);
+}
+
+.luma-day.is-past .luma-day-dot {
+  background: rgba(21, 21, 21, 0.12);
 }
 
 .luma-day-dot {

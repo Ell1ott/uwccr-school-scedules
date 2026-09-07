@@ -357,6 +357,10 @@ export function isSchoolEventLive(event: SchoolEvent, now = Date.now()): boolean
   return now >= Date.parse(event.startsAt) && now < Date.parse(event.endsAt);
 }
 
+export function isSchoolEventPast(event: SchoolEvent, now = Date.now()): boolean {
+  return Date.parse(event.endsAt) <= now;
+}
+
 export function eventIsSoldOut(event: SchoolEvent): boolean {
   return event.capacity != null && event.goingCount >= event.capacity;
 }
