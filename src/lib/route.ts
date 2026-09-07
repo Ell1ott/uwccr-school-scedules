@@ -6,6 +6,12 @@ export type AppRoute =
   | { page: "week" }
   | { page: "try-classes" }
   | { page: "events"; eventId?: string; draft?: "new" | "edit" }
+  | {
+      page: "cas";
+      casId?: string;
+      sessionId?: string;
+      draft?: "new" | "edit" | "session-new" | "session-edit";
+    }
   | { page: "login" }
   | { page: "admin" }
   | { page: "moderate"; token: string; decision: ModerateDecision | null };
@@ -80,6 +86,58 @@ export function parseRoute(pathname: string, search: string): AppRoute {
     };
   }
   if (path === "/try-classes") return { page: "try-classes" };
+  if (segments[0] === "cas") {
+    if (segments.length === 1) return { page: "cas" };
+    if (segments.length === 2 && segments[1] === "new") {
+      return { page: "cas", draft: "new" };
+    }
+    if (segments.length === 2) {
+      return { page: "cas", casId: decodeURIComponent(segments[1]) };
+    }
+    if (segments.length === 3 && segments[2] === "edit" && segments[1] !== "new") {
+      return {
+        page: "cas",
+        casId: decodeURIComponent(segments[1]),
+        draft: "edit",
+      };
+    }
+    if (
+      segments.length === 4 &&
+      segments[2] === "sessions" &&
+      segments[3] === "new" &&
+      segments[1] !== "new"
+    ) {
+      return {
+        page: "cas",
+        casId: decodeURIComponent(segments[1]),
+        draft: "session-new",
+      };
+    }
+    if (
+      segments.length === 4 &&
+      segments[2] === "sessions" &&
+      segments[1] !== "new" &&
+      segments[3] !== "new"
+    ) {
+      return {
+        page: "cas",
+        casId: decodeURIComponent(segments[1]),
+        sessionId: decodeURIComponent(segments[3]),
+      };
+    }
+    if (
+      segments.length === 5 &&
+      segments[2] === "sessions" &&
+      segments[4] === "edit"
+    ) {
+      return {
+        page: "cas",
+        casId: decodeURIComponent(segments[1]),
+        sessionId: decodeURIComponent(segments[3]),
+        draft: "session-edit",
+      };
+    }
+  }
   if (segments[0] === "events") {
     if (segments.length === 1) return { page: "events" };
     if (segments.length === 2 && segments[1] === "new") {
@@ -135,6 +193,22 @@ export function toPath(route: AppRoute): string {
       const query = params.toString();
       return query ? `/moderate?${query}` : "/moderate";
     }
+    case "cas":
+      if (route.draft === "new") return "/cas/new";
+      if (route.casId && route.draft === "edit") {
+        return `/cas/${encodeURIComponent(route.casId)}/edit`;
+      }
+      if (route.casId && route.draft === "session-new") {
+        return `/cas/${encodeURIComponent(route.casId)}/sessions/new`;
+      }
+      if (route.casId && route.sessionId && route.draft === "session-edit") {
+        return `/cas/${encodeURIComponent(route.casId)}/sessions/${encodeURIComponent(route.sessionId)}/edit`;
+      }
+      if (route.casId && route.sessionId) {
+        return `/cas/${encodeURIComponent(route.casId)}/sessions/${encodeURIComponent(route.sessionId)}`;
+      }
+      if (route.casId) return `/cas/${encodeURIComponent(route.casId)}`;
+      return "/cas";
     case "events":
       if (route.draft === "new") return "/events/new";
       if (route.eventId && route.draft === "edit") {

@@ -511,6 +511,24 @@ const KIND_TONES_CHROME: Record<string, Tone> = {
     bar: "bg-amber-900",
     chip: "bg-black/10",
   },
+  cas: {
+    bg: "bg-emerald-100",
+    text: "text-black",
+    bar: "bg-emerald-800",
+    chip: "bg-black/10",
+  },
+  cas_strong: {
+    bg: "bg-emerald-300",
+    text: "text-black",
+    bar: "bg-emerald-900",
+    chip: "bg-black/10",
+  },
+  cas_quiet: {
+    bg: "bg-stone-100",
+    text: "text-black",
+    bar: "bg-stone-400",
+    chip: "bg-black/10",
+  },
   holiday: {
     bg: "bg-zinc-200",
     text: "text-black",
@@ -570,6 +588,24 @@ const KIND_TONES: Record<PaletteId, Record<string, Tone>> = {
       text: "text-black",
       bar: "bg-tertiary",
       chip: "bg-tertiary/15",
+    },
+    cas: {
+      bg: "bg-emerald-100",
+      text: "text-black",
+      bar: "bg-emerald-800",
+      chip: "bg-black/10",
+    },
+    cas_strong: {
+      bg: "bg-emerald-200",
+      text: "text-black",
+      bar: "bg-emerald-900",
+      chip: "bg-black/10",
+    },
+    cas_quiet: {
+      bg: "bg-surface-container",
+      text: "text-black",
+      bar: "bg-outline-variant",
+      chip: "bg-black/10",
     },
     holiday: {
       bg: "bg-surface-container-high",
@@ -641,6 +677,11 @@ export function toneForEvent(
   if (event.kind === "residential") return KIND_TONES[palette].residential;
   if (event.kind === "community") return KIND_TONES[palette].community;
   if (event.kind === "school_event") return KIND_TONES[palette].school_event;
+  if (event.kind === "cas") {
+    if (event.emphasis === "strong") return KIND_TONES[palette].cas_strong;
+    if (event.emphasis === "quiet") return KIND_TONES[palette].cas_quiet;
+    return KIND_TONES[palette].cas;
+  }
   if (event.kind === "holiday") return KIND_TONES[palette].holiday;
   return KIND_TONES[palette].activity;
 }

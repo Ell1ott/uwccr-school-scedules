@@ -51,9 +51,39 @@ Deno.serve(async (req) => {
     message?: string;
     already?: boolean;
   };
+  if (payload.ok || payload.message !== "This link is not valid.") {
+    return json({
+      ok: Boolean(payload.ok),
+      already: Boolean(payload.already),
+      message: payload.message ?? (payload.ok ? "Done." : "Could not update this event."),
+    });
+  }
+
+  const { data: casData, error: casError } = await admin.rpc(
+    "moderate_cas_by_token",
+    { p_token: token, p_decision: decision },
+  );
+  if (casError) {
+    return json({ ok: false, message: casError.message }, 400);
+  }
+  const casPayload = (casData ?? {}) as {
+    ok?: boolean;
+    message?: string;
+    already?: boolean;
+    kind?: string;
+  };
+  if (casPayload.kind === "missing") {
+    return json({
+      ok: false,
+      already: false,
+      message: "This link is not valid.",
+    });
+  }
   return json({
-    ok: Boolean(payload.ok),
-    already: Boolean(payload.already),
-    message: payload.message ?? (payload.ok ? "Done." : "Could not update this event."),
+    ok: Boolean(casPayload.ok),
+    already: Boolean(casPayload.already),
+    message:
+      casPayload.message ??
+      (casPayload.ok ? "Done." : "Could not update this CAS."),
   });
 });

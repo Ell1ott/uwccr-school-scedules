@@ -121,9 +121,12 @@ export function EventCard({
     .join(", ");
 
   const interactive =
-    (event.kind === "class" || event.kind === "school_event") && Boolean(onOpen);
+    (event.kind === "class" ||
+      event.kind === "school_event" ||
+      event.kind === "cas") &&
+    Boolean(onOpen);
   const className = `relative flex h-full flex-col justify-start overflow-hidden rounded-[10px] shadow-[0_4px_12px_rgba(4,22,39,0.05)] transition-[filter,box-shadow,transform] duration-200 ${tone.bg} ${tone.text} ${padding} ${minHeight} ${
-    event.cancelled ? "opacity-70" : ""
+    event.cancelled ? "opacity-70" : event.kind === "cas" && event.emphasis === "quiet" ? "opacity-80" : ""
   } ${
     interactive
       ? "w-full appearance-none cursor-pointer text-left hover:brightness-[0.97] hover:shadow-[0_6px_16px_rgba(4,22,39,0.1)] active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
@@ -143,6 +146,8 @@ export function EventCard({
             />
           ) : event.kind === "school_event" ? (
             <EventIcon name="sparkles" className="mt-0.5" size={compact ? 14 : 16} />
+          ) : event.kind === "cas" ? (
+            <EventIcon name="users" className="mt-0.5" size={compact ? 14 : 16} />
           ) : null}
           <span className={event.cancelled ? "line-through" : ""}>{event.title}</span>
         </h3>
@@ -194,7 +199,7 @@ export function EventCard({
             <EventIcon name="user" /> {event.teacher}
           </p>
         ) : null}
-        {event.room && event.kind !== "school_event" ? (
+        {event.room && event.kind !== "school_event" && event.kind !== "cas" ? (
           <p className="flex items-center gap-1">
             <EventIcon name="door-open" /> Rm {event.room}
           </p>

@@ -170,7 +170,7 @@ export function formatDayDate(weekStart: string, dayId: DayId): string {
 export function formatWeekRange(weekStart: string): string {
   const start = parseISODate(weekStart);
   const end = parseISODate(weekStart);
-  end.setDate(end.getDate() + 4);
+  end.setDate(end.getDate() + 6);
   const startMonth = start.toLocaleString("en-US", { month: "short" });
   const endMonth = end.toLocaleString("en-US", { month: "short" });
   if (start.getMonth() === end.getMonth()) {

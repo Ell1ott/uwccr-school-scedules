@@ -30,7 +30,7 @@ export function ModerateEventPage({ onDone }: { onDone: () => void }) {
     ok === null ? "Please wait" : ok ? "Done" : "Could not update";
 
   return (
-    <StaffPage title={title} eyebrow="Events" onBack={onDone}>
+    <StaffPage title={title} eyebrow="Approval" onBack={onDone}>
       <div className="rounded-[28px] bg-surface-container-lowest p-6 shadow-[0_8px_32px_rgba(4,22,39,0.06)]">
         <p className="text-body-md text-on-surface-variant">{message}</p>
         {ok !== null ? (

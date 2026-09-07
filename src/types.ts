@@ -55,7 +55,7 @@ export type StudentsFile = {
   students: Omit<Student, "email">[];
 };
 
-export type DayId = "mon" | "tue" | "wed" | "thu" | "fri";
+export type DayId = "mon" | "tue" | "wed" | "thu" | "fri" | "sat" | "sun";
 
 export type EventKind =
   | "class"
@@ -67,7 +67,8 @@ export type EventKind =
   | "residential"
   | "community"
   | "holiday"
-  | "school_event";
+  | "school_event"
+  | "cas";
 
 export type CalendarAudience = "both" | "staff";
 
@@ -109,6 +110,9 @@ export type ScheduleEvent = {
   note?: string | null;
   noteId?: string;
   schoolEventId?: string;
+  casSessionId?: string;
+  casId?: string;
+  emphasis?: "strong" | "normal" | "quiet";
   eventMode?: EventMode;
   rsvpStatus?: RsvpStatus | null;
   goingCount?: number;

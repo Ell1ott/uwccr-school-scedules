@@ -4,6 +4,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronUp,
+  Compass,
   EllipsisVertical,
   MessageSquare,
   Shuffle,
@@ -212,8 +213,10 @@ export function MobileHub({
                 >
                   <ChevronLeft size={16} strokeWidth={1.75} aria-hidden />
                 </button>
-                <div className="flex min-w-0 flex-1">
-                  {DAYS.map((day) => {
+                <div className="flex min-w-0 flex-1 flex-col gap-1">
+                  <div className="flex">
+                    {DAYS.filter((day) => day.id !== "sat" && day.id !== "sun").map(
+                      (day) => {
                     const selectedDay = day.id === dayId;
                     const isToday = isThisWeek && todayId === day.id;
                     const date = formatDayDate(weekStart, day.id);
@@ -251,7 +254,52 @@ export function MobileHub({
                         </span>
                       </button>
                     );
-                  })}
+                      },
+                    )}
+                  </div>
+                  <div className="flex justify-center gap-1">
+                    {DAYS.filter((day) => day.id === "sat" || day.id === "sun").map(
+                      (day) => {
+                        const selectedDay = day.id === dayId;
+                        const isToday = isThisWeek && todayId === day.id;
+                        const date = formatDayDate(weekStart, day.id);
+                        return (
+                          <button
+                            key={day.id}
+                            type="button"
+                            aria-label={`${day.label} ${date}`}
+                            aria-pressed={selectedDay}
+                            className="flex w-14 flex-col items-center gap-1 rounded-xl py-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+                            onClick={() => {
+                              onPickDay(day.id);
+                              onClose();
+                            }}
+                          >
+                            <span
+                              className={`text-[11px] font-medium tracking-[0.08em] ${
+                                selectedDay
+                                  ? "text-on-surface"
+                                  : "text-on-surface-variant/70"
+                              }`}
+                            >
+                              {day.short}
+                            </span>
+                            <span
+                              className={`flex size-9 items-center justify-center rounded-full text-[15px] font-semibold tabular-nums ${
+                                selectedDay
+                                  ? "bg-primary text-on-primary"
+                                  : isToday
+                                    ? "text-primary ring-1 ring-primary/30"
+                                    : "text-on-surface-variant"
+                              }`}
+                            >
+                              {date}
+                            </span>
+                          </button>
+                        );
+                      },
+                    )}
+                  </div>
                 </div>
                 <button
                   type="button"
@@ -279,7 +327,7 @@ export function MobileHub({
               </button>
             </section>
 
-            <section className="grid grid-cols-3 gap-2">
+            <section className="grid grid-cols-2 gap-2">
               <DestinationTile
                 current={tab === "week"}
                 label="Week"
@@ -295,6 +343,14 @@ export function MobileHub({
                 onClick={() => goTab("events")}
               >
                 <Sparkles size={18} strokeWidth={1.75} aria-hidden />
+              </DestinationTile>
+              <DestinationTile
+                current={tab === "cas"}
+                label="CAS"
+                ariaLabel="CAS"
+                onClick={() => goTab("cas")}
+              >
+                <Compass size={18} strokeWidth={1.75} aria-hidden />
               </DestinationTile>
               <DestinationTile
                 current={tab === "classes"}

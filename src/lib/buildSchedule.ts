@@ -2,6 +2,7 @@ import {
   academicRowsFor,
   DAYS,
   SHARED_BREAKS,
+  isWeekendDay,
 } from "../data/weekTemplate";
 import {
   dateForDay,
@@ -103,11 +104,12 @@ function buildDayShell(
   const noClasses = dayHasNoClasses(date, kind, cohort);
   const communityMeeting = dayHasCommunityMeeting(date);
 
-  if (!noClasses) {
-    fillAcademic(events, communityMeeting, date);
+  if (!isWeekendDay(dayId)) {
+    if (!noClasses) {
+      fillAcademic(events, communityMeeting, date);
+    }
+    appendSharedSlots(events, dayId);
   }
-
-  appendSharedSlots(events, dayId);
   eventsForDate(date, kind, cohort).forEach((event, index) => {
     events.push(calendarToSchedule(dayId, event, index));
   });

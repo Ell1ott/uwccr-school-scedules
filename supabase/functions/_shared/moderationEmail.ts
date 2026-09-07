@@ -177,3 +177,54 @@ export async function sendModerationEmails(input: {
   }
   return { ok: true, emailed: results.length };
 }
+
+export async function sendCasModerationEmails(input: {
+  lead: string;
+  title: string;
+  description: string;
+  location: string;
+  origin: string;
+  token: string;
+}): Promise<{ ok: boolean; emailed: number; error?: string }> {
+  const origin = input.origin.replace(/\/$/, "");
+  const token = input.token.trim();
+  if (!origin || !token || !input.title) {
+    return { ok: false, emailed: 0, error: "token and origin are required" };
+  }
+  const allowUrl = `${origin}/moderate?token=${encodeURIComponent(token)}&decision=allow`;
+  const denyUrl = `${origin}/moderate?token=${encodeURIComponent(token)}&decision=deny`;
+  const details = input.description.trim()
+    ? `<p>${escapeHtml(input.description).replaceAll("\n", "<br/>")}</p>`
+    : "";
+  const location = input.location.trim()
+    ? `<p><strong>Where:</strong> ${escapeHtml(input.location)}</p>`
+    : "";
+  const html = `
+    <div style="font-family:Inter,system-ui,sans-serif;color:#1b1c1d;line-height:1.5;max-width:560px">
+      <p>${escapeHtml(input.lead)}</p>
+      <p><strong>${escapeHtml(input.title)}</strong></p>
+      <p><strong>Kind:</strong> New CAS</p>
+      ${location}
+      ${details}
+      <p style="margin:28px 0 12px">
+        <a href="${allowUrl}" style="display:inline-block;padding:12px 20px;border-radius:999px;background:#1b4d3e;color:#fff;text-decoration:none;font-weight:600">Allow</a>
+        &nbsp;
+        <a href="${denyUrl}" style="display:inline-block;padding:12px 20px;border-radius:999px;background:#ececec;color:#1b1c1d;text-decoration:none;font-weight:600">Don't allow</a>
+      </p>
+    </div>
+  `;
+  const subject = `Approve CAS: ${input.title}`;
+  const results: { to: string; ok: boolean; error?: string }[] = [];
+  for (const to of ADMIN_EMAILS) {
+    const sent = await sendResend(to, subject, html);
+    results.push({ to, ok: sent.ok, error: sent.error });
+  }
+  if (results.some((row) => !row.ok)) {
+    return {
+      ok: false,
+      emailed: results.filter((row) => row.ok).length,
+      error: results.find((row) => !row.ok)?.error ?? "Could not email admins",
+    };
+  }
+  return { ok: true, emailed: results.length };
+}

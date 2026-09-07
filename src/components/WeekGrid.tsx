@@ -1,4 +1,4 @@
-import { DAYS } from "../data/weekTemplate";
+import { DAYS, SCHOOL_DAYS } from "../data/weekTemplate";
 import { formatTime, parseTime, todayDayId } from "../lib/buildSchedule";
 import { dateForDay, formatDayDate, mondayOf } from "../lib/calendar";
 import { EventIcon } from "../lib/icons";
@@ -16,6 +16,7 @@ const HOUR_PX = 72;
 const OVERLAP_GAP_PX = 4;
 const DINNER_START = "18:00";
 const COLS = "grid-cols-[88px_repeat(5,minmax(0,1fr))]";
+const WEEKEND_DAYS = DAYS.filter((day) => day.id === "sat" || day.id === "sun");
 
 function eventAt(
   events: ScheduleEvent[],
@@ -61,7 +62,7 @@ function timedWeek(
   weekStart: string,
 ): Record<DayId, ScheduleEvent[]> {
   const next = {} as Record<DayId, ScheduleEvent[]>;
-  for (const day of DAYS) {
+  for (const day of SCHOOL_DAYS) {
     next[day.id] = week[day.id].filter(
       (event) => !isAllDayLaneEvent(event, weekStart),
     );
@@ -77,7 +78,7 @@ function allDaySpans(
   const spans: DaySpan[] = [];
   const weekStartDate = dateForDay(weekStart, "mon");
   const weekEndDate = dateForDay(weekStart, "fri");
-  for (const day of DAYS) {
+  for (const day of SCHOOL_DAYS) {
     for (const event of week[day.id]) {
       if (!isAllDayLaneEvent(event, weekStart)) continue;
       const key = event.schoolEventId ?? event.id;
@@ -87,7 +88,7 @@ function allDaySpans(
       const endDate = event.spanEndDate ?? event.date ?? startDate;
       let start = -1;
       let end = -1;
-      DAYS.forEach((item, index) => {
+      SCHOOL_DAYS.forEach((item, index) => {
         const date = dateForDay(weekStart, item.id);
         if (date >= startDate && date <= endDate) {
           if (start === -1) start = index;
@@ -306,7 +307,7 @@ export function WeekGrid({
     <div className="px-container-padding-desktop pb-16">
       <div className={`sticky top-[calc(3rem+env(safe-area-inset-top,0px))] z-30 grid ${COLS} gap-x-4 bg-surface-container-lowest/90 py-3 backdrop-blur-md`}>
         <div />
-        {DAYS.map((day) => (
+        {SCHOOL_DAYS.map((day) => (
           <div
             key={day.id}
             aria-current={day.id === todayId ? "date" : undefined}
@@ -344,12 +345,142 @@ export function WeekGrid({
         ))}
       </div>
 
+      <OffSlotMorning
+        week={timed}
+        weekStart={weekStart}
+        onClassClick={onClassClick}
+      />
+
       <AfternoonGrid
         week={timed}
         weekStart={weekStart}
         onClassClick={onClassClick}
       />
+
+      <WeekendStrip
+        week={week}
+        weekStart={weekStart}
+        onClassClick={onClassClick}
+      />
     </div>
+  );
+}
+
+function isSlotStart(start: string): boolean {
+  return MORNING_STARTS.includes(start);
+}
+
+function OffSlotMorning({
+  week,
+  weekStart,
+  onClassClick,
+}: {
+  week: Record<DayId, ScheduleEvent[]>;
+  weekStart: string;
+  onClassClick?: (event: ScheduleEvent) => void;
+}) {
+  const extras = SCHOOL_DAYS.map((day) => ({
+    day,
+    events: (week[day.id] ?? []).filter(
+      (event) =>
+        (event.kind === "cas" || event.kind === "school_event") &&
+        !event.allDay &&
+        event.startMin < AFTERNOON_START_MIN &&
+        !isSlotStart(event.start),
+    ),
+  }));
+  if (extras.every((item) => item.events.length === 0)) return null;
+
+  return (
+    <div className={`mt-3 grid ${COLS} items-start gap-x-4`}>
+      <div className="pt-3 text-right text-[11px] font-medium tracking-[0.12em] text-on-surface-variant/45 uppercase">
+        Extra
+      </div>
+      {extras.map(({ day, events }) => (
+        <div key={day.id} className="flex flex-col gap-2">
+          {events.map((event) => (
+            <EventCard
+              key={event.id}
+              event={event}
+              dayId={day.id}
+              weekStart={weekStart}
+              compact
+              fill
+              showTime
+              onOpen={onClassClick}
+            />
+          ))}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function WeekendStrip({
+  week,
+  weekStart,
+  onClassClick,
+}: {
+  week: Record<DayId, ScheduleEvent[]>;
+  weekStart: string;
+  onClassClick?: (event: ScheduleEvent) => void;
+}) {
+  const todayId = weekStart === mondayOf(new Date()) ? todayDayId() : null;
+  const columns = WEEKEND_DAYS.map((day) => ({
+    day,
+    events: week[day.id] ?? [],
+  }));
+  if (columns.every((item) => item.events.length === 0)) return null;
+
+  return (
+    <section className="mt-10">
+      <h2 className="mb-3 text-label-sm tracking-[0.12em] text-on-surface-variant uppercase">
+        Weekend
+      </h2>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+        {columns.map(({ day, events }) => (
+          <div key={day.id}>
+            <div
+              aria-current={day.id === todayId ? "date" : undefined}
+              className={`mb-2 text-label-sm tracking-[0.12em] uppercase ${
+                day.id === todayId
+                  ? "font-semibold text-primary"
+                  : "text-on-surface-variant"
+              }`}
+            >
+              {day.label}{" "}
+              <span
+                className={
+                  day.id === todayId
+                    ? "inline-flex size-6 items-center justify-center rounded-full bg-primary tracking-normal text-on-primary"
+                    : undefined
+                }
+              >
+                {formatDayDate(weekStart, day.id)}
+              </span>
+            </div>
+            {events.length === 0 ? (
+              <p className="text-body-md text-on-surface-variant">Nothing yet</p>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {events.map((event) => (
+                  <EventCard
+                    key={event.id}
+                    event={event}
+                    dayId={day.id}
+                    weekStart={weekStart}
+                    compact
+                    fill
+                    showTime
+                    onOpen={onClassClick}
+                  />
+                ))}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
   );
 }
 
@@ -385,7 +516,7 @@ function AfternoonGrid({
         </div>
       ))}
 
-      {DAYS.map((day, dayIndex) => {
+      {SCHOOL_DAYS.map((day, dayIndex) => {
         const dinner = week[day.id].find(
           (event) => event.kind === "meal" && event.start === DINNER_START,
         );
@@ -483,11 +614,11 @@ function TimeRow({
   weekStart: string;
   onClassClick?: (event: ScheduleEvent) => void;
 }) {
-  const sample = DAYS.map((day) => eventAt(week[day.id], start)).find(Boolean);
+  const sample = SCHOOL_DAYS.map((day) => eventAt(week[day.id], start)).find(Boolean);
   return (
     <>
       <TimeLabel start={start} end={sample?.end} />
-      {DAYS.map((day) => (
+      {SCHOOL_DAYS.map((day) => (
         <Slot
           key={day.id}
           event={eventAt(week[day.id], start)}

@@ -1,4 +1,4 @@
-import { Calendar, MessageSquare, Shuffle, Sparkles } from "lucide-react";
+import { Calendar, Compass, MessageSquare, Shuffle, Sparkles } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { useAuth } from "../lib/auth";
 import type { SelectedPerson, Student, Teacher } from "../types";
@@ -6,11 +6,12 @@ import { PalettePicker } from "./PalettePicker";
 import { StudentPicker } from "./StudentPicker";
 import { WeekNav } from "./WeekNav";
 
-export type AppTabId = "week" | "classes" | "events";
+export type AppTabId = "week" | "classes" | "events" | "cas";
 
 const APP_TABS = [
   { id: "week", label: "Week" },
   { id: "events", label: "Events" },
+  { id: "cas", label: "CAS" },
   { id: "classes", label: "Try classes" },
 ] as const;
 
@@ -102,6 +103,11 @@ function TabIcon({ id }: { id: AppTabId }) {
   if (id === "events") {
     return (
       <Sparkles size={16} strokeWidth={1.75} className="shrink-0" aria-hidden />
+    );
+  }
+  if (id === "cas") {
+    return (
+      <Compass size={16} strokeWidth={1.75} className="shrink-0" aria-hidden />
     );
   }
 

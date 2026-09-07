@@ -93,7 +93,7 @@ export function StudentPicker({
           aria-expanded={open}
           aria-controls={listId}
           aria-autocomplete="list"
-          className="w-full bg-transparent text-[13px] leading-5 text-on-surface outline-none placeholder:text-on-surface-variant/70"
+          className="w-full bg-transparent text-body-md outline-none placeholder:text-on-surface-variant/70 md:text-[13px] md:leading-5"
           placeholder={selectedName ? selectedName : "Search students & teachers"}
           autoFocus={autoFocus}
           value={open ? query : selectedName && !open ? "" : query}

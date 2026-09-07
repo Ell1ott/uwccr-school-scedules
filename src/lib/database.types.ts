@@ -83,6 +83,266 @@ export type Database = {
           },
         ]
       }
+      cas: {
+        Row: {
+          created_at: string
+          created_by: string
+          description: string
+          id: string
+          location: string
+          moderation_token: string | null
+          status: Database["public"]["Enums"]["cas_status"]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          description?: string
+          id?: string
+          location?: string
+          moderation_token?: string | null
+          status?: Database["public"]["Enums"]["cas_status"]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          description?: string
+          id?: string
+          location?: string
+          moderation_token?: string | null
+          status?: Database["public"]["Enums"]["cas_status"]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cas_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cas_leaders: {
+        Row: {
+          cas_id: string
+          created_at: string
+          profile_id: string
+        }
+        Insert: {
+          cas_id: string
+          created_at?: string
+          profile_id: string
+        }
+        Update: {
+          cas_id?: string
+          created_at?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cas_leaders_cas_id_fkey"
+            columns: ["cas_id"]
+            isOneToOne: false
+            referencedRelation: "cas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cas_leaders_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cas_members: {
+        Row: {
+          cas_id: string
+          joined_at: string
+          student_id: string
+        }
+        Insert: {
+          cas_id: string
+          joined_at?: string
+          student_id: string
+        }
+        Update: {
+          cas_id?: string
+          joined_at?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cas_members_cas_id_fkey"
+            columns: ["cas_id"]
+            isOneToOne: false
+            referencedRelation: "cas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cas_members_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cas_session_series: {
+        Row: {
+          cas_id: string
+          created_at: string
+          created_by: string
+          id: string
+          until_date: string
+        }
+        Insert: {
+          cas_id: string
+          created_at?: string
+          created_by: string
+          id?: string
+          until_date: string
+        }
+        Update: {
+          cas_id?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          until_date?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cas_session_series_cas_id_fkey"
+            columns: ["cas_id"]
+            isOneToOne: false
+            referencedRelation: "cas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cas_session_series_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cas_session_signups: {
+        Row: {
+          created_at: string
+          id: string
+          session_id: string
+          status: Database["public"]["Enums"]["cas_signup_status"]
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          session_id: string
+          status: Database["public"]["Enums"]["cas_signup_status"]
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          session_id?: string
+          status?: Database["public"]["Enums"]["cas_signup_status"]
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cas_session_signups_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "cas_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cas_session_signups_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      cas_sessions: {
+        Row: {
+          capacity: number | null
+          cas_id: string
+          created_at: string
+          description: string
+          ends_at: string
+          going_count: number
+          id: string
+          label: string
+          location: string
+          mode: Database["public"]["Enums"]["cas_session_mode"]
+          series_id: string | null
+          split_group_id: string | null
+          starts_at: string
+          status: Database["public"]["Enums"]["cas_session_status"]
+          updated_at: string
+          waitlisted_count: number
+        }
+        Insert: {
+          capacity?: number | null
+          cas_id: string
+          created_at?: string
+          description?: string
+          ends_at: string
+          going_count?: number
+          id?: string
+          label?: string
+          location?: string
+          mode?: Database["public"]["Enums"]["cas_session_mode"]
+          series_id?: string | null
+          split_group_id?: string | null
+          starts_at: string
+          status?: Database["public"]["Enums"]["cas_session_status"]
+          updated_at?: string
+          waitlisted_count?: number
+        }
+        Update: {
+          capacity?: number | null
+          cas_id?: string
+          created_at?: string
+          description?: string
+          ends_at?: string
+          going_count?: number
+          id?: string
+          label?: string
+          location?: string
+          mode?: Database["public"]["Enums"]["cas_session_mode"]
+          series_id?: string | null
+          split_group_id?: string | null
+          starts_at?: string
+          status?: Database["public"]["Enums"]["cas_session_status"]
+          updated_at?: string
+          waitlisted_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "cas_sessions_cas_id_fkey"
+            columns: ["cas_id"]
+            isOneToOne: false
+            referencedRelation: "cas"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "cas_sessions_series_id_fkey"
+            columns: ["series_id"]
+            isOneToOne: false
+            referencedRelation: "cas_session_series"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       email_ingest_log: {
         Row: {
           created_at: string
@@ -494,9 +754,44 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      add_cas_leader: {
+        Args: { p_cas_id: string; p_student_id?: string; p_teacher_id?: string }
+        Returns: undefined
+      }
+      archive_cas: { Args: { p_cas_id: string }; Returns: undefined }
+      can_see_cas: { Args: { p_cas_id: string }; Returns: boolean }
+      cancel_cas_session: {
+        Args: { p_rest_of_series?: boolean; p_session_id: string }
+        Returns: number
+      }
+      cancel_cas_signup: { Args: { p_session_id: string }; Returns: undefined }
       cancel_event: {
         Args: { p_event_id: string; p_rest_of_series?: boolean }
         Returns: number
+      }
+      create_cas: {
+        Args: {
+          p_description: string
+          p_leader_student_ids?: string[]
+          p_location: string
+          p_title: string
+        }
+        Returns: Json
+      }
+      create_cas_sessions: {
+        Args: {
+          p_capacity: number | null
+          p_cas_id: string
+          p_description: string
+          p_ends: string[]
+          p_freq?: string
+          p_label: string
+          p_location: string
+          p_mode: Database["public"]["Enums"]["cas_session_mode"]
+          p_starts: string[]
+          p_until_date?: string
+        }
+        Returns: string[]
       }
       create_event_batch: {
         Args: {
@@ -536,17 +831,67 @@ export type Database = {
       current_profile_id: { Args: never; Returns: string }
       current_student_id: { Args: never; Returns: string }
       current_teacher_id: { Args: never; Returns: string }
+      is_cas_leader: { Args: { p_cas_id: string }; Returns: boolean }
       is_staff: { Args: never; Returns: boolean }
+      join_cas: { Args: { p_cas_id: string }; Returns: undefined }
       join_event: {
         Args: { p_event_id: string }
         Returns: Database["public"]["Enums"]["rsvp_status"]
       }
+      leave_cas: { Args: { p_cas_id: string }; Returns: undefined }
       leave_event: { Args: { p_event_id: string }; Returns: undefined }
+      moderate_cas_by_token: {
+        Args: { p_decision: string; p_token: string }
+        Returns: Json
+      }
       moderate_events_by_token: {
         Args: { p_decision: string; p_token: string }
         Returns: Json
       }
+      pending_cas_for_token: { Args: { p_token: string }; Returns: Json }
       pending_events_for_token: { Args: { p_token: string }; Returns: Json }
+      remove_cas_leader: {
+        Args: { p_cas_id: string; p_profile_id: string }
+        Returns: undefined
+      }
+      signup_cas_session: {
+        Args: { p_session_id: string }
+        Returns: Database["public"]["Enums"]["cas_signup_status"]
+      }
+      split_cas_session: {
+        Args: {
+          p_capacity?: number | null
+          p_ends: string[]
+          p_labels?: string[]
+          p_session_id: string
+          p_starts: string[]
+        }
+        Returns: string[]
+      }
+      student_is_cas_member: { Args: { p_cas_id: string }; Returns: boolean }
+      update_cas: {
+        Args: {
+          p_cas_id: string
+          p_description: string
+          p_location: string
+          p_title: string
+        }
+        Returns: undefined
+      }
+      update_cas_session: {
+        Args: {
+          p_capacity: number | null
+          p_description: string
+          p_ends_at: string
+          p_label: string
+          p_location: string
+          p_mode: Database["public"]["Enums"]["cas_session_mode"]
+          p_rest_of_series?: boolean
+          p_session_id: string
+          p_starts_at: string
+        }
+        Returns: number
+      }
       promote_waitlist: { Args: { p_event_id: string }; Returns: undefined }
       seed_event_responses: { Args: { p_event_id: string }; Returns: undefined }
       respond_invite: {
@@ -560,6 +905,10 @@ export type Database = {
     }
     Enums: {
       app_role: "student" | "staff"
+      cas_session_mode: "mandatory" | "signup" | "optional"
+      cas_session_status: "published" | "cancelled"
+      cas_signup_status: "going" | "waitlisted"
+      cas_status: "pending" | "published" | "archived" | "rejected"
       event_mode: "mandatory" | "invite" | "open" | "info"
       event_status: "published" | "cancelled" | "pending" | "rejected"
       rsvp_source: "assigned" | "joined"
@@ -701,6 +1050,10 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["student", "staff"],
+      cas_session_mode: ["mandatory", "signup", "optional"],
+      cas_session_status: ["published", "cancelled"],
+      cas_signup_status: ["going", "waitlisted"],
+      cas_status: ["pending", "published", "archived", "rejected"],
       event_mode: ["mandatory", "invite", "open", "info"],
       event_status: ["published", "cancelled"],
       rsvp_source: ["assigned", "joined"],

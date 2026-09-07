@@ -13,6 +13,8 @@ import { AppHeader, type AppTabId } from "./components/AppHeader";
 import { ClassChooser } from "./components/ClassChooser";
 import { ClassDetailSheet } from "./components/ClassDetailSheet";
 import { EventDetailSheet } from "./components/EventDetailSheet";
+import { CasPage, type CasDraft } from "./components/CasPage";
+import { CasSessionSheet } from "./components/CasSessionSheet";
 import { EventsPage } from "./components/EventsPage";
 import { FeedbackSheet } from "./components/FeedbackSheet";
 import { MobileHub } from "./components/MobileHub";
@@ -59,6 +61,7 @@ import {
   useAppRoute,
   type AppRoute,
 } from "./lib/route";
+import { applyCasSessions, useCasCatalog } from "./lib/cas";
 import {
   applySchoolEvents,
   useSchoolEvents,
@@ -102,12 +105,14 @@ function eventsListRoute(route: AppRoute): AppRoute {
 function tabFromRoute(route: AppRoute): AppTabId {
   if (route.page === "try-classes") return "classes";
   if (route.page === "events") return "events";
+  if (route.page === "cas") return "cas";
   return "week";
 }
 
 function routeFromTab(tab: AppTabId): AppRoute {
   if (tab === "classes") return { page: "try-classes" };
   if (tab === "events") return { page: "events" };
+  if (tab === "cas") return { page: "cas" };
   return { page: "week" };
 }
 
@@ -128,6 +133,10 @@ function AppShell() {
   const lessonNotes = useLessonNotes();
   const { events: schoolEvents, loaded: eventsLoaded } = useSchoolEvents(
     auth.studentId,
+  );
+  const { groups: casGroups } = useCasCatalog(
+    auth.studentId,
+    auth.profileId,
   );
   const [selected, setSelected] = useState<SelectedPerson | null>(
     () => readStoredPerson(),
@@ -161,6 +170,20 @@ function AppShell() {
         : null;
   const openSchoolEvent =
     route.page === "events" && !route.draft ? matchedSchoolEvent : null;
+  const matchedCas =
+    route.page === "cas" && route.casId
+      ? casGroups.find((item) => item.id === route.casId) ?? null
+      : null;
+  const matchedCasSession =
+    matchedCas && route.page === "cas" && route.sessionId
+      ? matchedCas.sessions.find((item) => item.id === route.sessionId) ?? null
+      : null;
+  const casDraft: CasDraft | null =
+    route.page === "cas" ? route.draft ?? null : null;
+  const openCasSession =
+    route.page === "cas" && route.sessionId && !route.draft
+      ? matchedCasSession
+      : null;
 
   useLayoutEffect(() => {
     const canonical = toPath(route);
@@ -259,6 +282,7 @@ function AppShell() {
     if (next === "classes") track("class_chooser_opened");
     else if (tab === "classes") track("class_chooser_closed");
     if (next === "events") track("events_opened");
+    if (next === "cas") track("cas_opened");
     navigate(routeFromTab(next));
   }
 
@@ -270,6 +294,20 @@ function AppShell() {
         navigate({ page: "events", eventId: match.id });
         track("school_event_opened", { event_id: match.id, source: "week" });
       }
+      return;
+    }
+    if (event.kind === "cas" && event.casId && event.casSessionId) {
+      setOpenEvent(null);
+      navigate({
+        page: "cas",
+        casId: event.casId,
+        sessionId: event.casSessionId,
+      });
+      track("cas_session_opened", {
+        cas_id: event.casId,
+        session_id: event.casSessionId,
+        source: "week",
+      });
       return;
     }
     setOpenEvent(event);
@@ -303,6 +341,35 @@ function AppShell() {
     navigate(eventsListRoute(route));
   }
 
+  function onCasDraftChange(draft: CasDraft | null, casId?: string) {
+    if (draft === "new") {
+      navigate({ page: "cas", draft: "new" });
+      return;
+    }
+    if (draft === "edit" && casId) {
+      navigate({ page: "cas", casId, draft: "edit" });
+      return;
+    }
+    if (draft === "session-new" && casId) {
+      navigate({ page: "cas", casId, draft: "session-new" });
+      return;
+    }
+    if (draft === "session-edit" && casId && route.page === "cas") {
+      navigate({
+        page: "cas",
+        casId,
+        sessionId: route.sessionId,
+        draft: "session-edit",
+      });
+      return;
+    }
+    if (casId) {
+      navigate({ page: "cas", casId });
+      return;
+    }
+    navigate({ page: "cas" });
+  }
+
   const student = selectedStudent(students, selected);
   const teacher = selectedTeacher(teachers, selected);
   const buildLiveWeek = useCallback(
@@ -319,7 +386,11 @@ function AppShell() {
         lessonNotes,
       );
       if (student && auth.studentId === student.id) {
-        return applySchoolEvents(withLive, start, schoolEvents);
+        return applyCasSessions(
+          applySchoolEvents(withLive, start, schoolEvents),
+          start,
+          casGroups,
+        );
       }
       return withLive;
     },
@@ -330,6 +401,7 @@ function AppShell() {
       lessonNotes,
       auth.studentId,
       schoolEvents,
+      casGroups,
     ],
   );
   const week = useMemo(
@@ -376,7 +448,8 @@ function AppShell() {
     } else if (
       route.page === "week" ||
       route.page === "try-classes" ||
-      route.page === "events"
+      route.page === "events" ||
+      route.page === "cas"
     ) {
       track("roster_viewed");
     }
@@ -501,6 +574,29 @@ function AppShell() {
                 onOpenHub={openHub}
               />
             </div>
+          ) : tab === "cas" ? (
+            <div id="cas-panel" role="tabpanel" aria-labelledby="tab-cas">
+              <CasPage
+                groups={casGroups}
+                students={students}
+                teachers={teachers}
+                casId={route.page === "cas" ? route.casId : undefined}
+                sessionId={route.page === "cas" ? route.sessionId : undefined}
+                draft={casDraft}
+                onOpenCas={(group) => navigate({ page: "cas", casId: group.id })}
+                onOpenSession={(group, session) =>
+                  navigate({
+                    page: "cas",
+                    casId: group.id,
+                    sessionId: session.id,
+                  })
+                }
+                onDraftChange={onCasDraftChange}
+                onOpenLogin={openLogin}
+                hubOpen={hubOpen}
+                onOpenHub={openHub}
+              />
+            </div>
           ) : (
             <div id="week-panel" role="tabpanel" aria-labelledby="tab-week">
               {!week ? (
@@ -533,7 +629,11 @@ function AppShell() {
                       onClassClick={openClass}
                       weekStart={weekStart}
                       paused={Boolean(
-                        openEvent || openSchoolEvent || feedbackOpen || hubOpen,
+                        openEvent ||
+                          openSchoolEvent ||
+                          openCasSession ||
+                          feedbackOpen ||
+                          hubOpen,
                       )}
                       hubOpen={hubOpen}
                       onOpenHub={openHub}
@@ -595,6 +695,24 @@ function AppShell() {
                 draft: "edit",
               });
             }}
+          />
+        ) : null}
+        {openCasSession && matchedCas ? (
+          <CasSessionSheet
+            group={matchedCas}
+            session={openCasSession}
+            students={students}
+            onClose={() =>
+              navigate({ page: "cas", casId: matchedCas.id })
+            }
+            onEdit={() =>
+              navigate({
+                page: "cas",
+                casId: matchedCas.id,
+                sessionId: openCasSession.id,
+                draft: "session-edit",
+              })
+            }
           />
         ) : null}
         {feedbackOpen ? (

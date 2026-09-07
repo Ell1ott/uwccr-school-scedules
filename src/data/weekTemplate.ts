@@ -7,7 +7,17 @@ export const DAYS: { id: DayId; label: string; short: string; jsDay: number }[] 
     { id: "wed", label: "Wednesday", short: "Wed", jsDay: 3 },
     { id: "thu", label: "Thursday", short: "Thu", jsDay: 4 },
     { id: "fri", label: "Friday", short: "Fri", jsDay: 5 },
+    { id: "sat", label: "Saturday", short: "Sat", jsDay: 6 },
+    { id: "sun", label: "Sunday", short: "Sun", jsDay: 0 },
   ];
+
+export const SCHOOL_DAYS = DAYS.filter(
+  (day) => day.id !== "sat" && day.id !== "sun",
+);
+
+export function isWeekendDay(dayId: DayId): boolean {
+  return dayId === "sat" || dayId === "sun";
+}
 
 export const DAY_START_MIN = 7 * 60 + 30;
 export const DAY_END_MIN = 21 * 60;
