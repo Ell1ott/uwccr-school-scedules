@@ -47,6 +47,7 @@ import {
 import {
   clampWeekStart,
   mondayOf,
+  shiftWeek,
   weekHasCommunityMeeting,
 } from "./lib/calendar";
 import { PaletteProvider } from "./lib/palette";
@@ -304,31 +305,57 @@ function AppShell() {
 
   const student = selectedStudent(students, selected);
   const teacher = selectedTeacher(teachers, selected);
-  const week = useMemo(() => {
-    const built = student
-      ? buildSchedule(student, weekStart)
-      : teacher
-        ? buildTeacherSchedule(teacher, weekStart)
-        : null;
-    if (!built) return null;
-    const withLive = applyLessonNotes(
-      applyCancellations(built, weekStart, cancellations),
-      weekStart,
+  const buildLiveWeek = useCallback(
+    (start: string) => {
+      const built = student
+        ? buildSchedule(student, start)
+        : teacher
+          ? buildTeacherSchedule(teacher, start)
+          : null;
+      if (!built) return null;
+      const withLive = applyLessonNotes(
+        applyCancellations(built, start, cancellations),
+        start,
+        lessonNotes,
+      );
+      if (student && auth.studentId === student.id) {
+        return applySchoolEvents(withLive, start, schoolEvents);
+      }
+      return withLive;
+    },
+    [
+      student,
+      teacher,
+      cancellations,
       lessonNotes,
-    );
-    if (student && auth.studentId === student.id) {
-      return applySchoolEvents(withLive, weekStart, schoolEvents);
+      auth.studentId,
+      schoolEvents,
+    ],
+  );
+  const week = useMemo(
+    () => buildLiveWeek(weekStart),
+    [buildLiveWeek, weekStart],
+  );
+  const prevWeekStart = shiftWeek(weekStart, -1);
+  const nextWeekStart = shiftWeek(weekStart, 1);
+  const prevWeek = useMemo(
+    () => (prevWeekStart === weekStart ? null : buildLiveWeek(prevWeekStart)),
+    [buildLiveWeek, prevWeekStart, weekStart],
+  );
+  const nextWeek = useMemo(
+    () => (nextWeekStart === weekStart ? null : buildLiveWeek(nextWeekStart)),
+    [buildLiveWeek, nextWeekStart, weekStart],
+  );
+
+  function chooseDay(id: DayId) {
+    if (id !== dayId) {
+      track("day_changed", {
+        day_id: id,
+        previous_day_id: dayId,
+      });
     }
-    return withLive;
-  }, [
-    student,
-    teacher,
-    weekStart,
-    cancellations,
-    lessonNotes,
-    auth.studentId,
-    schoolEvents,
-  ]);
+    setDayId(id);
+  }
 
   useEffect(() => {
     setTeacherContext(auth.teacherId);
@@ -498,16 +525,11 @@ function AppShell() {
                   <div className="md:hidden">
                     <DayTimeline
                       dayId={dayId}
-                      onDayChange={(id) => {
-                        if (id !== dayId) {
-                          track("day_changed", {
-                            day_id: id,
-                            previous_day_id: dayId,
-                          });
-                        }
-                        setDayId(id);
-                      }}
-                      events={week[dayId]}
+                      onDayChange={chooseDay}
+                      onWeekChange={chooseWeek}
+                      week={week}
+                      prevWeek={prevWeek}
+                      nextWeek={nextWeek}
                       onClassClick={openClass}
                       weekStart={weekStart}
                       paused={Boolean(
@@ -592,13 +614,7 @@ function AppShell() {
             }}
             onWeekChange={chooseWeek}
             onPickDay={(id) => {
-              if (id !== dayId) {
-                track("day_changed", {
-                  day_id: id,
-                  previous_day_id: dayId,
-                });
-              }
-              setDayId(id);
+              chooseDay(id);
               chooseTab("week");
             }}
             onTabChange={chooseTab}

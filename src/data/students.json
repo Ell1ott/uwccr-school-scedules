@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-04T14:32:10.645754+00:00",
+  "generatedAt": "2026-09-07T17:01:24.291243+00:00",
   "source": "https://docs.google.com/spreadsheets/d/1pGFqN1XrL4T_NDr_a9fkAmuwMf5ob3e_0_f6_uFDC8c/export?format=xlsx&gid=0 + IB2 Class list 2025-2026.xlsx",
   "students": [
     {
@@ -210,22 +210,22 @@
           "room": "15"
         },
         "B": {
-          "subject": "Psychology",
+          "subject": "English Lang & Lit",
           "level": "HL",
-          "teacher": "Karlina",
-          "room": "4"
+          "teacher": "Christine",
+          "room": "17"
         },
         "C": {
+          "subject": "Anthropology",
+          "level": "SL",
+          "teacher": "Jeff L",
+          "room": "12"
+        },
+        "D": {
           "subject": "Chemistry",
           "level": "HL",
           "teacher": "Karina",
           "room": "13"
-        },
-        "D": {
-          "subject": "English Lit",
-          "level": "HL",
-          "teacher": "Heloise",
-          "room": "16"
         },
         "E": {
           "subject": "Spanish Lang & Lit",
@@ -1410,10 +1410,18 @@
           "room": "16"
         },
         "G": {
-          "subject": "Math Applications and Interpretation",
+          "subject": "Math Analysis and Approaches",
           "level": "SL",
-          "teacher": "Carolina",
-          "room": "7"
+          "teacher": "JD",
+          "room": "10",
+          "extras": [
+            {
+              "subject": "Math Applications and Interpretation",
+              "level": "SL",
+              "teacher": "Carolina",
+              "room": "7"
+            }
+          ]
         },
         "H": {
           "subject": "SSST",
@@ -1922,19 +1930,27 @@
           "subject": "Anthropology",
           "level": "HL",
           "teacher": "Jeff L",
-          "room": "12"
+          "room": "12",
+          "extras": [
+            {
+              "subject": "Global Politics",
+              "level": "HL",
+              "teacher": "Tiya",
+              "room": "2"
+            }
+          ]
+        },
+        "B": {
+          "subject": "Economics",
+          "level": "HL",
+          "teacher": "Brian",
+          "room": "9"
         },
         "C": {
           "subject": "ESS",
           "level": "HL",
           "teacher": "Heidy",
           "room": "9"
-        },
-        "D": {
-          "subject": "Global Politics",
-          "level": "HL",
-          "teacher": "Ryan",
-          "room": "10"
         },
         "E": {
           "subject": "Spanish AB",
@@ -2378,16 +2394,16 @@
           "room": "12"
         },
         "E": {
-          "subject": "Math Applications and Interpretation",
-          "level": "SL",
-          "teacher": "Éricka",
-          "room": "12"
-        },
-        "F": {
           "subject": "English Lang & Lit",
           "level": "SL",
           "teacher": "Heloise",
           "room": "16"
+        },
+        "F": {
+          "subject": "Math Applications and Interpretation",
+          "level": "SL",
+          "teacher": "Éricka",
+          "room": "12"
         },
         "G": {
           "subject": "TOK",
@@ -2931,8 +2947,8 @@
         "G": {
           "subject": "TOK",
           "level": "TOK",
-          "teacher": "Tiya",
-          "room": "2"
+          "teacher": "Norman",
+          "room": "11"
         },
         "H": {
           "subject": "ESS",
@@ -2948,10 +2964,10 @@
       "cohort": "IB1",
       "blocks": {
         "A": {
-          "subject": "Biology",
+          "subject": "Anthropology",
           "level": "HL",
-          "teacher": "Jeff",
-          "room": "15"
+          "teacher": "Jeff L",
+          "room": "12"
         },
         "C": {
           "subject": "Global Politics",
@@ -3058,16 +3074,24 @@
           "room": "4"
         },
         "C": {
-          "subject": "Chemistry",
-          "level": "HL",
-          "teacher": "Karina",
-          "room": "13"
+          "subject": "Visual Arts",
+          "level": "SL",
+          "teacher": "Melissa",
+          "room": "3"
         },
         "D": {
           "subject": "Biology",
           "level": "SL",
           "teacher": "Jeff N.",
-          "room": "15"
+          "room": "15",
+          "extras": [
+            {
+              "subject": "Chemistry",
+              "level": "HL",
+              "teacher": "Karina",
+              "room": "13"
+            }
+          ]
         },
         "E": {
           "subject": "Spanish Lang & Lit",
@@ -3156,10 +3180,10 @@
           "room": "1"
         },
         "C": {
-          "subject": "Economics",
+          "subject": "Anthropology",
           "level": "HL",
-          "teacher": "Brian",
-          "room": "7"
+          "teacher": "Jeff L",
+          "room": "12"
         },
         "E": {
           "subject": "Physics",
@@ -3633,17 +3657,17 @@
           "teacher": "Tiya",
           "room": "2"
         },
-        "B": {
-          "subject": "Economics",
-          "level": "HL",
-          "teacher": "Brian",
-          "room": "9"
-        },
         "C": {
           "subject": "ESS",
           "level": "HL",
           "teacher": "Heidy",
           "room": "9"
+        },
+        "D": {
+          "subject": "Biology",
+          "level": "HL",
+          "teacher": "Jeff N.",
+          "room": "15"
         },
         "E": {
           "subject": "Math Applications and Interpretation",
@@ -4663,10 +4687,10 @@
           "room": "17"
         },
         "B": {
-          "subject": "Psychology",
+          "subject": "Global Politics",
           "level": "HL",
-          "teacher": "Karlina",
-          "room": "4"
+          "teacher": "Ryan",
+          "room": "10"
         },
         "C": {
           "subject": "Economics",

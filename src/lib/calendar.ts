@@ -117,6 +117,35 @@ export function shiftWeek(weekStart: string, delta: number): string {
   return clampWeekStart(toISODate(date));
 }
 
+export function shiftSchoolDay(
+  weekStart: string,
+  dayId: DayId,
+  delta: number,
+): { weekStart: string; dayId: DayId } {
+  if (delta === 0) return { weekStart, dayId };
+  const index = DAYS.findIndex((day) => day.id === dayId);
+  if (index < 0) return { weekStart, dayId };
+
+  const step = delta > 0 ? 1 : -1;
+  let start = weekStart;
+  let id = dayId;
+  let cursor = index;
+  for (let n = 0; n < Math.abs(delta); n++) {
+    const nextIndex = cursor + step;
+    if (nextIndex >= 0 && nextIndex < DAYS.length) {
+      cursor = nextIndex;
+      id = DAYS[cursor].id;
+      continue;
+    }
+    const nextWeek = shiftWeek(start, step);
+    if (nextWeek === start) return { weekStart: start, dayId: id };
+    start = nextWeek;
+    cursor = step > 0 ? 0 : DAYS.length - 1;
+    id = DAYS[cursor].id;
+  }
+  return { weekStart: start, dayId: id };
+}
+
 export function dateForDay(weekStart: string, dayId: DayId): string {
   const index = DAYS.findIndex((day) => day.id === dayId);
   const date = parseISODate(weekStart);
