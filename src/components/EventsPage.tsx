@@ -100,7 +100,7 @@ export function EventsPage({
 
   if (composing) {
     return (
-      <div className="px-container-padding-mobile pt-[calc(env(safe-area-inset-top,0px)+1rem)] pb-16 md:px-container-padding-desktop md:pt-8">
+      <div className="px-container-padding-mobile pt-[calc(env(safe-area-inset-top,0px)+1rem)] pb-mobile-nav md:px-container-padding-desktop md:pt-8 md:pb-16">
         <div className="mx-auto max-w-2xl">
           <p className="text-label-sm tracking-[0.14em] text-on-surface-variant uppercase">
             Events
@@ -188,7 +188,7 @@ export function EventsPage({
             )}
           </div>
 
-          <div className="flex flex-1 flex-col px-container-padding-mobile pb-24 md:px-container-padding-desktop">
+          <div className="flex flex-1 flex-col px-container-padding-mobile pb-mobile-nav md:px-container-padding-desktop md:pb-24">
             {loggedOut ? (
               <div className="mx-auto my-auto w-full max-w-md rounded-[28px] bg-surface-container px-5 py-8 text-center">
                 <Sparkles size={22} strokeWidth={1.75} className="mx-auto text-primary" />

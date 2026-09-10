@@ -152,7 +152,7 @@ export function CasDetail({
   return (
     <div className="flex min-h-dvh flex-col md:min-h-[calc(100dvh-3rem-env(safe-area-inset-top,0px))]">
       <div className="flex min-h-0 flex-1 flex-col lg:flex-row lg:items-start">
-        <div className="flex min-w-0 flex-1 flex-col px-container-padding-mobile pt-[calc(env(safe-area-inset-top,0px)+1rem)] pb-16 md:px-container-padding-desktop md:pt-8">
+        <div className="flex min-w-0 flex-1 flex-col px-container-padding-mobile pt-[calc(env(safe-area-inset-top,0px)+1rem)] pb-mobile-nav md:px-container-padding-desktop md:pt-8 md:pb-16">
           <div className="mx-auto w-full max-w-2xl md:mx-0">
         <button
           type="button"

@@ -162,7 +162,7 @@ export function ClassChooser({
   }
 
   return (
-    <div className="fixed inset-0 z-[80] flex flex-col overflow-hidden bg-surface-container-lowest pt-safe text-on-surface md:static md:z-auto md:h-[calc(100dvh-3rem-env(safe-area-inset-top,0px))] md:pt-0">
+    <div className="fixed inset-0 z-[80] flex flex-col overflow-hidden bg-surface-container-lowest pt-safe pb-mobile-nav text-on-surface md:static md:z-auto md:h-[calc(100dvh-3rem-env(safe-area-inset-top,0px))] md:pt-0 md:pb-0">
       <h1 className="sr-only">Try classes</h1>
       <div className="shrink-0 px-container-padding-mobile pt-4 pb-3 md:px-container-padding-desktop">
         <div className="flex flex-wrap items-center gap-2 rounded-2xl bg-surface-container px-3 py-2.5">

@@ -4,14 +4,11 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronUp,
-  Compass,
   EllipsisVertical,
   MessageSquare,
-  Shuffle,
-  Sparkles,
   X,
 } from "lucide-react";
-import { useId, useState, type ReactNode } from "react";
+import { useId, useState } from "react";
 import { DAYS } from "../data/weekTemplate";
 import { useAuth } from "../lib/auth";
 import { todayDayId } from "../lib/buildSchedule";
@@ -27,7 +24,6 @@ import { usePalette } from "../lib/palette";
 import { subjectSummary } from "../lib/teachers";
 import { PALETTE_OPTIONS } from "../lib/tones";
 import type { DayId, SelectedPerson, Student, Teacher } from "../types";
-import type { AppTabId } from "./AppHeader";
 import { BottomSheet, SheetHandle } from "./BottomSheet";
 import { PalettePicker } from "./PalettePicker";
 import { StudentPicker } from "./StudentPicker";
@@ -60,7 +56,6 @@ export function MobileHubButton({
 }
 
 export function MobileHub({
-  tab,
   students,
   teachers,
   selected,
@@ -69,13 +64,11 @@ export function MobileHub({
   onSelect,
   onWeekChange,
   onPickDay,
-  onTabChange,
   onClose,
   onOpenLogin,
   onOpenAdmin,
   onOpenFeedback,
 }: {
-  tab: AppTabId;
   students: Student[];
   teachers: Teacher[];
   selected: SelectedPerson | null;
@@ -84,7 +77,6 @@ export function MobileHub({
   onSelect: (person: SelectedPerson) => void;
   onWeekChange: (weekStart: string) => void;
   onPickDay: (id: DayId) => void;
-  onTabChange: (tab: AppTabId) => void;
   onClose: () => void;
   onOpenLogin?: () => void;
   onOpenAdmin?: () => void;
@@ -108,11 +100,6 @@ export function MobileHub({
   const isThisWeek = weekStart === thisWeek;
   const now = new Date();
   const todayId = todayDayId(now);
-
-  function goTab(next: AppTabId) {
-    onTabChange(next);
-    onClose();
-  }
 
   return (
     <BottomSheet
@@ -327,41 +314,6 @@ export function MobileHub({
               </button>
             </section>
 
-            <section className="grid grid-cols-2 gap-2">
-              <DestinationTile
-                current={tab === "week"}
-                label="Week"
-                ariaLabel="Schedule"
-                onClick={() => goTab("week")}
-              >
-                <Calendar size={18} strokeWidth={1.75} aria-hidden />
-              </DestinationTile>
-              <DestinationTile
-                current={tab === "events"}
-                label="Events"
-                ariaLabel="Events"
-                onClick={() => goTab("events")}
-              >
-                <Sparkles size={18} strokeWidth={1.75} aria-hidden />
-              </DestinationTile>
-              <DestinationTile
-                current={tab === "cas"}
-                label="CAS"
-                ariaLabel="CAS"
-                onClick={() => goTab("cas")}
-              >
-                <Compass size={18} strokeWidth={1.75} aria-hidden />
-              </DestinationTile>
-              <DestinationTile
-                current={tab === "classes"}
-                label="Try"
-                ariaLabel="Try classes"
-                onClick={() => goTab("classes")}
-              >
-                <Shuffle size={18} strokeWidth={1.75} aria-hidden />
-              </DestinationTile>
-            </section>
-
             <section className="overflow-hidden rounded-[18px] bg-surface-container-low">
               <button
                 type="button"
@@ -451,37 +403,6 @@ export function MobileHub({
         </>
       )}
     </BottomSheet>
-  );
-}
-
-function DestinationTile({
-  current,
-  label,
-  ariaLabel,
-  onClick,
-  children,
-}: {
-  current: boolean;
-  label: string;
-  ariaLabel: string;
-  onClick: () => void;
-  children: ReactNode;
-}) {
-  return (
-    <button
-      type="button"
-      aria-label={ariaLabel}
-      aria-current={current ? "page" : undefined}
-      className={`flex min-h-[5.5rem] flex-col items-center justify-center gap-2 rounded-[18px] px-2 py-3 text-center focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 ${
-        current
-          ? "bg-primary text-on-primary"
-          : "bg-surface-container-low text-on-surface"
-      }`}
-      onClick={onClick}
-    >
-      {children}
-      <span className="text-label-sm tracking-wide">{label}</span>
-    </button>
   );
 }
 

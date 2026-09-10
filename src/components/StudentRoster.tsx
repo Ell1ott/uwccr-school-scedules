@@ -90,7 +90,7 @@ export function StudentRoster({
       : `${students.length} students`;
 
   return (
-    <div className="mx-auto max-w-6xl px-container-padding-mobile pt-safe pb-16 md:px-container-padding-desktop md:pt-0">
+    <div className="mx-auto max-w-6xl px-container-padding-mobile pt-safe pb-mobile-nav md:px-container-padding-desktop md:pt-0 md:pb-16">
       <div className="flex items-start justify-between gap-3 pt-8 pb-6 md:pt-10">
         <div className="min-w-0">
           <p className="text-label-sm tracking-[0.14em] text-on-surface-variant uppercase">

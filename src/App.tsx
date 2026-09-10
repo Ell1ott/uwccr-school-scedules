@@ -18,6 +18,7 @@ import { CasSessionSheet } from "./components/CasSessionSheet";
 import { EventsPage } from "./components/EventsPage";
 import { FeedbackSheet } from "./components/FeedbackSheet";
 import { MobileHub } from "./components/MobileHub";
+import { MobileTabBar } from "./components/MobileTabBar";
 import { ModerateEventPage } from "./components/ModerateEventPage";
 import { StudentRoster } from "./components/StudentRoster";
 import { DayTimeline } from "./components/DayTimeline";
@@ -721,9 +722,19 @@ function AppShell() {
         {feedbackOpen ? (
           <FeedbackSheet onClose={() => setFeedbackOpen(false)} />
         ) : null}
+        <MobileTabBar
+          tab={tab}
+          onTabChange={chooseTab}
+          hidden={Boolean(
+            openEvent ||
+              openSchoolEvent ||
+              openCasSession ||
+              feedbackOpen ||
+              hubOpen,
+          )}
+        />
         {hubOpen ? (
           <MobileHub
-            tab={tab}
             students={students}
             teachers={teachers}
             selected={selected}
@@ -738,7 +749,6 @@ function AppShell() {
               chooseDay(id);
               chooseTab("week");
             }}
-            onTabChange={chooseTab}
             onClose={() => setHubOpen(false)}
             onOpenLogin={openLogin}
             onOpenAdmin={openAdmin}
