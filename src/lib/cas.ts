@@ -154,6 +154,23 @@ export function isCasSessionPast(session: CasSession, now = Date.now()): boolean
   return Date.parse(session.endsAt) <= now;
 }
 
+export function casSessionReplacedBySplit(
+  group: CasGroup,
+  session: CasSession,
+): boolean {
+  if (session.splitGroupId) return false;
+  const start = Date.parse(session.startsAt);
+  const end = Date.parse(session.endsAt);
+  return group.sessions.some(
+    (other) =>
+      other.id !== session.id &&
+      other.splitGroupId != null &&
+      other.status === "published" &&
+      Date.parse(other.startsAt) < end &&
+      Date.parse(other.endsAt) > start,
+  );
+}
+
 export function casSessionLabel(session: CasSession): string {
   if (session.status === "cancelled") return "Cancelled";
   if (session.mode === "mandatory") return "Mandatory";
@@ -567,6 +584,18 @@ export async function cancelCasSession(
 ): Promise<string | null> {
   if (!supabase) return "Login is not configured yet.";
   const { error } = await supabase.rpc("cancel_cas_session", {
+    p_session_id: sessionId,
+    p_rest_of_series: restOfSeries,
+  });
+  return error?.message ?? null;
+}
+
+export async function restoreCasSession(
+  sessionId: string,
+  restOfSeries: boolean,
+): Promise<string | null> {
+  if (!supabase) return "Login is not configured yet.";
+  const { error } = await supabase.rpc("restore_cas_session", {
     p_session_id: sessionId,
     p_rest_of_series: restOfSeries,
   });

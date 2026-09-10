@@ -1,5 +1,5 @@
-import { CalendarPlus, MapPin, Users } from "lucide-react";
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { CalendarPlus, MapPin, TriangleAlert, Users, X } from "lucide-react";
+import { useId, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../lib/auth";
 import {
   addCasLeader,
@@ -20,6 +20,7 @@ import { useNow } from "../lib/now";
 import { LinkifiedText } from "../lib/linkify";
 import { compareNames, matchesQuery } from "../lib/people";
 import type { Student, Teacher } from "../types";
+import { BottomSheet, SheetHandle } from "./BottomSheet";
 import { EventsMonthCalendar } from "./EventsMonthCalendar";
 
 export function CasDetail({
@@ -47,6 +48,7 @@ export function CasDetail({
   const [error, setError] = useState<string | null>(null);
   const [leaderQuery, setLeaderQuery] = useState("");
   const [addingLeaders, setAddingLeaders] = useState(false);
+  const [confirmArchive, setConfirmArchive] = useState(false);
   const pendingDay = useRef<string | null>(null);
 
   const { past, upcoming } = useMemo(() => {
@@ -332,9 +334,9 @@ export function CasDetail({
               type="button"
               disabled={busy}
               className="h-12 rounded-full text-label-sm tracking-wide text-error disabled:opacity-50"
-              onClick={async () => {
-                const ok = await run(() => archiveCas(group.id));
-                if (ok) onLeft();
+              onClick={() => {
+                setError(null);
+                setConfirmArchive(true);
               }}
             >
               Archive CAS
@@ -342,7 +344,9 @@ export function CasDetail({
           ) : null}
         </div>
 
-        {error ? <p className="mt-4 text-body-md text-error">{error}</p> : null}
+        {error && !confirmArchive ? (
+          <p className="mt-4 text-body-md text-error">{error}</p>
+        ) : null}
 
         <section className="mt-10">
           <h2 className="text-title-md tracking-tight">Sessions</h2>
@@ -425,6 +429,93 @@ export function CasDetail({
           onSelectDay={scrollToDay}
         />
       </div>
+      {confirmArchive ? (
+        <ArchiveCasWarning
+          title={group.title}
+          busy={busy}
+          error={error}
+          onCancel={() => {
+            if (!busy) setConfirmArchive(false);
+          }}
+          onConfirm={async () => {
+            const ok = await run(() => archiveCas(group.id));
+            if (ok) onLeft();
+          }}
+        />
+      ) : null}
     </div>
+  );
+}
+
+function ArchiveCasWarning({
+  title,
+  busy,
+  error,
+  onCancel,
+  onConfirm,
+}: {
+  title: string;
+  busy: boolean;
+  error: string | null;
+  onCancel: () => void;
+  onConfirm: () => void;
+}) {
+  const titleId = useId();
+
+  return (
+    <BottomSheet
+      labelledBy={titleId}
+      overlayLabel="Archive this CAS"
+      onClose={onCancel}
+      className="md:items-center md:p-6"
+      panelClassName="max-w-md md:rounded-[28px]"
+    >
+      {(closeRef) => (
+        <div className="px-5 pt-2 pb-[max(1.5rem,env(safe-area-inset-bottom,0px))] md:pt-5">
+          <SheetHandle />
+          <div className="flex items-start justify-between gap-3">
+            <span className="flex size-11 items-center justify-center rounded-full bg-error-container text-on-error-container">
+              <TriangleAlert size={20} strokeWidth={1.75} aria-hidden />
+            </span>
+            <button
+              ref={closeRef}
+              type="button"
+              disabled={busy}
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-surface-container text-on-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20 disabled:opacity-50"
+              aria-label="Keep this CAS"
+              onClick={onCancel}
+            >
+              <X size={18} strokeWidth={1.75} aria-hidden />
+            </button>
+          </div>
+          <h2 id={titleId} className="mt-4 text-title-md tracking-tight">
+            Archive {title}?
+          </h2>
+          <p className="mt-2 text-body-md text-on-surface-variant">
+            Everyone will lose it from their list, and sessions will drop off
+            calendars. You can’t bring this back from here.
+          </p>
+          {error ? <p className="mt-3 text-body-md text-error">{error}</p> : null}
+          <div className="mt-6 flex flex-col gap-2">
+            <button
+              type="button"
+              disabled={busy}
+              className="h-12 rounded-full bg-error text-label-sm tracking-wide text-on-error disabled:opacity-50"
+              onClick={onConfirm}
+            >
+              {busy ? "Archiving…" : "Archive"}
+            </button>
+            <button
+              type="button"
+              disabled={busy}
+              className="h-12 rounded-full bg-surface-container text-label-sm tracking-wide disabled:opacity-50"
+              onClick={onCancel}
+            >
+              Keep it
+            </button>
+          </div>
+        </div>
+      )}
+    </BottomSheet>
   );
 }

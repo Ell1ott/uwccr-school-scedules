@@ -1,9 +1,9 @@
 import "jsr:@supabase/functions-js/edge-runtime.d.ts";
-import { createClient } from "npm:@supabase/supabase-js@2";
 import {
   sendModerationEmails,
   type ModerationEventRow,
 } from "../_shared/moderationEmail.ts";
+import { authedClients, callerUserId } from "../_shared/userAuth.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -31,24 +31,10 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const authHeader = req.headers.get("Authorization") ?? "";
-    const jwt = authHeader.replace(/^Bearer\s+/i, "").trim();
-    const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
-    const anonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
-    const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
-    const userClient = createClient(supabaseUrl, anonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
-    const admin = createClient(supabaseUrl, serviceKey);
-
-    const {
-      data: { user },
-      error: userError,
-    } = jwt
-      ? await userClient.auth.getUser(jwt)
-      : await userClient.auth.getUser();
-    if (userError || !user) {
-      log("auth_failed", { error: userError?.message ?? "no user", has_jwt: Boolean(jwt) });
+    const { userClient, admin, jwt } = authedClients(req);
+    const userId = await callerUserId(userClient, jwt);
+    if (!userId) {
+      log("auth_failed", { error: "no user id in jwt", has_jwt: Boolean(jwt) });
       return json({ error: "Unauthorized" }, 401);
     }
 
@@ -59,7 +45,7 @@ Deno.serve(async (req) => {
       return json({ error: "token and origin are required" }, 400);
     }
     log("notify_request", {
-      user_id: user.id,
+      user_id: userId,
       origin,
       token_len: token.length,
     });
@@ -67,7 +53,7 @@ Deno.serve(async (req) => {
     const { data: profile, error: profileError } = await admin
       .from("profiles")
       .select("id, display_name, role")
-      .eq("auth_user_id", user.id)
+      .eq("auth_user_id", userId)
       .maybeSingle();
     if (profileError) {
       log("profile_error", { error: profileError.message });

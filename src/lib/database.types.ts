@@ -764,6 +764,10 @@ export type Database = {
         Args: { p_rest_of_series?: boolean; p_session_id: string }
         Returns: number
       }
+      restore_cas_session: {
+        Args: { p_rest_of_series?: boolean; p_session_id: string }
+        Returns: number
+      }
       cancel_cas_signup: { Args: { p_session_id: string }; Returns: undefined }
       cancel_event: {
         Args: { p_event_id: string; p_rest_of_series?: boolean }

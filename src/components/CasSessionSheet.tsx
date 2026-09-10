@@ -6,9 +6,11 @@ import {
   cancelCasSession,
   cancelCasSignup,
   casSessionLabel,
+  casSessionReplacedBySplit,
   fetchCasSignups,
   formatCasWhen,
   localToIso,
+  restoreCasSession,
   signupCasSession,
   splitCasSession,
   type CasGroup,
@@ -279,6 +281,31 @@ export function CasSessionSheet({
               onClick={() => void run(() => cancelCasSession(session.id, true))}
             >
               Cancel this and future weeks
+            </button>
+          ) : null}
+        </div>
+      ) : null}
+
+      {group.iAmLeader &&
+      session.status === "cancelled" &&
+      !casSessionReplacedBySplit(group, session) ? (
+        <div className="mt-6 flex flex-col gap-2">
+          <button
+            type="button"
+            disabled={busy}
+            className="h-12 rounded-full bg-primary text-label-sm tracking-wide text-on-primary disabled:opacity-50"
+            onClick={() => void run(() => restoreCasSession(session.id, false))}
+          >
+            Restore this session
+          </button>
+          {session.seriesId ? (
+            <button
+              type="button"
+              disabled={busy}
+              className="h-12 rounded-full bg-surface-container text-label-sm tracking-wide disabled:opacity-50"
+              onClick={() => void run(() => restoreCasSession(session.id, true))}
+            >
+              Restore this and future weeks
             </button>
           ) : null}
         </div>
