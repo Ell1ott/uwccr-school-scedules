@@ -1,41 +1,58 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
+  datesBetween,
   inMonth,
   monthCells,
   monthLabel,
   parseISODate,
   shiftMonth,
 } from "../lib/calendar";
-import {
-  crDate,
-  eventDates,
-  formatMonthChipTime,
-  isMultiDayEvent,
-  type SchoolEvent,
-} from "../lib/schoolEvents";
+import { crDate, formatMonthChipTime } from "../lib/schoolEvents";
+
+export type MonthCalEvent = {
+  id: string;
+  title: string;
+  startsAt: string;
+  endsAt: string;
+  allDay?: boolean;
+  status: string;
+  mode: string;
+};
 
 const WEEKDAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const CHIP_ROW = 18;
 
-function chipClass(event: SchoolEvent): string {
+function itemDates(event: MonthCalEvent): string[] {
+  return datesBetween(crDate(event.startsAt), crDate(event.endsAt));
+}
+
+function isMultiDay(event: MonthCalEvent): boolean {
+  return crDate(event.startsAt) !== crDate(event.endsAt);
+}
+
+function chipClass(event: MonthCalEvent): string {
   if (event.status === "cancelled" || event.status === "rejected") {
     return "bg-[#ececec] text-[#8a8a8a] line-through";
   }
   if (event.status === "pending") return "bg-[#efe6d8] text-[#6b522e]";
   if (event.mode === "mandatory") return "bg-[#efe6d8] text-[#6b522e]";
-  if (event.mode === "invite") return "bg-[#d8e2ee] text-[#1a2b3c]";
-  if (event.mode === "open") return "bg-[#e3f0dc] text-[#3d7a3a]";
+  if (event.mode === "invite" || event.mode === "signup") {
+    return "bg-[#d8e2ee] text-[#1a2b3c]";
+  }
+  if (event.mode === "open" || event.mode === "optional") {
+    return "bg-[#e3f0dc] text-[#3d7a3a]";
+  }
   return "bg-[#ececec] text-[#444]";
 }
 
-function chipLabel(event: SchoolEvent, date: string): string {
+function chipLabel(event: MonthCalEvent, date: string): string {
   const start = crDate(event.startsAt);
   if (event.allDay || date !== start) return event.title;
   return `${formatMonthChipTime(event.startsAt)} ${event.title}`;
 }
 
-function assignLanes(events: SchoolEvent[]): Map<string, number> {
+function assignLanes(events: MonthCalEvent[]): Map<string, number> {
   const sorted = [...events].sort((a, b) => {
     const as = crDate(a.startsAt);
     const bs = crDate(b.startsAt);
@@ -59,26 +76,26 @@ function assignLanes(events: SchoolEvent[]): Map<string, number> {
   return lanes;
 }
 
-function chipShape(event: SchoolEvent, date: string, index: number): string {
+function chipShape(event: MonthCalEvent, date: string, index: number): string {
   const start = crDate(event.startsAt);
   const end = crDate(event.endsAt);
   const weekStart = index % 7 === 0;
   const weekEnd = index % 7 === 6;
-  const roundLeft = start === date || weekStart || !isMultiDayEvent(event);
-  const roundRight = end === date || weekEnd || !isMultiDayEvent(event);
+  const roundLeft = start === date || weekStart || !isMultiDay(event);
+  const roundRight = end === date || weekEnd || !isMultiDay(event);
   return [
     roundLeft ? "rounded-l-[4px] ml-px" : "rounded-l-none",
     roundRight ? "rounded-r-[4px] mr-px" : "rounded-r-none",
   ].join(" ");
 }
 
-export function EventsMonthCalendar({
+export function EventsMonthCalendar<T extends MonthCalEvent>({
   events,
   onOpenEvent,
   onSelectDay,
 }: {
-  events: SchoolEvent[];
-  onOpenEvent: (event: SchoolEvent) => void;
+  events: T[];
+  onOpenEvent: (event: T) => void;
   onSelectDay: (date: string) => void;
 }) {
   const today = crDate(new Date().toISOString());
@@ -97,9 +114,9 @@ export function EventsMonthCalendar({
   );
 
   const byDate = useMemo(() => {
-    const map = new Map<string, SchoolEvent[]>();
+    const map = new Map<string, T[]>();
     for (const event of events) {
-      for (const date of eventDates(event)) {
+      for (const date of itemDates(event)) {
         const list = map.get(date);
         if (list) list.push(event);
         else map.set(date, [event]);
@@ -199,8 +216,7 @@ export function EventsMonthCalendar({
               : dayEvents.slice(0, fit);
             const more = dayEvents.length - visible.length;
             const dayNum = parseISODate(date).getDate();
-            const chips: ({ kind: "chip"; event: SchoolEvent } | { kind: "gap" })[] =
-              [];
+            const chips: ({ kind: "chip"; event: T } | { kind: "gap" })[] = [];
             for (let i = 0; i < visible.length; i += 1) {
               if (i > 0) {
                 const prevLane = lanes.get(visible[i - 1].id) ?? 0;

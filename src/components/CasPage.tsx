@@ -57,9 +57,7 @@ export function CasPage({
     () =>
       groups.filter(
         (group) =>
-          group.iAmMember ||
-          group.iAmLeader ||
-          group.createdBy === auth.profileId,
+          group.iAmMember || group.createdBy === auth.profileId,
       ),
     [groups, auth.profileId],
   );
@@ -67,7 +65,9 @@ export function CasPage({
     () =>
       groups.filter(
         (group) =>
-          group.status === "published" && !group.iAmMember && !group.iAmLeader,
+          group.status === "published" &&
+          !group.iAmMember &&
+          group.createdBy !== auth.profileId,
       ),
     [groups],
   );

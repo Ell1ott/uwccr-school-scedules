@@ -18,3 +18,12 @@ verify_jwt = false
 [functions.ingest-resend-email]
 verify_jwt = false
 
+[functions.link-google-profile]
+verify_jwt = true
+
+[auth.external.google]
+enabled = true
+client_id = "884762771241-olseorkgvkte6or3b44ssi10mjal12k5.apps.googleusercontent.com"
+secret = "env(SUPABASE_AUTH_EXTERNAL_GOOGLE_CLIENT_SECRET)"
+skip_nonce_check = false
+

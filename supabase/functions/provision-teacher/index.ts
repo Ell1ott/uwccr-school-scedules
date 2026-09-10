@@ -93,16 +93,16 @@ function loginEmailHtml(input: {
   const intro =
     input.role === "student"
       ? `<p>Your UWCCR Schedule now has events on the site. You can see what's on, accept invitations, and join what is open.</p>
-      <p>You'll need to log in for that. Here is your login:</p>`
-      : `<p>You can log in to your UWCCR Schedule to create events for students. If you teach, you can still cancel only your own classes.</p>`;
+      <p>Sign in with Google using your school email:</p>`
+      : `<p>You can log in to your UWCCR Schedule to create events for students. If you teach, you can still cancel only your own classes.</p>
+      <p>Sign in with Google using your school email:</p>`;
   return `
     <div style="font-family:Inter,system-ui,sans-serif;color:#1b1c1d;line-height:1.5">
       <p>Hi ${input.name},</p>
       ${intro}
       <p><strong>Login:</strong> <a href="${loginUrl}">${loginUrl}</a></p>
-      <p><strong>Email:</strong> ${input.email}<br/>
-      <strong>Password:</strong> ${input.password}</p>
-      <p>Use Forgot password on the login page if you need a new one. Stay signed in on your phone so you do not have to type this each time.</p>
+      <p><strong>Email:</strong> ${input.email}</p>
+      <p>Stay signed in on your phone so you do not have to tap through Google each time.</p>
     </div>
   `;
 }

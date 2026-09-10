@@ -385,12 +385,14 @@ function AppShell() {
         start,
         lessonNotes,
       );
-      if (student && auth.studentId === student.id) {
-        return applyCasSessions(
-          applySchoolEvents(withLive, start, schoolEvents),
-          start,
-          casGroups,
-        );
+      const ownWeek =
+        (student && auth.studentId === student.id) ||
+        (teacher && auth.teacherId === teacher.id);
+      if (ownWeek) {
+        const withEvents = student
+          ? applySchoolEvents(withLive, start, schoolEvents)
+          : withLive;
+        return applyCasSessions(withEvents, start, casGroups);
       }
       return withLive;
     },
@@ -400,6 +402,7 @@ function AppShell() {
       cancellations,
       lessonNotes,
       auth.studentId,
+      auth.teacherId,
       schoolEvents,
       casGroups,
     ],

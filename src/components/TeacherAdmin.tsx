@@ -290,10 +290,12 @@ export function TeacherAdmin({
         ? [
             "Your UWCCR Schedule now has events on the site. You can see what's on, accept invitations, and join what is open.",
             "",
-            "You'll need to log in for that. Here is your login:",
+            "Sign in with Google using your school email:",
           ]
         : [
-            "Here is your UWCCR Schedule login. Use it for events and, if you teach, to cancel your own classes.",
+            "You can log in to your UWCCR Schedule to create events for students. If you teach, you can still cancel only your own classes.",
+            "",
+            "Sign in with Google using your school email:",
           ];
     return [
       `Hi ${name},`,
@@ -302,9 +304,8 @@ export function TeacherAdmin({
       "",
       `Login: ${result.loginUrl}`,
       `Email: ${result.email}`,
-      `Password: ${result.password}`,
       "",
-      "Use Forgot password on the login page if you need a new one. Stay signed in on your phone.",
+      "Stay signed in on your phone so you do not have to tap through Google each time.",
     ].join("\n");
   }
 
@@ -344,10 +345,6 @@ export function TeacherAdmin({
               <div className="flex flex-wrap gap-x-2">
                 <dt className="text-on-surface-variant">Email</dt>
                 <dd>{result.email}</dd>
-              </div>
-              <div className="flex flex-wrap gap-x-2">
-                <dt className="text-on-surface-variant">Password</dt>
-                <dd className="tabular-nums">{result.password}</dd>
               </div>
             </dl>
             <button

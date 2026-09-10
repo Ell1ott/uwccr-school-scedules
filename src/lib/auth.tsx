@@ -9,7 +9,7 @@ import {
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { setTeacherContext, track, trackNow } from "./analytics";
 import { errorMessage } from "./errors";
-import { supabase } from "./supabase";
+import { SUPABASE_ANON_KEY, functionsUrl, supabase } from "./supabase";
 
 export type AuthRole = "student" | "staff";
 
@@ -23,7 +23,7 @@ export type AuthState = {
   teacherId: string | null;
   teacherName: string | null;
   studentId: string | null;
-  signIn: (email: string, password: string) => Promise<string | null>;
+  signInWithGoogle: () => Promise<string | null>;
   signOut: () => Promise<void>;
   resetPassword: (email: string) => Promise<string | null>;
   updatePassword: (password: string) => Promise<string | null>;
@@ -81,6 +81,51 @@ function authErrorProps(error: unknown): Record<string, unknown> {
     return props;
   }
   return { error: String(error) };
+}
+
+async function fetchProfile(authUserId: string): Promise<{
+  data: ProfileRow | null;
+  error: { message?: string } | null;
+}> {
+  if (!supabase) return { data: null, error: { message: "Login is not configured yet." } };
+  const result = await supabase
+    .from("profiles")
+    .select("id, role, display_name, student_id, teacher_id")
+    .eq("auth_user_id", authUserId)
+    .maybeSingle();
+  return {
+    data: (result.data as ProfileRow | null) ?? null,
+    error: result.error,
+  };
+}
+
+async function linkGoogleProfile(accessToken: string): Promise<{
+  linked: boolean;
+  error?: string;
+}> {
+  if (!functionsUrl) return { linked: false, error: "Login is not configured yet." };
+  const response = await fetch(`${functionsUrl}/link-google-profile`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      apikey: SUPABASE_ANON_KEY,
+      "Content-Type": "application/json",
+    },
+  });
+  let payload: { linked?: boolean; error?: unknown } = {};
+  try {
+    payload = (await response.json()) as { linked?: boolean; error?: unknown };
+  } catch {
+    /* ignore */
+  }
+  if (!response.ok) {
+    const message =
+      typeof payload.error === "string" && payload.error
+        ? payload.error
+        : "Could not link this Google account.";
+    return { linked: false, error: message };
+  }
+  return { linked: Boolean(payload.linked) };
 }
 
 function withTimeout<T>(promise: Promise<T>, label: string): Promise<T> {
@@ -199,32 +244,36 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setLoading(false);
     }, AUTH_TIMEOUT_MS);
 
-    void Promise.resolve(
-      supabase
-        .from("profiles")
-        .select("id, role, display_name, student_id, teacher_id")
-        .eq("auth_user_id", session.user.id)
-        .maybeSingle(),
-    )
-      .then(({ data, error }) => {
+    void Promise.resolve(fetchProfile(session.user.id))
+      .then(async ({ data, error }) => {
+        if (!active) return;
+        let row = data;
+        let lookupError = error;
+        if (!lookupError && !row) {
+          const linked = await linkGoogleProfile(session.access_token);
+          if (linked.linked) {
+            const again = await fetchProfile(session.user.id);
+            row = again.data;
+            lookupError = again.error;
+          }
+        }
         if (!active) return;
         const late = timedOut;
         settled = true;
         globalThis.clearTimeout(timer);
         const duration_ms = elapsedMs(startedAt);
-        if (error) {
+        if (lookupError) {
           trackNow("auth_profile_finished", {
             ok: false,
             has_profile: false,
             late,
             duration_ms,
-            ...authErrorProps(error),
+            ...authErrorProps(lookupError),
           });
           setIdentity(emptyIdentity());
           setLoading(false);
           return;
         }
-        const row = data as ProfileRow | null;
         if (!row) {
           trackNow("auth_profile_finished", {
             ok: true,
@@ -283,7 +332,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       session,
       recovery,
       ...identity,
-      async signIn(email, password) {
+      async signInWithGoogle() {
         const startedAt = performance.now();
         let settled = false;
         const finish = (ok: boolean, extra: Record<string, unknown> = {}) => {
@@ -292,7 +341,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           trackNow("auth_sign_in_finished", {
             ok,
             duration_ms: elapsedMs(startedAt),
-            email_domain: emailDomain(email),
+            provider: "google",
             ...extra,
           });
         };
@@ -304,22 +353,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             });
             return "Login is not configured yet.";
           }
-          const { data, error } = await withTimeout(
-            supabase.auth.signInWithPassword({
-              email: email.trim(),
-              password,
+          const origin = window.location.origin;
+          const { error } = await withTimeout(
+            supabase.auth.signInWithOAuth({
+              provider: "google",
+              options: {
+                redirectTo: `${origin}/login`,
+                queryParams: {
+                  prompt: "select_account",
+                  hd: "uwccostarica.org",
+                },
+              },
             }),
-            "sign in",
+            "google sign in",
           );
           if (error) {
             finish(false, authErrorProps(error));
             return error.message;
           }
-          finish(true, { has_session: Boolean(data.session) });
+          finish(true, { redirected: true });
           return null;
         } catch (error: unknown) {
           finish(false, authErrorProps(error));
-          return errorMessage(error, "Sign in failed.");
+          return errorMessage(error, "Google sign in failed.");
         }
       },
       async signOut() {

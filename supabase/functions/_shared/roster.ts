@@ -1195,3 +1195,9 @@ export const ROSTER: RosterStudent[] = [
     "email": "zoe.amat.27@uwccostarica.org"
   }
 ];
+
+export function rosterByEmail(email: string): RosterStudent | null {
+  const lower = email.trim().toLowerCase();
+  if (!lower) return null;
+  return ROSTER.find((student) => student.email?.toLowerCase() === lower) ?? null;
+}

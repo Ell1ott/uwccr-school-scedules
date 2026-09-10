@@ -1,3 +1,20 @@
+import * as chrono from "npm:chrono-node@2";
+
+export function normalizeClock(
+  value: string | null | undefined,
+): string | null {
+  if (!value?.trim()) return null;
+  const trimmed = value.trim();
+  if (/^\d{2}:\d{2}$/.test(trimmed)) return trimmed;
+
+  const results = chrono.parse(trimmed, new Date(), { forwardDate: true });
+  const start = results[0]?.start;
+  if (!start?.isCertain("hour")) return null;
+
+  const d = start.date();
+  return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+}
+
 export function parseISODate(value: string): Date {
   const [year, month, day] = value.split("-").map(Number);
   return new Date(year, month - 1, day);
@@ -12,6 +29,15 @@ export function toISODate(value: Date): string {
 
 export function localToIso(date: string, time: string): string {
   return new Date(`${date}T${time}:00-06:00`).toISOString();
+}
+
+export function addHoursToClock(time: string, hours: number): string {
+  const [h, m] = time.split(":").map(Number);
+  let totalMinutes = h * 60 + m + hours * 60;
+  if (totalMinutes >= 24 * 60) totalMinutes = 24 * 60 - 1;
+  const nh = Math.floor(totalMinutes / 60);
+  const nm = totalMinutes % 60;
+  return `${String(nh).padStart(2, "0")}:${String(nm).padStart(2, "0")}`;
 }
 
 export function occurrenceStamps(

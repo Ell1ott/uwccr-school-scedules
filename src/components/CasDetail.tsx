@@ -1,10 +1,11 @@
 import { CalendarPlus, MapPin, Users } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../lib/auth";
 import {
   addCasLeader,
   archiveCas,
   casSessionLabel,
+  crDate,
   formatCasWhen,
   groupCasSessionsByDay,
   isCasSessionPast,
@@ -19,6 +20,7 @@ import { useNow } from "../lib/now";
 import { LinkifiedText } from "../lib/linkify";
 import { compareNames, matchesQuery } from "../lib/people";
 import type { Student, Teacher } from "../types";
+import { EventsMonthCalendar } from "./EventsMonthCalendar";
 
 export function CasDetail({
   group,
@@ -45,6 +47,7 @@ export function CasDetail({
   const [error, setError] = useState<string | null>(null);
   const [leaderQuery, setLeaderQuery] = useState("");
   const [addingLeaders, setAddingLeaders] = useState(false);
+  const pendingDay = useRef<string | null>(null);
 
   const { past, upcoming } = useMemo(() => {
     const past: CasSession[] = [];
@@ -61,9 +64,48 @@ export function CasDetail({
     [group.sessions, upcoming, showPast],
   );
 
+  useLayoutEffect(() => {
+    const date = pendingDay.current;
+    if (!date || !showPast) return;
+    pendingDay.current = null;
+    const covering = group.sessions.find(
+      (session) =>
+        crDate(session.startsAt) <= date && date <= crDate(session.endsAt),
+    );
+    const section =
+      document.getElementById(`cas-day-${date}`) ??
+      (covering
+        ? document.getElementById(`cas-day-${crDate(covering.startsAt)}`)
+        : null);
+    section?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [group.sessions, groups, showPast]);
+
+  function scrollToDay(date: string) {
+    const direct = document.getElementById(`cas-day-${date}`);
+    if (direct) {
+      direct.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    const covering = group.sessions.find(
+      (session) =>
+        crDate(session.startsAt) <= date && date <= crDate(session.endsAt),
+    );
+    if (!covering) return;
+    const section = document.getElementById(
+      `cas-day-${crDate(covering.startsAt)}`,
+    );
+    if (section) {
+      section.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+    pendingDay.current = date;
+    setShowPast(true);
+  }
+
   const studentCanJoin =
     auth.role === "student" && group.status === "published" && !group.iAmMember;
-  const studentCanLeave = auth.role === "student" && group.iAmMember;
+  const studentCanLeave =
+    auth.role === "student" && group.iAmMember && !group.iAmLeader;
 
   const leaderHits = useMemo(() => {
     const q = leaderQuery.trim();
@@ -106,8 +148,10 @@ export function CasDetail({
   }
 
   return (
-    <div className="px-container-padding-mobile pt-[calc(env(safe-area-inset-top,0px)+1rem)] pb-16 md:px-container-padding-desktop md:pt-8">
-      <div className="mx-auto max-w-2xl">
+    <div className="flex min-h-dvh flex-col md:min-h-[calc(100dvh-3rem-env(safe-area-inset-top,0px))]">
+      <div className="flex min-h-0 flex-1 flex-col lg:flex-row lg:items-start">
+        <div className="flex min-w-0 flex-1 flex-col px-container-padding-mobile pt-[calc(env(safe-area-inset-top,0px)+1rem)] pb-16 md:px-container-padding-desktop md:pt-8">
+          <div className="mx-auto w-full max-w-2xl md:mx-0">
         <button
           type="button"
           className="text-label-sm tracking-wide text-on-surface-variant"
@@ -322,9 +366,10 @@ export function CasDetail({
               {groups.map((day, index) => (
                 <section
                   key={day.date}
-                  className={`luma-day${index === 0 ? " is-first" : ""}${
-                    index === groups.length - 1 ? " is-last" : ""
-                  }`}
+                  id={`cas-day-${day.date}`}
+                  className={`luma-day scroll-mt-24 md:scroll-mt-16${
+                    index === 0 ? " is-first" : ""
+                  }${index === groups.length - 1 ? " is-last" : ""}`}
                 >
                   <div className="luma-day-line" aria-hidden />
                   <div className="luma-day-head">
@@ -372,6 +417,13 @@ export function CasDetail({
             </div>
           )}
         </section>
+          </div>
+        </div>
+        <EventsMonthCalendar
+          events={group.sessions}
+          onOpenEvent={onOpenSession}
+          onSelectDay={scrollToDay}
+        />
       </div>
     </div>
   );

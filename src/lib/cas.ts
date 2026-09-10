@@ -309,9 +309,17 @@ export async function fetchCasCatalog(
 
   const now = Date.now();
   return rows.map((row) => {
-    const memberIds = membersByCas.get(row.id) ?? [];
-    const iAmMember = Boolean(studentId && memberIds.includes(studentId));
     const groupLeaders = leadersByCas.get(row.id) ?? [];
+    const memberIdSet = new Set(membersByCas.get(row.id) ?? []);
+    for (const leader of groupLeaders) {
+      if (leader.studentId) memberIdSet.add(leader.studentId);
+    }
+    const memberIds = [...memberIdSet];
+    const iAmLeader = Boolean(
+      profileId && groupLeaders.some((l) => l.profileId === profileId),
+    );
+    const iAmMember =
+      iAmLeader || Boolean(studentId && memberIdSet.has(studentId));
     const mapped = sessions
       .filter((session) => session.cas_id === row.id)
       .map((session) => mapSession(session, row.title, mine.get(session.id) ?? null));
@@ -329,10 +337,12 @@ export async function fetchCasCatalog(
       location: row.location,
       status: row.status,
       moderationToken: row.moderation_token,
-      memberCount: memberIds.length,
+      memberCount:
+        memberIds.length +
+        groupLeaders.filter((leader) => !leader.studentId).length,
       memberIds,
       iAmMember,
-      iAmLeader: Boolean(profileId && groupLeaders.some((l) => l.profileId === profileId)),
+      iAmLeader,
       leaders: groupLeaders,
       nextSession: upcoming[0] ?? null,
       sessions: mapped,
@@ -683,12 +693,7 @@ export function applyCasSessions(
     next[day.id] = [...week[day.id]];
   }
   for (const group of groups) {
-    if (
-      group.status !== "published" ||
-      (!group.iAmMember && !group.iAmLeader)
-    ) {
-      continue;
-    }
+    if (group.status !== "published" || !group.iAmMember) continue;
     for (const session of group.sessions) {
       if (session.status === "cancelled" && session.splitGroupId) continue;
       const date = crDate(session.startsAt);
