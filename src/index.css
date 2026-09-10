@@ -129,7 +129,7 @@
 }
 
 @utility pb-mobile-nav {
-  padding-bottom: calc(5rem + env(safe-area-inset-bottom, 0px));
+  padding-bottom: 5rem;
 }
 
 @utility menu-panel {
@@ -313,7 +313,7 @@
   position: fixed;
   z-index: 85;
   right: 0;
-  bottom: calc(0.5rem + env(safe-area-inset-bottom, 0px));
+  bottom: 0.5rem;
   left: 0;
   display: flex;
   justify-content: center;
