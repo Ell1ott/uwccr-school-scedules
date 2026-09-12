@@ -55,6 +55,7 @@ export function ReachPage({
   onBack,
   onOpenLogin,
   onDraftChange,
+  embedded = false,
 }: {
   students: Student[];
   draft: "new" | "edit" | null;
@@ -62,6 +63,7 @@ export function ReachPage({
   onBack: () => void;
   onOpenLogin?: () => void;
   onDraftChange: (draft: "new" | string | null) => void;
+  embedded?: boolean;
 }) {
   const auth = useAuth();
   const loggedOut = !auth.session || !auth.role;
@@ -161,28 +163,32 @@ export function ReachPage({
   }
 
   return (
-    <div className="reach-app">
+    <div className={embedded ? "reach-app embedded" : "reach-app"}>
       <div className="reach-shell">
         <header className="reach-nav">
-          <button
-            type="button"
-            aria-label="Back"
-            onClick={() => {
-              if (composing && step === "details") {
-                setDirection("back");
-                setStep("kind");
-                return;
-              }
-              if (composing) {
-                onDraftChange(null);
-                setStep("kind");
-                return;
-              }
-              onBack();
-            }}
-          >
-            <ArrowLeft size={22} strokeWidth={1.75} aria-hidden />
-          </button>
+          {embedded && !composing ? (
+            <button type="button" disabled aria-hidden />
+          ) : (
+            <button
+              type="button"
+              aria-label="Back"
+              onClick={() => {
+                if (composing && step === "details") {
+                  setDirection("back");
+                  setStep("kind");
+                  return;
+                }
+                if (composing) {
+                  onDraftChange(null);
+                  setStep("kind");
+                  return;
+                }
+                onBack();
+              }}
+            >
+              <ArrowLeft size={22} strokeWidth={1.75} aria-hidden />
+            </button>
+          )}
           {composing && step === "details" ? (
             <button
               type="button"
@@ -443,7 +449,10 @@ function ReachRequestCard({
 
   async function onDelete() {
     setBusy(true);
-    const message = await deleteReachRequest(request.id);
+    const message = await deleteReachRequest(
+      request.id,
+      request.documents.map((doc) => doc.path),
+    );
     setBusy(false);
     if (message) {
       setActionError(message);

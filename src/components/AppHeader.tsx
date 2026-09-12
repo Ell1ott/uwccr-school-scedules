@@ -1,19 +1,18 @@
-import { Calendar, Compass, DoorOpen, MessageSquare, Shuffle, Sparkles } from "lucide-react";
+import { Calendar, CircleUser, Compass, DoorOpen, Sparkles } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
-import { useAuth } from "../lib/auth";
 import type { SelectedPerson, Student, Teacher } from "../types";
-import { PalettePicker } from "./PalettePicker";
 import { StudentPicker } from "./StudentPicker";
 import { ViewingPersonLabel } from "./ViewingPersonLabel";
 import { WeekNav } from "./WeekNav";
 
-export type AppTabId = "week" | "classes" | "events" | "cas";
+export type AppTabId = "week" | "events" | "cas" | "reach" | "more";
 
 const APP_TABS = [
   { id: "week", label: "Week" },
   { id: "events", label: "Events" },
   { id: "cas", label: "CAS" },
-  { id: "classes", label: "Try classes" },
+  { id: "reach", label: "Reach" },
+  { id: "more", label: "More" },
 ] as const;
 
 const TAB_RADIUS = 12;
@@ -96,11 +95,6 @@ function FolderTabFace({ selected }: { selected: boolean }) {
 }
 
 function TabIcon({ id }: { id: AppTabId }) {
-  if (id === "classes") {
-    return (
-      <Shuffle size={16} strokeWidth={1.75} className="shrink-0" aria-hidden />
-    );
-  }
   if (id === "events") {
     return (
       <Sparkles size={16} strokeWidth={1.75} className="shrink-0" aria-hidden />
@@ -109,6 +103,16 @@ function TabIcon({ id }: { id: AppTabId }) {
   if (id === "cas") {
     return (
       <Compass size={16} strokeWidth={1.75} className="shrink-0" aria-hidden />
+    );
+  }
+  if (id === "reach") {
+    return (
+      <DoorOpen size={16} strokeWidth={1.75} className="shrink-0" aria-hidden />
+    );
+  }
+  if (id === "more") {
+    return (
+      <CircleUser size={16} strokeWidth={1.75} className="shrink-0" aria-hidden />
     );
   }
 
@@ -159,9 +163,6 @@ export function AppHeader({
   teachers,
   selected,
   onSelect,
-  onOpenLogin,
-  onOpenFeedback,
-  onOpenReach,
   viewingName,
   onBackFromViewing,
 }: {
@@ -173,14 +174,9 @@ export function AppHeader({
   teachers: Teacher[];
   selected: SelectedPerson | null;
   onSelect: (person: SelectedPerson) => void;
-  onOpenLogin?: () => void;
-  onOpenFeedback?: () => void;
-  onOpenReach?: () => void;
   viewingName?: string | null;
   onBackFromViewing?: () => void;
 }) {
-  const auth = useAuth();
-
   return (
     <header className="sticky top-0 z-50 hidden w-full bg-surface-dim pt-safe md:block">
       {viewingName && onBackFromViewing ? (
@@ -200,44 +196,6 @@ export function AppHeader({
           <AppTabs tab={tab} onTabChange={onTabChange} />
         </div>
         <div className="ml-auto flex min-w-0 items-center gap-2">
-          {onOpenReach ? (
-            <button
-              type="button"
-              className="flex h-8.5 shrink-0 items-center gap-1.5 rounded-full bg-surface-container-lowest px-2.5 text-label-sm tracking-wide text-on-surface-variant"
-              onClick={onOpenReach}
-            >
-              <DoorOpen size={14} strokeWidth={1.75} aria-hidden />
-              Reach
-            </button>
-          ) : null}
-          {onOpenFeedback ? (
-            <button
-              type="button"
-              className="flex h-8.5 shrink-0 items-center gap-1.5 rounded-full bg-surface-container-lowest px-2.5 text-label-sm tracking-wide text-on-surface-variant"
-              onClick={onOpenFeedback}
-            >
-              <MessageSquare size={14} strokeWidth={1.75} aria-hidden />
-              Feedback
-            </button>
-          ) : null}
-          {auth.displayName ? (
-            <button
-              type="button"
-              className="flex h-8.5 shrink-0 items-center rounded-full bg-surface-container-lowest px-2.5 text-label-sm tracking-wide text-on-surface-variant"
-              onClick={() => void auth.signOut()}
-            >
-              Sign out
-            </button>
-          ) : (
-            <button
-              type="button"
-              className="flex h-8.5 shrink-0 items-center rounded-full bg-surface-container-lowest px-2.5 text-label-sm tracking-wide text-on-surface-variant"
-              onClick={() => onOpenLogin?.()}
-            >
-              Log in
-            </button>
-          )}
-          <PalettePicker />
           <div className="w-36 min-w-0 lg:w-64">
             <StudentPicker
               students={students}

@@ -17,6 +17,36 @@
   -webkit-font-smoothing: antialiased;
 }
 
+.reach-app.embedded .reach-body {
+  padding-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
+}
+
+.reach-app.embedded .reach-dock {
+  padding-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
+}
+
+@media (min-width: 768px) {
+  .reach-app.embedded {
+    min-height: calc(100dvh - 3rem - env(safe-area-inset-top, 0px));
+  }
+
+  .reach-app.embedded .reach-shell {
+    min-height: calc(100dvh - 3rem - env(safe-area-inset-top, 0px));
+  }
+
+  .reach-app.embedded .reach-nav {
+    padding-top: 0.75rem;
+  }
+
+  .reach-app.embedded .reach-body {
+    padding-bottom: 1.5rem;
+  }
+
+  .reach-app.embedded .reach-dock {
+    padding-bottom: 0.9rem;
+  }
+}
+
 .reach-app button,
 .reach-app input,
 .reach-app textarea {

@@ -15,6 +15,7 @@ export type AppRoute =
   | { page: "login" }
   | { page: "admin" }
   | { page: "reach"; draft?: "new" | "edit"; requestId?: string }
+  | { page: "more" }
   | { page: "gate" }
   | { page: "moderate"; token: string; decision: ModerateDecision | null };
 
@@ -103,6 +104,7 @@ export function parseRoute(pathname: string, search: string): AppRoute {
     };
   }
   if (path === "/try-classes") return { page: "try-classes" };
+  if (path === "/more") return { page: "more" };
   if (segments[0] === "cas") {
     if (segments.length === 1) return { page: "cas" };
     if (segments.length === 2 && segments[1] === "new") {
@@ -199,6 +201,8 @@ export function toPath(route: AppRoute): string {
       return "/";
     case "try-classes":
       return "/try-classes";
+    case "more":
+      return "/more";
     case "login":
       return "/login";
     case "admin":

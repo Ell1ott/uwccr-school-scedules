@@ -20,6 +20,7 @@ import { FeedbackSheet } from "./components/FeedbackSheet";
 import { MobileHub } from "./components/MobileHub";
 import { MobileTabBar } from "./components/MobileTabBar";
 import { ModerateEventPage } from "./components/ModerateEventPage";
+import { MorePage } from "./components/MorePage";
 import { GatePage } from "./components/GatePage";
 import { ReachPage } from "./components/ReachPage";
 import { StudentRoster } from "./components/StudentRoster";
@@ -106,16 +107,18 @@ function eventsListRoute(route: AppRoute): AppRoute {
 }
 
 function tabFromRoute(route: AppRoute): AppTabId {
-  if (route.page === "try-classes") return "classes";
+  if (route.page === "try-classes" || route.page === "more") return "more";
   if (route.page === "events") return "events";
   if (route.page === "cas") return "cas";
+  if (route.page === "reach") return "reach";
   return "week";
 }
 
 function routeFromTab(tab: AppTabId): AppRoute {
-  if (tab === "classes") return { page: "try-classes" };
+  if (tab === "more") return { page: "more" };
   if (tab === "events") return { page: "events" };
   if (tab === "cas") return { page: "cas" };
+  if (tab === "reach") return { page: "reach" };
   return { page: "week" };
 }
 
@@ -280,12 +283,15 @@ function AppShell() {
   }, [auth.teacherId, auth.studentId, choosePerson]);
 
   function chooseTab(next: AppTabId) {
-    if (next === tab) return;
+    if (next === tab && !(route.page === "try-classes" && next === "more")) {
+      return;
+    }
     setOpenEvent(null);
-    if (next === "classes") track("class_chooser_opened");
-    else if (tab === "classes") track("class_chooser_closed");
+    if (route.page === "try-classes") track("class_chooser_closed");
     if (next === "events") track("events_opened");
     if (next === "cas") track("cas_opened");
+    if (next === "reach") track("reach_opened");
+    if (next === "more") track("more_opened");
     navigate(routeFromTab(next));
   }
 
@@ -474,7 +480,9 @@ function AppShell() {
       route.page === "week" ||
       route.page === "try-classes" ||
       route.page === "events" ||
-      route.page === "cas"
+      route.page === "cas" ||
+      route.page === "reach" ||
+      route.page === "more"
     ) {
       track("roster_viewed");
     }
@@ -553,29 +561,6 @@ function AppShell() {
     return <GatePage />;
   }
 
-  if (route.page === "reach") {
-    return (
-      <ReachPage
-        students={students}
-        draft={route.draft ?? null}
-        requestId={route.requestId}
-        onBack={goHome}
-        onOpenLogin={openLogin}
-        onDraftChange={(next) => {
-          if (next === "new") {
-            navigate({ page: "reach", draft: "new" });
-            return;
-          }
-          if (next) {
-            navigate({ page: "reach", draft: "edit", requestId: next });
-            return;
-          }
-          navigate({ page: "reach" });
-        }}
-      />
-    );
-  }
-
   return (
     <PaletteProvider
       palette={palette}
@@ -593,9 +578,6 @@ function AppShell() {
           teachers={teachers}
           selected={selected}
           onSelect={choosePerson}
-          onOpenLogin={openLogin}
-          onOpenFeedback={openFeedback}
-          onOpenReach={() => navigate({ page: "reach" })}
           viewingName={viewingOtherName}
           onBackFromViewing={goBackToOwnSchedule}
         />
@@ -603,15 +585,55 @@ function AppShell() {
         <main>
           <div className="md:-mt-px md:rounded-t-2xl md:shadow-[0_-12px_32px_rgba(4,22,39,0.06)]">
             <div className="min-h-dvh bg-surface-container-lowest md:min-h-[calc(100dvh-3rem-env(safe-area-inset-top,0px))] md:rounded-t-2xl">
-          {tab === "classes" ? (
-            <div id="classes-panel" role="tabpanel" aria-labelledby="tab-classes">
+          {route.page === "try-classes" ? (
+            <div id="more-panel" role="tabpanel" aria-labelledby="tab-more">
               <ClassChooser
                 students={students}
                 currentStudent={student}
                 communityMeeting={communityMeeting}
-                onClose={() => chooseTab("week")}
+                onClose={() => {
+                  track("class_chooser_closed");
+                  navigate({ page: "more" });
+                }}
                 hubOpen={hubOpen}
                 onOpenHub={openHub}
+              />
+            </div>
+          ) : tab === "more" ? (
+            <div id="more-panel" role="tabpanel" aria-labelledby="tab-more">
+              <MorePage
+                hubOpen={hubOpen}
+                onOpenHub={openHub}
+                onOpenLogin={openLogin}
+                onOpenFeedback={openFeedback}
+                onOpenGate={() => navigate({ page: "gate" })}
+                onOpenAdmin={openAdmin}
+                onOpenTryClasses={() => {
+                  track("class_chooser_opened");
+                  navigate({ page: "try-classes" });
+                }}
+              />
+            </div>
+          ) : tab === "reach" ? (
+            <div id="reach-panel" role="tabpanel" aria-labelledby="tab-reach">
+              <ReachPage
+                students={students}
+                draft={route.page === "reach" ? route.draft ?? null : null}
+                requestId={route.page === "reach" ? route.requestId : undefined}
+                onBack={() => navigate({ page: "reach" })}
+                onOpenLogin={openLogin}
+                embedded
+                onDraftChange={(next) => {
+                  if (next === "new") {
+                    navigate({ page: "reach", draft: "new" });
+                    return;
+                  }
+                  if (next) {
+                    navigate({ page: "reach", draft: "edit", requestId: next });
+                    return;
+                  }
+                  navigate({ page: "reach" });
+                }}
               />
             </div>
           ) : tab === "events" ? (
@@ -803,17 +825,6 @@ function AppShell() {
               chooseTab("week");
             }}
             onClose={() => setHubOpen(false)}
-            onOpenLogin={openLogin}
-            onOpenAdmin={openAdmin}
-            onOpenFeedback={openFeedback}
-            onOpenReach={() => {
-              setHubOpen(false);
-              navigate({ page: "reach" });
-            }}
-            onOpenGate={() => {
-              setHubOpen(false);
-              navigate({ page: "gate" });
-            }}
           />
         ) : null}
       </div>

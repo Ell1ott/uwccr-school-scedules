@@ -336,7 +336,7 @@
   isolation: isolate;
   display: flex;
   flex-direction: column;
-  width: min(17.25rem, 100%);
+  width: min(20.5rem, 100%);
   padding: 0.22rem;
   border-radius: 999px;
   background: color-mix(
@@ -361,7 +361,7 @@
   position: relative;
   isolation: isolate;
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
 }
 
 .mobile-tab-bar-indicator {
@@ -370,7 +370,7 @@
   top: 0;
   bottom: 0;
   left: 0;
-  width: 25%;
+  width: 20%;
   border-radius: 999px;
   background: color-mix(in srgb, var(--color-on-surface) 8%, transparent);
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.55) inset;
@@ -422,7 +422,7 @@
   min-width: 0;
   align-items: center;
   gap: 0.45rem;
-  padding: 0.4rem 0.28rem 0.2rem 0.75rem;
+  padding: 0.4rem 0.28rem 0.7rem 0.75rem;
   color: var(--color-on-surface);
   font-size: 13px;
   font-weight: 600;

@@ -673,10 +673,32 @@ export async function updateReachRequest(input: {
   };
 }
 
+async function removeReachDocuments(
+  requestId: string,
+  documentPaths: string[],
+) {
+  if (!supabase) return;
+  const paths = new Set(documentPaths.filter(Boolean));
+  const { data: listed } = await supabase.storage
+    .from("reach-documents")
+    .list(requestId, { limit: 1000 });
+  for (const item of listed ?? []) {
+    if (item.id) paths.add(`${requestId}/${item.name}`);
+  }
+  if (paths.size === 0) return;
+  await supabase.storage.from("reach-documents").remove([...paths]);
+}
+
 export async function deleteReachRequest(
   requestId: string,
+  documentPaths: string[] = [],
 ): Promise<string | null> {
   if (!supabase) return "Login is not configured yet.";
+  try {
+    await removeReachDocuments(requestId, documentPaths);
+  } catch {
+    // Storage cleanup is best-effort. The request row is what the student is deleting.
+  }
   const { error } = await supabase.rpc("delete_reach_request", {
     p_request_id: requestId,
   });

@@ -1,4 +1,4 @@
-import { Calendar, Compass, Shuffle, Sparkles } from "lucide-react";
+import { Calendar, CircleUser, Compass, DoorOpen, Sparkles } from "lucide-react";
 import type { AppTabId } from "./AppHeader";
 import { ViewingPersonLabel } from "./ViewingPersonLabel";
 
@@ -6,7 +6,8 @@ const TABS = [
   { id: "week", hint: "Schedule" },
   { id: "events", hint: "Events" },
   { id: "cas", hint: "CAS" },
-  { id: "classes", hint: "Try classes" },
+  { id: "reach", hint: "Reach" },
+  { id: "more", hint: "More" },
 ] as const satisfies readonly { id: AppTabId; hint: string }[];
 
 export function MobileTabBar({
@@ -80,6 +81,7 @@ function TabGlyph({ id, selected }: { id: AppTabId; selected: boolean }) {
 
   if (id === "events") return <Sparkles {...props} />;
   if (id === "cas") return <Compass {...props} />;
-  if (id === "classes") return <Shuffle {...props} />;
+  if (id === "reach") return <DoorOpen {...props} />;
+  if (id === "more") return <CircleUser {...props} />;
   return <Calendar {...props} />;
 }

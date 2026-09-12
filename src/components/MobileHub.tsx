@@ -4,14 +4,11 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronUp,
-  DoorOpen,
   EllipsisVertical,
-  MessageSquare,
   X,
 } from "lucide-react";
 import { useId, useState } from "react";
 import { DAYS } from "../data/weekTemplate";
-import { useAuth } from "../lib/auth";
 import { todayDayId } from "../lib/buildSchedule";
 import {
   formatDayDate,
@@ -21,12 +18,9 @@ import {
 } from "../lib/calendar";
 import { initials } from "../lib/classDetail";
 import { selectedStudent, selectedTeacher } from "../lib/people";
-import { usePalette } from "../lib/palette";
 import { subjectSummary } from "../lib/teachers";
-import { PALETTE_OPTIONS } from "../lib/tones";
 import type { DayId, SelectedPerson, Student, Teacher } from "../types";
 import { BottomSheet, SheetHandle } from "./BottomSheet";
-import { PalettePicker } from "./PalettePicker";
 import { StudentPicker } from "./StudentPicker";
 
 export function MobileHubButton({
@@ -66,11 +60,6 @@ export function MobileHub({
   onWeekChange,
   onPickDay,
   onClose,
-  onOpenLogin,
-  onOpenAdmin,
-  onOpenFeedback,
-  onOpenReach,
-  onOpenGate,
 }: {
   students: Student[];
   teachers: Teacher[];
@@ -81,17 +70,9 @@ export function MobileHub({
   onWeekChange: (weekStart: string) => void;
   onPickDay: (id: DayId) => void;
   onClose: () => void;
-  onOpenLogin?: () => void;
-  onOpenAdmin?: () => void;
-  onOpenFeedback?: () => void;
-  onOpenReach?: () => void;
-  onOpenGate?: () => void;
 }) {
-  const auth = useAuth();
-  const { palette } = usePalette();
   const titleId = useId();
   const [inspectPerson, setInspectPerson] = useState(false);
-  const [inspectMore, setInspectMore] = useState(false);
   const student = selectedStudent(students, selected);
   const teacher = selectedTeacher(teachers, selected);
   const name = student?.name ?? teacher?.name;
@@ -100,7 +81,6 @@ export function MobileHub({
     : teacher
       ? subjectSummary(teacher)
       : "Pick a student or teacher";
-  const currentPalette = PALETTE_OPTIONS.find((option) => option.id === palette);
   const thisWeek = mondayOf(new Date());
   const isThisWeek = weekStart === thisWeek;
   const now = new Date();
@@ -318,143 +298,9 @@ export function MobileHub({
                 {formatWeekRange(weekStart)}
               </button>
             </section>
-
-            {onOpenReach ? (
-              <section>
-                <button
-                  type="button"
-                  className="flex min-h-[4.25rem] w-full items-center gap-3 rounded-[18px] bg-residential-container px-4 text-left text-on-residential-container focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-                  onClick={() => {
-                    onOpenReach();
-                    onClose();
-                  }}
-                >
-                  <span className="flex size-10 items-center justify-center rounded-full bg-residential text-on-residential">
-                    <DoorOpen size={18} strokeWidth={1.75} aria-hidden />
-                  </span>
-                  <span>
-                    <span className="block text-body-md font-medium">Reach</span>
-                    <span className="block text-label-sm tracking-wide opacity-80">
-                      Request leave
-                    </span>
-                  </span>
-                </button>
-              </section>
-            ) : null}
-
-            <section className="overflow-hidden rounded-[18px] bg-surface-container-low">
-              <button
-                type="button"
-                className="flex w-full items-center gap-3 px-4 py-3 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/20"
-                aria-expanded={inspectMore}
-                onClick={() => setInspectMore((open) => !open)}
-              >
-                <span className="flex items-center -space-x-1" aria-hidden>
-                  {(currentPalette?.swatches ?? []).slice(0, 4).map((swatch) => (
-                    <PeekSwatch key={swatch} swatch={swatch} />
-                  ))}
-                </span>
-                <span className="min-w-0 flex-1 text-body-md text-on-surface">
-                  Look & account
-                </span>
-                {inspectMore ? (
-                  <ChevronUp
-                    size={16}
-                    strokeWidth={1.75}
-                    className="shrink-0 text-on-surface-variant"
-                    aria-hidden
-                  />
-                ) : (
-                  <ChevronDown
-                    size={16}
-                    strokeWidth={1.75}
-                    className="shrink-0 text-on-surface-variant"
-                    aria-hidden
-                  />
-                )}
-              </button>
-              {inspectMore ? (
-                <div className="flex flex-col gap-2 px-3 pb-3">
-                  <PalettePicker alwaysExpanded className="w-full" />
-                  {onOpenFeedback ? (
-                    <button
-                      type="button"
-                      className="flex h-12 items-center gap-2 rounded-full bg-surface-container px-4 text-left text-label-sm tracking-wide text-on-surface"
-                      onClick={() => {
-                        onOpenFeedback();
-                        onClose();
-                      }}
-                    >
-                      <MessageSquare size={16} strokeWidth={1.75} aria-hidden />
-                      Send feedback
-                    </button>
-                  ) : null}
-                  {auth.role === "staff" && onOpenGate ? (
-                    <button
-                      type="button"
-                      className="flex h-12 items-center gap-2 rounded-full bg-surface-container px-4 text-left text-label-sm tracking-wide text-on-surface"
-                      onClick={() => {
-                        onOpenGate();
-                        onClose();
-                      }}
-                    >
-                      <DoorOpen size={16} strokeWidth={1.75} aria-hidden />
-                      Gate
-                    </button>
-                  ) : null}
-                  {auth.displayName ? (
-                    <button
-                      type="button"
-                      className="h-12 rounded-full bg-surface-container px-4 text-left text-label-sm tracking-wide text-on-surface"
-                      onClick={() => {
-                        void auth.signOut();
-                        onClose();
-                      }}
-                    >
-                      Sign out {auth.displayName}
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      className="h-12 rounded-full bg-surface-container px-4 text-left text-label-sm tracking-wide text-on-surface"
-                      onClick={() => {
-                        onOpenLogin?.();
-                        onClose();
-                      }}
-                    >
-                      Log in
-                    </button>
-                  )}
-                  {import.meta.env.VITE_SHOW_SEND_LOGINS ? (
-                    <button
-                      type="button"
-                      className="h-12 rounded-full px-4 text-left text-label-sm tracking-wide text-on-surface-variant"
-                      onClick={() => {
-                        onOpenAdmin?.();
-                        onClose();
-                      }}
-                    >
-                      Send logins
-                    </button>
-                  ) : null}
-                </div>
-              ) : null}
-            </section>
           </div>
         </>
       )}
     </BottomSheet>
-  );
-}
-
-function PeekSwatch({ swatch }: { swatch: string }) {
-  const isClass = swatch.startsWith("bg-");
-  return (
-    <span
-      className={`h-3.5 w-3.5 rounded-full ring-2 ring-surface-container-low ${
-        isClass ? swatch : ""
-      }`}
-      style={isClass ? undefined : { backgroundColor: swatch }}
-    />
   );
 }
