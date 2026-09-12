@@ -203,7 +203,7 @@ export function DayTimeline({
 
       <div
         ref={dayPageRef}
-        className="relative mt-2 touch-pan-y overflow-x-hidden overscroll-x-none pb-16 select-none"
+        className="relative mt-2 touch-pan-y overflow-x-hidden overscroll-x-none pb-24 select-none"
       >
         <div
           ref={dayTrackRef}

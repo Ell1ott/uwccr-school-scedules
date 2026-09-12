@@ -23,6 +23,7 @@ import { StudentRoster } from "./components/StudentRoster";
 import { DayTimeline } from "./components/DayTimeline";
 import { TeacherAdmin } from "./components/TeacherAdmin";
 import { TeacherLogin } from "./components/TeacherLogin";
+import { ViewingPersonLabel } from "./components/ViewingPersonLabel";
 import { WeekGrid } from "./components/WeekGrid";
 import {
   setSelectedPerson,
@@ -372,6 +373,16 @@ function AppShell() {
 
   const student = selectedStudent(students, selected);
   const teacher = selectedTeacher(teachers, selected);
+  const viewingOtherName =
+    !auth.loading &&
+    auth.session &&
+    auth.role &&
+    !(
+      (student && auth.studentId === student.id) ||
+      (teacher && auth.teacherId === teacher.id)
+    )
+      ? (student?.name ?? teacher?.name ?? null)
+      : null;
   const buildLiveWeek = useCallback(
     (start: string) => {
       const built = student
@@ -720,6 +731,33 @@ function AppShell() {
         ) : null}
         {feedbackOpen ? (
           <FeedbackSheet onClose={() => setFeedbackOpen(false)} />
+        ) : null}
+        {tab === "week" && week && viewingOtherName ? (
+          <ViewingPersonLabel
+            name={viewingOtherName}
+            hidden={Boolean(
+              openEvent ||
+                openSchoolEvent ||
+                openCasSession ||
+                feedbackOpen ||
+                hubOpen,
+            )}
+            onBack={() => {
+              if (auth.teacherId) {
+                choosePerson(
+                  { kind: "teacher", id: auth.teacherId },
+                  "viewing_label",
+                );
+                return;
+              }
+              if (auth.studentId) {
+                choosePerson(
+                  { kind: "student", id: auth.studentId },
+                  "viewing_label",
+                );
+              }
+            }}
+          />
         ) : null}
         {hubOpen ? (
           <MobileHub
