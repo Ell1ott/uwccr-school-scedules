@@ -1,5 +1,6 @@
 import { ArrowLeft, ChevronDown, DoorOpen, FileUp } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { MobileHubButton } from "./MobileHub";
 import { ReachForm, type ReachFormStep } from "./ReachForm";
 import { StudentQrCard } from "./StudentQrCard";
 import { useAuth } from "../lib/auth";
@@ -55,6 +56,8 @@ export function ReachPage({
   onBack,
   onOpenLogin,
   onDraftChange,
+  hubOpen,
+  onOpenHub,
   embedded = false,
 }: {
   students: Student[];
@@ -63,6 +66,8 @@ export function ReachPage({
   onBack: () => void;
   onOpenLogin?: () => void;
   onDraftChange: (draft: "new" | string | null) => void;
+  hubOpen?: boolean;
+  onOpenHub?: () => void;
   embedded?: boolean;
 }) {
   const auth = useAuth();
@@ -218,6 +223,12 @@ export function ReachPage({
               <i className={step === "kind" ? "on" : ""} />
               <i className={step === "details" ? "on" : ""} />
             </div>
+          ) : onOpenHub ? (
+            <MobileHubButton
+              className="md:invisible"
+              expanded={hubOpen}
+              onClick={onOpenHub}
+            />
           ) : (
             <button type="button" disabled aria-hidden />
           )}
