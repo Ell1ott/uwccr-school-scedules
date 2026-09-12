@@ -19,6 +19,7 @@ import {
 import { meetingsForBlock } from "../lib/classDetail";
 import { LessonMark } from "../lib/icons";
 import { usePalette } from "../lib/palette";
+import { scrollAppToTop } from "../lib/scroll";
 import { COHORT_TABS } from "../lib/school";
 import { toneForEvent, type Tone } from "../lib/tones";
 import type {
@@ -119,7 +120,7 @@ export function ClassChooser({
     onClose();
   });
   useEffect(() => {
-    window.scrollTo(0, 0);
+    scrollAppToTop();
   }, []);
 
   function chooseCohort(next: CohortId) {

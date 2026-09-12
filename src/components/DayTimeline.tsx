@@ -13,6 +13,7 @@ import {
   shiftWeek,
 } from "../lib/calendar";
 import { minutesOfDay } from "../lib/now";
+import { scrollAppToTop } from "../lib/scroll";
 import type { DayId, ScheduleEvent } from "../types";
 import { EventCard } from "./EventCard";
 import { MobileHubButton } from "./MobileHub";
@@ -73,11 +74,11 @@ export function DayTimeline({
       canGoNext: canGoNextWeek,
       onPrev: () => {
         onWeekChange(prevWeekStart);
-        window.scrollTo(0, 0);
+        scrollAppToTop();
       },
       onNext: () => {
         onWeekChange(nextWeekStart);
-        window.scrollTo(0, 0);
+        scrollAppToTop();
       },
       resetKey: weekStart,
       restTransform: translateXFromMiddle,
@@ -91,12 +92,12 @@ export function DayTimeline({
       onPrev: () => {
         if (prevDay.dayId !== dayId) onDayChange(prevDay.dayId);
         if (prevDay.weekStart !== weekStart) onWeekChange(prevDay.weekStart);
-        window.scrollTo(0, 0);
+        scrollAppToTop();
       },
       onNext: () => {
         if (nextDay.dayId !== dayId) onDayChange(nextDay.dayId);
         if (nextDay.weekStart !== weekStart) onWeekChange(nextDay.weekStart);
-        window.scrollTo(0, 0);
+        scrollAppToTop();
       },
       resetKey: `${weekStart}-${dayId}`,
       restTransform: translateX,

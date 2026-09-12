@@ -65,6 +65,7 @@ import {
   useAppRoute,
   type AppRoute,
 } from "./lib/route";
+import { scrollAppToTop } from "./lib/scroll";
 import { applyCasSessions, useCasCatalog } from "./lib/cas";
 import {
   applySchoolEvents,
@@ -513,7 +514,7 @@ function AppShell() {
     if (document.activeElement instanceof HTMLElement) {
       document.activeElement.blur();
     }
-    window.scrollTo(0, 0);
+    scrollAppToTop();
   }, [selected]);
 
   function openFeedback() {

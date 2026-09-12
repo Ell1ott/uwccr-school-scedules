@@ -100,6 +100,26 @@
   }
 }
 
+/* Document must not scroll on phone — that is what toggles Chrome's toolbar. */
+@media (max-width: 767px) {
+  html,
+  body {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    overflow: hidden;
+    overscroll-behavior: none;
+  }
+
+  #root {
+    height: 100%;
+    overflow-x: hidden;
+    overflow-y: auto;
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+}
+
 /* Unlayered so it beats Tailwind size utilities. iOS zooms inputs under 16px. */
 @media (max-width: 767px) {
   input:where(
@@ -131,7 +151,7 @@
 }
 
 @utility pb-mobile-nav {
-  padding-bottom: 8rem;
+  padding-bottom: calc(8rem + env(safe-area-inset-bottom, 0px));
 }
 
 @utility menu-panel {
@@ -315,7 +335,7 @@
   position: fixed;
   z-index: 85;
   right: 0;
-  bottom: 1rem;
+  bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
   left: 0;
   display: flex;
   justify-content: center;
@@ -327,7 +347,7 @@
 }
 
 .mobile-tab-bar-hidden {
-  transform: translateY(calc(100% + 1.25rem));
+  transform: translateY(calc(100% + 1.25rem + env(safe-area-inset-bottom, 0px)));
   opacity: 0;
 }
 
