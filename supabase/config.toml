@@ -24,6 +24,22 @@ verify_jwt = true
 [functions.guard-login]
 verify_jwt = false
 
+[auth]
+site_url = "https://uwccr-schedule.vercel.app"
+additional_redirect_urls = [
+  "https://uwccr-schedule.vercel.app",
+  "https://uwccr-schedule.vercel.app/**",
+  "https://uwccr-schedule.vercel.app/login",
+  "https://uwccr-schedule-*.vercel.app/**",
+  "https://uwccr-school-scedules-*.vercel.app/**",
+  "http://localhost:5173",
+  "http://localhost:5173/**",
+  "http://localhost:3000",
+  "http://localhost:3000/**",
+  "uwccr://",
+  "uwccr://*",
+]
+
 [auth.external.google]
 enabled = true
 client_id = "884762771241-olseorkgvkte6or3b44ssi10mjal12k5.apps.googleusercontent.com"

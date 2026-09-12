@@ -9,6 +9,7 @@ import {
 import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 import { setTeacherContext, track, trackNow } from "./analytics";
 import { errorMessage } from "./errors";
+import { rememberLoginReturn } from "./route";
 import { SUPABASE_ANON_KEY, functionsUrl, supabase } from "./supabase";
 
 export type AuthRole = "student" | "staff";
@@ -354,6 +355,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             return "Login is not configured yet.";
           }
           const origin = window.location.origin;
+          const from = (window.history.state as { from?: string } | null)?.from;
+          if (typeof from === "string") rememberLoginReturn(from);
           const { error } = await withTimeout(
             supabase.auth.signInWithOAuth({
               provider: "google",

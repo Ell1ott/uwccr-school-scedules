@@ -59,8 +59,8 @@ import {
 import { PaletteProvider } from "./lib/palette";
 import { selectedStudent, selectedTeacher } from "./lib/people";
 import {
+  consumeLoginReturn,
   navigate,
-  previousRoute,
   toPath,
   useAppRoute,
   type AppRoute,
@@ -265,7 +265,7 @@ function AppShell() {
   );
 
   const goHome = useCallback(() => {
-    const from = previousRoute();
+    const from = consumeLoginReturn();
     navigate(from ?? { page: "week" }, { replace: true });
   }, []);
 
@@ -278,7 +278,7 @@ function AppShell() {
       track("student_logged_in", { student_id: auth.studentId });
       choosePerson({ kind: "student", id: auth.studentId }, "login");
     }
-    const from = previousRoute();
+    const from = consumeLoginReturn();
     navigate(from ?? { page: "events" }, { replace: true });
   }, [auth.teacherId, auth.studentId, choosePerson]);
 

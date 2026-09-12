@@ -23,6 +23,8 @@ type RouteHistoryState = {
   from?: string;
 };
 
+const LOGIN_RETURN_KEY = "uwccr-login-return";
+
 const listeners = new Set<() => void>();
 
 function currentHref() {
@@ -252,6 +254,9 @@ export function navigate(route: AppRoute, options?: { replace?: boolean }) {
   const next = toPath(route);
   const current = currentHref();
   if (next === current) return;
+  if (route.page === "login") {
+    rememberLoginReturn(current);
+  }
   if (options?.replace) {
     window.history.replaceState(window.history.state, "", next);
   } else {
@@ -261,19 +266,49 @@ export function navigate(route: AppRoute, options?: { replace?: boolean }) {
   emit();
 }
 
-export function previousRoute(): AppRoute | null {
-  const from = (window.history.state as RouteHistoryState | null)?.from;
-  if (typeof from !== "string" || !from) return null;
-  const route = parseHref(from);
-  if (
+function isTransientAuthPage(route: AppRoute): boolean {
+  return (
     route.page === "login" ||
     route.page === "admin" ||
     route.page === "moderate" ||
     route.page === "gate"
-  ) {
-    return null;
+  );
+}
+
+function safeReturnHref(raw: string | null | undefined): AppRoute | null {
+  if (!raw || !raw.startsWith("/") || raw.startsWith("//")) return null;
+  const route = parseHref(raw);
+  return isTransientAuthPage(route) ? null : route;
+}
+
+export function rememberLoginReturn(href = currentHref()) {
+  const route = safeReturnHref(href);
+  if (!route) return;
+  try {
+    sessionStorage.setItem(LOGIN_RETURN_KEY, toPath(route));
+  } catch {
+    /* ignore quota / private mode */
   }
-  return route;
+}
+
+export function previousRoute(): AppRoute | null {
+  const from = (window.history.state as RouteHistoryState | null)?.from;
+  return safeReturnHref(typeof from === "string" ? from : null);
+}
+
+export function consumeLoginReturn(): AppRoute | null {
+  const fromHistory = previousRoute();
+  const fromQuery = safeReturnHref(
+    new URLSearchParams(window.location.search).get("next"),
+  );
+  let fromStore: AppRoute | null = null;
+  try {
+    fromStore = safeReturnHref(sessionStorage.getItem(LOGIN_RETURN_KEY));
+    sessionStorage.removeItem(LOGIN_RETURN_KEY);
+  } catch {
+    /* ignore quota / private mode */
+  }
+  return fromHistory ?? fromQuery ?? fromStore;
 }
 
 export function useAppRoute(): AppRoute {
