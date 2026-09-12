@@ -267,6 +267,32 @@ export function reachLeaveWindowError(
   return null;
 }
 
+export function requiredReachCompanionCount(
+  startsAt: string,
+  endsAt: string,
+): 1 | 2 {
+  const sixPmOnStart = localToIso(crDate(startsAt), "18:00");
+  return Date.parse(endsAt) > Date.parse(sixPmOnStart) ? 2 : 1;
+}
+
+export function reachCompanionCountError(
+  startsAt: string,
+  endsAt: string,
+  companionIds: string[],
+  ownerId: string | null,
+): string | null {
+  const required = requiredReachCompanionCount(startsAt, endsAt);
+  const invited = new Set(
+    companionIds
+      .map((id) => id.trim())
+      .filter((id) => id !== "" && id !== ownerId),
+  );
+  if (invited.size >= required) return null;
+  return required === 2
+    ? "Leave after 6 PM needs 2 other people."
+    : "You have to go with at least 1 other person.";
+}
+
 export function canManageReachRequest(
   request: ReachRequest,
   auth: {

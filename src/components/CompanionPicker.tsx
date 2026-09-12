@@ -8,11 +8,13 @@ export function CompanionPicker({
   students,
   selectedIds,
   excludeId,
+  needed = 1,
   onChange,
 }: {
   students: Student[];
   selectedIds: string[];
   excludeId: string | null;
+  needed?: 1 | 2;
   onChange: (ids: string[]) => void;
 }) {
   const listId = useId();
@@ -97,7 +99,11 @@ export function CompanionPicker({
           aria-autocomplete="list"
           className="h-12 w-full bg-transparent text-body-md outline-none placeholder:text-on-surface-variant/70"
           placeholder={
-            selected.length ? "Add another person" : "Type a name — enter adds"
+            selected.length
+              ? "Add another person"
+              : needed === 2
+                ? "Add 2 people — enter adds"
+                : "Add 1 person — enter adds"
           }
           value={query}
           onChange={(event) => {

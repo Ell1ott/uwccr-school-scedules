@@ -30,7 +30,9 @@ import {
   localToIso,
   REACH_LEAVE_TYPES,
   REACH_TRANSPORTS,
+  reachCompanionCountError,
   reachLeaveWindowError,
+  requiredReachCompanionCount,
   suggestedEnd,
   updateReachRequest,
   validateReachFile,
@@ -178,6 +180,12 @@ export function ReachForm({
     docsOpen ||
     files.length > 0 ||
     existingDocs.length > 0;
+  const startIsoForCompanions = localToIso(start.date, start.time);
+  const endIsoForCompanions = localToIso(end.date, end.time);
+  const requiredCompanions = requiredReachCompanionCount(
+    startIsoForCompanions,
+    endIsoForCompanions,
+  );
   const fileError = useMemo(() => {
     for (const file of files) {
       const invalid = validateReachFile(file);
@@ -266,6 +274,16 @@ export function ReachForm({
     );
     if (windowError) {
       showFormNotice(windowError);
+      return;
+    }
+    const companionError = reachCompanionCountError(
+      startIso ?? new Date(startMs).toISOString(),
+      endIso,
+      companionIds,
+      auth.studentId,
+    );
+    if (companionError) {
+      showFormNotice(companionError);
       return;
     }
     const payload = {
@@ -463,13 +481,20 @@ export function ReachForm({
           </div>
 
           <div className="mt-4">
-            <p className="reach-label">People going</p>
+            <p className="reach-label">
+              People going
+              <br />
+              {requiredCompanions === 2
+                ? "Need 2 other people — back after 6 PM"
+                : "Need 1 other person"}
+            </p>
             <div className="reach-group">
               <div className="reach-field">
                 <CompanionPicker
                   students={students}
                   selectedIds={companionIds}
                   excludeId={auth.studentId}
+                  needed={requiredCompanions}
                   onChange={setCompanionIds}
                 />
               </div>

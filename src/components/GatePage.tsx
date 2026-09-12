@@ -1,4 +1,4 @@
-import { ArrowRight, DoorOpen, LogOut, Search, X } from "lucide-react";
+import { DoorOpen, LogIn, LogOut, Search, X, type LucideIcon } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { GateScanner } from "./GateScanner";
 import {
@@ -434,52 +434,52 @@ function LeaveWindow({
   startsAt: string;
   endsAt: string;
 }) {
-  const sameDay = crDate(startsAt) === crDate(endsAt);
   const startDay = formatReachDayLabel(startsAt);
   const endDay = formatReachDayLabel(endsAt);
+  const day =
+    crDate(startsAt) === crDate(endsAt)
+      ? startDay
+      : `${startDay} → ${endDay}`;
 
   return (
-    <div className="mt-3 rounded-2xl bg-surface-container px-3 py-3">
-      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-3">
-        <div>
-          <p className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
-            Out
-          </p>
-          <p className="mt-1 text-headline-lg-mobile tracking-tight tabular-nums">
-            {formatReachClock(startsAt)}
-          </p>
-          {sameDay ? null : (
-            <p className="mt-0.5 text-body-md text-on-surface-variant">
-              {startDay}
-            </p>
-          )}
-        </div>
-        <ArrowRight
-          size={18}
-          strokeWidth={1.75}
-          className="text-on-surface-variant"
-          aria-hidden
-        />
-        <div className="text-right">
-          <p className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
-            Back
-          </p>
-          <p className="mt-1 text-headline-lg-mobile tracking-tight tabular-nums">
-            {formatReachClock(endsAt)}
-          </p>
-          {sameDay ? null : (
-            <p className="mt-0.5 text-body-md text-on-surface-variant">
-              {endDay}
-            </p>
-          )}
-        </div>
-      </div>
-      {sameDay ? (
-        <p className="mt-1 text-center text-body-md text-on-surface-variant">
-          {startDay}
-        </p>
-      ) : null}
+    <div className="shrink-0 text-right">
+      <p className="text-title-md tracking-tight tabular-nums">
+        {formatReachClock(startsAt)}
+        <span className="mx-1 font-normal text-on-surface-variant">→</span>
+        {formatReachClock(endsAt)}
+      </p>
+      <p className="mt-0.5 text-body-md text-on-surface-variant">{day}</p>
     </div>
+  );
+}
+
+function GateAction({
+  label,
+  icon: Icon,
+  tone,
+  disabled,
+  onClick,
+}: {
+  label: string;
+  icon: LucideIcon;
+  tone: "out" | "in";
+  disabled: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      disabled={disabled}
+      onClick={onClick}
+      className={`flex w-[5.75rem] min-h-[5.25rem] cursor-pointer flex-col items-center justify-center gap-1.5 self-stretch rounded-2xl px-1 transition-[filter,transform] duration-150 hover:brightness-[1.08] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30 disabled:pointer-events-none disabled:opacity-40 ${
+        tone === "out"
+          ? "bg-primary text-on-primary"
+          : "bg-residential text-on-residential"
+      }`}
+    >
+      <Icon size={22} strokeWidth={1.75} aria-hidden />
+      <span className="text-center text-label-sm leading-tight">{label}</span>
+    </button>
   );
 }
 
@@ -525,68 +525,68 @@ function SelectedCard({
           {initials(student.name)}
         </span>
         <div className="min-w-0 flex-1">
-          <div className="flex items-start justify-between gap-2">
-            <div>
-              <p className="text-title-md tracking-tight">{student.name}</p>
-              <p className="text-label-sm text-on-surface-variant">
-                {student.cohort}
-              </p>
-            </div>
-            <div className="flex items-center gap-2">
-              <CampusChip status={student.campusStatus} />
-              <button
-                type="button"
-                className="flex size-9 items-center justify-center rounded-full bg-surface-container-lowest text-on-surface-variant"
-                aria-label={`Remove ${student.name}`}
-                onClick={onRemove}
-              >
-                <X size={14} strokeWidth={1.75} aria-hidden />
-              </button>
-            </div>
-          </div>
-          {leave ? (
-            <div className="mt-3 rounded-2xl bg-surface-container-lowest px-3 py-3">
-              <p className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
-                {leaveTypeMeta(leave.leaveType).label}
-              </p>
-              <p className="mt-1 text-body-md">{leave.destination}</p>
-              <LeaveWindow startsAt={leave.startsAt} endsAt={leave.endsAt} />
-              {reachLeaveIsOpen(leave.startsAt, leave.endsAt) ? null : (
-                <p className="mt-2 text-body-md text-on-surface-variant">
-                  Leave has not started
-                </p>
-              )}
-              <p className="mt-2 text-body-md">
-                <span className="text-on-surface-variant">Leaving with </span>
-                {others.length
-                  ? others.map((person) => person.name).join(", ")
-                  : "no one else"}
-              </p>
-            </div>
-          ) : (
-            <p className="mt-3 rounded-2xl bg-error-container px-3 py-2 text-body-md text-on-error-container">
-              No approved leave
-            </p>
-          )}
+          <p className="text-title-md tracking-tight">{student.name}</p>
+          <p className="text-label-sm text-on-surface-variant">
+            {student.cohort}
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <CampusChip status={student.campusStatus} />
+          <button
+            type="button"
+            className="flex size-9 items-center justify-center rounded-full bg-surface-container-lowest text-on-surface-variant"
+            aria-label={`Remove ${student.name}`}
+            onClick={onRemove}
+          >
+            <X size={14} strokeWidth={1.75} aria-hidden />
+          </button>
         </div>
       </div>
-      <div className="mt-4 flex gap-2">
-        <button
-          type="button"
-          disabled={busy || !canCheckout(student)}
-          className="h-11 flex-1 rounded-full bg-primary text-label-sm tracking-wide text-on-primary disabled:opacity-40"
-          onClick={onOut}
-        >
-          Sign out
-        </button>
-        <button
-          type="button"
-          disabled={busy || !canCheckin(student)}
-          className="h-11 flex-1 rounded-full bg-residential text-label-sm tracking-wide text-on-residential disabled:opacity-40"
-          onClick={onIn}
-        >
-          Sign in
-        </button>
+      <div className="mt-3 flex items-stretch gap-2">
+        {leave ? (
+          <div className="min-w-0 flex-1 rounded-2xl bg-surface-container-lowest px-3 py-3">
+            <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+              <div className="min-w-0">
+                <p className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
+                  {leaveTypeMeta(leave.leaveType).label}
+                </p>
+                <p className="mt-1 text-body-md">{leave.destination}</p>
+              </div>
+              <LeaveWindow startsAt={leave.startsAt} endsAt={leave.endsAt} />
+            </div>
+            {reachLeaveIsOpen(leave.startsAt, leave.endsAt) ? null : (
+              <p className="mt-2 text-body-md text-on-surface-variant">
+                Leave has not started
+              </p>
+            )}
+            <p className="mt-2 text-body-md">
+              <span className="text-on-surface-variant">Leaving with </span>
+              {others.length
+                ? others.map((person) => person.name).join(", ")
+                : "no one else"}
+            </p>
+          </div>
+        ) : (
+          <p className="flex min-w-0 flex-1 items-center rounded-2xl bg-error-container px-3 py-2 text-body-md text-on-error-container">
+            No approved leave
+          </p>
+        )}
+        <div className="flex shrink-0 items-stretch gap-2">
+          <GateAction
+            label="Sign out"
+            icon={LogOut}
+            tone="out"
+            disabled={busy || !canCheckout(student)}
+            onClick={onOut}
+          />
+          <GateAction
+            label="Sign in"
+            icon={LogIn}
+            tone="in"
+            disabled={busy || !canCheckin(student)}
+            onClick={onIn}
+          />
+        </div>
       </div>
     </article>
   );

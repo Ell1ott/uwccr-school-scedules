@@ -1,4 +1,4 @@
-import { ArrowLeft, ChevronDown, DoorOpen, FileUp, Plus } from "lucide-react";
+import { ArrowLeft, ChevronDown, DoorOpen, FileUp } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ReachForm, type ReachFormStep } from "./ReachForm";
 import { StudentQrCard } from "./StudentQrCard";
@@ -218,21 +218,8 @@ export function ReachPage({
               <i className={step === "kind" ? "on" : ""} />
               <i className={step === "details" ? "on" : ""} />
             </div>
-          ) : loggedOut || auth.role !== "student" ? (
-            <button type="button" disabled aria-hidden />
           ) : (
-            <button
-              type="button"
-              className="reach-new"
-              onClick={() => {
-                setLeaveType("day");
-                setDirection("forward");
-                setStep("kind");
-                onDraftChange("new");
-              }}
-            >
-              <Plus size={20} strokeWidth={2} aria-hidden />
-            </button>
+            <button type="button" disabled aria-hidden />
           )}
         </header>
 
@@ -283,7 +270,12 @@ export function ReachPage({
             </main>
           )
         ) : (
-          <main className="reach-body">
+          <>
+            <main
+              className={
+                auth.role === "student" ? "reach-body docked" : "reach-body"
+              }
+            >
             {loggedOut ? (
               <div className="reach-login">
                 <DoorOpen size={28} strokeWidth={1.5} className="mx-auto text-[var(--reach-muted)]" />
@@ -401,7 +393,23 @@ export function ReachPage({
                 </section>
               </>
             )}
-          </main>
+            </main>
+            {auth.role === "student" ? (
+              <div className="reach-dock">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setLeaveType("day");
+                    setDirection("forward");
+                    setStep("kind");
+                    onDraftChange("new");
+                  }}
+                >
+                  New leave
+                </button>
+              </div>
+            ) : null}
+          </>
         )}
       </div>
     </div>

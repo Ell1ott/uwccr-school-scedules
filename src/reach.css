@@ -21,6 +21,10 @@
   padding-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
 }
 
+.reach-app.embedded .reach-body.docked {
+  padding-bottom: calc(9.75rem + env(safe-area-inset-bottom, 0px));
+}
+
 .reach-app.embedded .reach-dock {
   padding-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
 }
@@ -40,6 +44,10 @@
 
   .reach-app.embedded .reach-body {
     padding-bottom: 1.5rem;
+  }
+
+  .reach-app.embedded .reach-body.docked {
+    padding-bottom: 5.75rem;
   }
 
   .reach-app.embedded .reach-dock {
@@ -93,13 +101,6 @@
 
 .reach-nav button:disabled {
   visibility: hidden;
-}
-
-.reach-nav .reach-new {
-  width: auto;
-  padding: 0 0.35rem;
-  font-size: 17px;
-  font-weight: 600;
 }
 
 .reach-nav button.reach-nav-type {
@@ -494,11 +495,13 @@
 
 .reach-dock {
   position: fixed;
+  z-index: 20;
   right: 0;
   bottom: 0;
   left: 0;
   padding: 0.75rem 1rem calc(0.9rem + env(safe-area-inset-bottom, 0px));
   background: linear-gradient(180deg, transparent, var(--reach-bg) 32%);
+  pointer-events: none;
 }
 
 .reach-dock button,
@@ -515,6 +518,7 @@
   font-size: 17px;
   font-weight: 600;
   cursor: pointer;
+  pointer-events: auto;
 }
 
 .reach-dock button:disabled,
