@@ -158,12 +158,113 @@ export type ReachRequest = {
   documents: ReachDocument[];
 };
 
+export const REACH_CHECKOUT_GRACE_MS = 10 * 60 * 1000;
+
+const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"] as const;
+
 export function leaveTypeMeta(type: ReachLeaveType) {
   return REACH_LEAVE_TYPES.find((item) => item.id === type) ?? REACH_LEAVE_TYPES[0];
 }
 
 export function reachRequestLocked(status: ReachRequestStatus) {
   return status === "active" || status === "returned";
+}
+
+export function reachRequestIsPast(
+  request: Pick<ReachRequest, "endsAt" | "status">,
+  now = Date.now(),
+) {
+  if (request.status === "active") return false;
+  if (request.status === "returned") return true;
+  return Date.parse(request.endsAt) <= now;
+}
+
+export function reachRequestIsOverdue(
+  request: Pick<ReachRequest, "endsAt" | "status">,
+  now = Date.now(),
+) {
+  return request.status === "active" && Date.parse(request.endsAt) <= now;
+}
+
+export function reachLeaveIsOpen(
+  startsAt: string,
+  endsAt: string,
+  now = Date.now(),
+) {
+  return (
+    Date.parse(startsAt) - REACH_CHECKOUT_GRACE_MS <= now &&
+    now < Date.parse(endsAt)
+  );
+}
+
+function crWeekday(iso: string): number {
+  const weekday = new Intl.DateTimeFormat("en-US", {
+    timeZone: SCHOOL_TZ,
+    weekday: "short",
+  }).format(new Date(iso));
+  return WEEKDAYS.indexOf(weekday as (typeof WEEKDAYS)[number]);
+}
+
+function crMinutes(iso: string): number {
+  const [hour, minute] = crTime(iso).split(":").map(Number);
+  return hour * 60 + minute;
+}
+
+export function reachLeaveWindowError(
+  type: ReachLeaveType,
+  startsAt: string,
+  endsAt: string,
+): string | null {
+  if (
+    type === "medical" ||
+    type === "special" ||
+    type === "overnight" ||
+    type === "mayo_2026"
+  ) {
+    return null;
+  }
+
+  const startDate = crDate(startsAt);
+  const endDate = crDate(endsAt);
+  const startMinutes = crMinutes(startsAt);
+  const endMinutes = crMinutes(endsAt);
+  const weekday = crWeekday(startsAt);
+
+  if (type === "day") {
+    if (startDate !== endDate) return "Day leave has to be the same day.";
+    if (startMinutes < 6 * 60 || endMinutes > 18 * 60) {
+      return "Day leave is 6 AM to 6 PM.";
+    }
+    return null;
+  }
+
+  if (type === "fri_sat_evening") {
+    if (weekday !== 5 && weekday !== 6) {
+      return "Friday and Saturday evening leave is only those nights.";
+    }
+    if (startDate !== endDate) {
+      return "Friday and Saturday evening leave has to be the same night.";
+    }
+    if (startMinutes < 18 * 60 || endMinutes > 22 * 60) {
+      return "Friday and Saturday evening leave is 6 PM to 10 PM.";
+    }
+    return null;
+  }
+
+  if (type === "sun_thu_evening") {
+    if (weekday < 0 || weekday > 4) {
+      return "Sunday to Thursday evening leave is only those nights.";
+    }
+    if (startDate !== endDate) {
+      return "Sunday to Thursday evening leave has to be the same night.";
+    }
+    if (startMinutes < 18 * 60 || endMinutes > 20 * 60) {
+      return "Sunday to Thursday evening leave is 6 PM to 8 PM.";
+    }
+    return null;
+  }
+
+  return null;
 }
 
 export function canManageReachRequest(

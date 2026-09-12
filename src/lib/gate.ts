@@ -1,5 +1,5 @@
 import { SUPABASE_ANON_KEY, functionsUrl, supabase } from "./supabase";
-import type { ReachLeaveType, ReachRequestStatus } from "./reach";
+import { reachLeaveIsOpen, type ReachLeaveType, type ReachRequestStatus } from "./reach";
 
 const TOKEN_KEY = "uwccr-gate-token";
 export const STUDENT_QR_PREFIX = "uwccr:student:";
@@ -192,7 +192,11 @@ export function checkinStudents(studentIds: string[]) {
 }
 
 export function canCheckout(student: GateStudent) {
-  return student.campusStatus === "on_campus" && Boolean(student.leave);
+  return (
+    student.campusStatus === "on_campus" &&
+    student.leave != null &&
+    reachLeaveIsOpen(student.leave.startsAt, student.leave.endsAt)
+  );
 }
 
 export function canCheckin(student: GateStudent) {
@@ -201,6 +205,7 @@ export function canCheckin(student: GateStudent) {
 
 export function blockReasonLabel(reason: string) {
   if (reason === "no_approved_leave") return "No approved leave";
+  if (reason === "leave_not_started") return "Leave has not started";
   if (reason === "already_out") return "Already off campus";
   if (reason === "already_in") return "Already on campus";
   if (reason === "no_crossing") return "No leave to close";

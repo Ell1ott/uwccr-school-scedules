@@ -1,9 +1,10 @@
-import { ArrowLeft, DoorOpen, FileUp, Plus } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { ArrowLeft, ChevronDown, DoorOpen, FileUp, Plus } from "lucide-react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { ReachForm, type ReachFormStep } from "./ReachForm";
 import { StudentQrCard } from "./StudentQrCard";
 import { useAuth } from "../lib/auth";
 import { initials } from "../lib/classDetail";
+import { useNow } from "../lib/now";
 import {
   canLeaveReachRequest,
   canManageReachRequest,
@@ -11,6 +12,8 @@ import {
   formatReachRange,
   leaveReachRequest,
   leaveTypeMeta,
+  reachRequestIsOverdue,
+  reachRequestIsPast,
   reachRequestLocked,
   respondReachInvite,
   transportLabel,
@@ -64,8 +67,10 @@ export function ReachPage({
   const loggedOut = !auth.session || !auth.role;
   const ready = Boolean(auth.session && auth.role);
   const { requests, loaded, refresh } = useReachCatalog(ready);
+  const nowMs = Math.floor(useNow().getTime() / 60_000) * 60_000;
   const [notice, setNotice] = useState<string | null>(null);
   const [inviteError, setInviteError] = useState<string | null>(null);
+  const [showOld, setShowOld] = useState(false);
   const [step, setStep] = useState<ReachFormStep>("kind");
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [leaveType, setLeaveType] = useState<ReachLeaveType>("day");
@@ -98,13 +103,25 @@ export function ReachPage({
           companion.status === "accepted",
       ),
   );
-  const invites = requests.filter((request) =>
-    request.companions.some(
-      (companion) =>
-        companion.studentId === auth.studentId && companion.status === "pending",
-    ),
+  const invites = requests.filter(
+    (request) =>
+      !reachRequestIsPast(request, nowMs) &&
+      request.companions.some(
+        (companion) =>
+          companion.studentId === auth.studentId &&
+          companion.status === "pending",
+      ),
   );
   const list = auth.role === "staff" ? requests : mine;
+  const { current, old } = useMemo(() => {
+    const current: ReachRequest[] = [];
+    const old: ReachRequest[] = [];
+    for (const request of list) {
+      if (reachRequestIsPast(request, nowMs)) old.push(request);
+      else current.push(request);
+    }
+    return { current, old };
+  }, [list, nowMs]);
 
   async function answerInvite(requestId: string, accept: boolean) {
     setInviteError(null);
@@ -114,6 +131,34 @@ export function ReachPage({
   }
 
   const composing = draft === "new" || draft === "edit";
+
+  function requestCard(request: ReachRequest) {
+    return (
+      <ReachRequestCard
+        key={request.id}
+        request={request}
+        students={students}
+        canAttach={request.createdBy === auth.profileId}
+        canManage={canManageReachRequest(request, auth)}
+        canLeave={canLeaveReachRequest(request, auth)}
+        onAttached={() => void refresh()}
+        onEdit={() => {
+          setLeaveType(request.leaveType);
+          setDirection("forward");
+          setStep("details");
+          onDraftChange(request.id);
+        }}
+        onDeleted={(message) => {
+          if (message) setNotice(message);
+          void refresh();
+        }}
+        onLeft={(message) => {
+          if (message) setNotice(message);
+          void refresh();
+        }}
+      />
+    );
+  }
 
   return (
     <div className="reach-app">
@@ -307,7 +352,7 @@ export function ReachPage({
                   </p>
                   {!loaded ? (
                     <p className="reach-lead">Loading…</p>
-                  ) : list.length === 0 ? (
+                  ) : current.length === 0 && old.length === 0 ? (
                     <div className="reach-empty">
                       <DoorOpen
                         size={28}
@@ -323,34 +368,28 @@ export function ReachPage({
                     </div>
                   ) : (
                     <div className="grid gap-3">
-                      {list.map((request) => (
-                        <ReachRequestCard
-                          key={request.id}
-                          request={request}
-                          students={students}
-                          canAttach={
-                            request.createdBy === auth.profileId ||
-                            request.studentId === auth.studentId
-                          }
-                          canManage={canManageReachRequest(request, auth)}
-                          canLeave={canLeaveReachRequest(request, auth)}
-                          onAttached={() => void refresh()}
-                          onEdit={() => {
-                            setLeaveType(request.leaveType);
-                            setDirection("forward");
-                            setStep("details");
-                            onDraftChange(request.id);
-                          }}
-                          onDeleted={(message) => {
-                            if (message) setNotice(message);
-                            void refresh();
-                          }}
-                          onLeft={(message) => {
-                            if (message) setNotice(message);
-                            void refresh();
-                          }}
-                        />
-                      ))}
+                      {current.map(requestCard)}
+                      {old.length > 0 ? (
+                        <>
+                          <button
+                            type="button"
+                            className="reach-old"
+                            aria-expanded={showOld}
+                            onClick={() => setShowOld((open) => !open)}
+                          >
+                            <span>Old</span>
+                            <i>
+                              {showOld
+                                ? "Hide"
+                                : old.length === 1
+                                  ? "1 leave"
+                                  : `${old.length} leaves`}
+                              <ChevronDown size={16} strokeWidth={2} aria-hidden />
+                            </i>
+                          </button>
+                          {showOld ? old.map(requestCard) : null}
+                        </>
+                      ) : null}
                     </div>
                   )}
                 </section>
@@ -440,6 +479,9 @@ function ReachRequestCard({
         <br />
         {request.transports.map(transportLabel).join(" → ")} · {owner}
       </p>
+      {reachRequestIsOverdue(request) ? (
+        <p className="reach-err">Back time has passed.</p>
+      ) : null}
       {request.companions.length > 0 ? (
         <ul className="reach-people">
           {request.companions.map((companion) => (

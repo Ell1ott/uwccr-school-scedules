@@ -584,6 +584,42 @@
   opacity: 0.4;
 }
 
+.reach-old {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-height: 2.75rem;
+  padding: 0.7rem 1rem;
+  border: 0;
+  border-radius: 10px;
+  background: var(--reach-card);
+  color: var(--reach-muted);
+  font-size: 15px;
+  cursor: pointer;
+}
+
+.reach-old span {
+  font-weight: 600;
+  color: var(--reach-ink);
+}
+
+.reach-old i {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-style: normal;
+}
+
+.reach-old svg {
+  transition: transform 180ms ease;
+}
+
+.reach-old[aria-expanded="true"] svg {
+  transform: rotate(180deg);
+}
+
 .reach-note {
   font-size: 15px;
   line-height: 1.4;
@@ -614,5 +650,9 @@
 @media (prefers-reduced-motion: reduce) {
   .reach-step {
     animation: none;
+  }
+
+  .reach-old svg {
+    transition: none;
   }
 }

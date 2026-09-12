@@ -29,6 +29,7 @@ import {
   localToIso,
   REACH_LEAVE_TYPES,
   REACH_TRANSPORTS,
+  reachLeaveWindowError,
   suggestedEnd,
   updateReachRequest,
   validateReachFile,
@@ -236,6 +237,15 @@ export function ReachForm({
     }
     if (Date.parse(endIso) <= startMs) {
       setError("End time has to be after the start.");
+      return;
+    }
+    const windowError = reachLeaveWindowError(
+      leaveType,
+      startIso ?? new Date(startMs).toISOString(),
+      endIso,
+    );
+    if (windowError) {
+      setError(windowError);
       return;
     }
     const payload = {

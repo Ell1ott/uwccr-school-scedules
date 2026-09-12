@@ -16,7 +16,11 @@ import {
   type GateFilter,
   type GateStudent,
 } from "../lib/gate";
-import { formatReachRange, leaveTypeMeta } from "../lib/reach";
+import {
+  formatReachRange,
+  leaveTypeMeta,
+  reachLeaveIsOpen,
+} from "../lib/reach";
 import { searchPeople } from "../lib/people";
 import { initials } from "../lib/classDetail";
 
@@ -489,6 +493,11 @@ function SelectedCard({
               <p className="mt-1 text-label-sm text-on-surface-variant">
                 {formatReachRange(leave.startsAt, leave.endsAt)}
               </p>
+              {reachLeaveIsOpen(leave.startsAt, leave.endsAt) ? null : (
+                <p className="mt-2 text-body-md text-on-surface-variant">
+                  Leave has not started
+                </p>
+              )}
               <p className="mt-2 text-body-md">
                 <span className="text-on-surface-variant">Leaving with </span>
                 {others.length
