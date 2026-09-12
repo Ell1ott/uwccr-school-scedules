@@ -4,6 +4,7 @@ import {
   ChevronLeft,
   ChevronRight,
   ChevronUp,
+  DoorOpen,
   EllipsisVertical,
   MessageSquare,
   X,
@@ -68,6 +69,8 @@ export function MobileHub({
   onOpenLogin,
   onOpenAdmin,
   onOpenFeedback,
+  onOpenReach,
+  onOpenGate,
 }: {
   students: Student[];
   teachers: Teacher[];
@@ -81,6 +84,8 @@ export function MobileHub({
   onOpenLogin?: () => void;
   onOpenAdmin?: () => void;
   onOpenFeedback?: () => void;
+  onOpenReach?: () => void;
+  onOpenGate?: () => void;
 }) {
   const auth = useAuth();
   const { palette } = usePalette();
@@ -314,6 +319,29 @@ export function MobileHub({
               </button>
             </section>
 
+            {onOpenReach ? (
+              <section>
+                <button
+                  type="button"
+                  className="flex min-h-[4.25rem] w-full items-center gap-3 rounded-[18px] bg-residential-container px-4 text-left text-on-residential-container focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+                  onClick={() => {
+                    onOpenReach();
+                    onClose();
+                  }}
+                >
+                  <span className="flex size-10 items-center justify-center rounded-full bg-residential text-on-residential">
+                    <DoorOpen size={18} strokeWidth={1.75} aria-hidden />
+                  </span>
+                  <span>
+                    <span className="block text-body-md font-medium">Reach</span>
+                    <span className="block text-label-sm tracking-wide opacity-80">
+                      Request leave
+                    </span>
+                  </span>
+                </button>
+              </section>
+            ) : null}
+
             <section className="overflow-hidden rounded-[18px] bg-surface-container-low">
               <button
                 type="button"
@@ -359,6 +387,19 @@ export function MobileHub({
                     >
                       <MessageSquare size={16} strokeWidth={1.75} aria-hidden />
                       Send feedback
+                    </button>
+                  ) : null}
+                  {auth.role === "staff" && onOpenGate ? (
+                    <button
+                      type="button"
+                      className="flex h-12 items-center gap-2 rounded-full bg-surface-container px-4 text-left text-label-sm tracking-wide text-on-surface"
+                      onClick={() => {
+                        onOpenGate();
+                        onClose();
+                      }}
+                    >
+                      <DoorOpen size={16} strokeWidth={1.75} aria-hidden />
+                      Gate
                     </button>
                   ) : null}
                   {auth.displayName ? (

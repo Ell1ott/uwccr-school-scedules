@@ -1,9 +1,10 @@
-import { Calendar, Compass, MessageSquare, Shuffle, Sparkles } from "lucide-react";
+import { Calendar, Compass, DoorOpen, MessageSquare, Shuffle, Sparkles } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { useAuth } from "../lib/auth";
 import type { SelectedPerson, Student, Teacher } from "../types";
 import { PalettePicker } from "./PalettePicker";
 import { StudentPicker } from "./StudentPicker";
+import { ViewingPersonLabel } from "./ViewingPersonLabel";
 import { WeekNav } from "./WeekNav";
 
 export type AppTabId = "week" | "classes" | "events" | "cas";
@@ -160,6 +161,9 @@ export function AppHeader({
   onSelect,
   onOpenLogin,
   onOpenFeedback,
+  onOpenReach,
+  viewingName,
+  onBackFromViewing,
 }: {
   tab: AppTabId;
   onTabChange: (tab: AppTabId) => void;
@@ -171,11 +175,19 @@ export function AppHeader({
   onSelect: (person: SelectedPerson) => void;
   onOpenLogin?: () => void;
   onOpenFeedback?: () => void;
+  onOpenReach?: () => void;
+  viewingName?: string | null;
+  onBackFromViewing?: () => void;
 }) {
   const auth = useAuth();
 
   return (
     <header className="sticky top-0 z-50 hidden w-full bg-surface-dim pt-safe md:block">
+      {viewingName && onBackFromViewing ? (
+        <div className="flex justify-center px-container-padding-desktop pt-1.5">
+          <ViewingPersonLabel name={viewingName} onBack={onBackFromViewing} />
+        </div>
+      ) : null}
       <div className="flex h-12 items-stretch gap-2 px-container-padding-desktop">
         <div className="flex min-w-0 self-stretch gap-1">
           <div className="flex min-w-0 items-center pt-2">
@@ -188,6 +200,16 @@ export function AppHeader({
           <AppTabs tab={tab} onTabChange={onTabChange} />
         </div>
         <div className="ml-auto flex min-w-0 items-center gap-2">
+          {onOpenReach ? (
+            <button
+              type="button"
+              className="flex h-8.5 shrink-0 items-center gap-1.5 rounded-full bg-surface-container-lowest px-2.5 text-label-sm tracking-wide text-on-surface-variant"
+              onClick={onOpenReach}
+            >
+              <DoorOpen size={14} strokeWidth={1.75} aria-hidden />
+              Reach
+            </button>
+          ) : null}
           {onOpenFeedback ? (
             <button
               type="button"

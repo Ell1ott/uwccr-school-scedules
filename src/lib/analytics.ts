@@ -6,7 +6,8 @@ export type ScheduleViewSource =
   | "roster"
   | "picker"
   | "class_detail"
-  | "login";
+  | "login"
+  | "viewing_label";
 
 type CaptureOptions = {
   send_instantly?: boolean;

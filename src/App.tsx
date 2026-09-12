@@ -20,6 +20,8 @@ import { FeedbackSheet } from "./components/FeedbackSheet";
 import { MobileHub } from "./components/MobileHub";
 import { MobileTabBar } from "./components/MobileTabBar";
 import { ModerateEventPage } from "./components/ModerateEventPage";
+import { GatePage } from "./components/GatePage";
+import { ReachPage } from "./components/ReachPage";
 import { StudentRoster } from "./components/StudentRoster";
 import { DayTimeline } from "./components/DayTimeline";
 import { TeacherAdmin } from "./components/TeacherAdmin";
@@ -373,6 +375,25 @@ function AppShell() {
 
   const student = selectedStudent(students, selected);
   const teacher = selectedTeacher(teachers, selected);
+  const viewingOtherName =
+    !auth.loading &&
+    auth.session &&
+    auth.role &&
+    !(
+      (student && auth.studentId === student.id) ||
+      (teacher && auth.teacherId === teacher.id)
+    )
+      ? (student?.name ?? teacher?.name ?? null)
+      : null;
+  const goBackToOwnSchedule = useCallback(() => {
+    if (auth.teacherId) {
+      choosePerson({ kind: "teacher", id: auth.teacherId }, "viewing_label");
+      return;
+    }
+    if (auth.studentId) {
+      choosePerson({ kind: "student", id: auth.studentId }, "viewing_label");
+    }
+  }, [auth.studentId, auth.teacherId, choosePerson]);
   const buildLiveWeek = useCallback(
     (start: string) => {
       const built = student
@@ -528,6 +549,33 @@ function AppShell() {
     return <ModerateEventPage onDone={() => navigate({ page: "week" })} />;
   }
 
+  if (route.page === "gate") {
+    return <GatePage />;
+  }
+
+  if (route.page === "reach") {
+    return (
+      <ReachPage
+        students={students}
+        draft={route.draft ?? null}
+        requestId={route.requestId}
+        onBack={goHome}
+        onOpenLogin={openLogin}
+        onDraftChange={(next) => {
+          if (next === "new") {
+            navigate({ page: "reach", draft: "new" });
+            return;
+          }
+          if (next) {
+            navigate({ page: "reach", draft: "edit", requestId: next });
+            return;
+          }
+          navigate({ page: "reach" });
+        }}
+      />
+    );
+  }
+
   return (
     <PaletteProvider
       palette={palette}
@@ -547,6 +595,9 @@ function AppShell() {
           onSelect={choosePerson}
           onOpenLogin={openLogin}
           onOpenFeedback={openFeedback}
+          onOpenReach={() => navigate({ page: "reach" })}
+          viewingName={viewingOtherName}
+          onBackFromViewing={goBackToOwnSchedule}
         />
 
         <main>
@@ -732,6 +783,8 @@ function AppShell() {
               feedbackOpen ||
               hubOpen,
           )}
+          viewingName={viewingOtherName}
+          onBackFromViewing={goBackToOwnSchedule}
         />
         {hubOpen ? (
           <MobileHub
@@ -753,6 +806,14 @@ function AppShell() {
             onOpenLogin={openLogin}
             onOpenAdmin={openAdmin}
             onOpenFeedback={openFeedback}
+            onOpenReach={() => {
+              setHubOpen(false);
+              navigate({ page: "reach" });
+            }}
+            onOpenGate={() => {
+              setHubOpen(false);
+              navigate({ page: "gate" });
+            }}
           />
         ) : null}
       </div>

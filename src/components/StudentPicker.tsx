@@ -3,7 +3,7 @@ import { useId, useMemo, useRef, useState } from "react";
 import { useDismissible } from "../hooks/useDismissible";
 import {
   compareNames,
-  matchesQuery,
+  searchPeople,
   selectedStudent,
   selectedTeacher,
 } from "../lib/people";
@@ -48,23 +48,20 @@ export function StudentPicker({
 
   const results = useMemo(() => {
     const hits: Hit[] = [
-      ...students
-        .filter((student) => matchesQuery(student.name, query))
-        .map((student) => ({
-          kind: "student" as const,
-          id: student.id,
-          name: student.name,
-          badge: student.cohort,
-        })),
-      ...teachers
-        .filter((teacher) => matchesQuery(teacher.name, query))
-        .map((teacher) => ({
-          kind: "teacher" as const,
-          id: teacher.id,
-          name: teacher.name,
-          badge: "Teacher",
-        })),
+      ...students.map((student) => ({
+        kind: "student" as const,
+        id: student.id,
+        name: student.name,
+        badge: student.cohort,
+      })),
+      ...teachers.map((teacher) => ({
+        kind: "teacher" as const,
+        id: teacher.id,
+        name: teacher.name,
+        badge: "Teacher",
+      })),
     ];
+    if (query.trim()) return searchPeople(hits, query);
     hits.sort((a, b) => compareNames(a.name, b.name));
     return hits;
   }, [students, teachers, query]);
@@ -102,10 +99,20 @@ export function StudentPicker({
             setActiveIndex(0);
             setOpen(true);
           }}
-          onFocus={() => {
+          onFocus={(event) => {
             setOpen(true);
             setQuery("");
             setActiveIndex(0);
+            const field = event.currentTarget;
+            requestAnimationFrame(() => {
+              const scroller = field.closest(".sheet-scroll");
+              if (!(scroller instanceof HTMLElement)) return;
+              const box = field.getBoundingClientRect();
+              const area = scroller.getBoundingClientRect();
+              if (box.top < area.top || box.bottom > area.bottom) {
+                scroller.scrollTop += box.top - area.top - 12;
+              }
+            });
           }}
           onKeyDown={(e) => {
             if (e.key === "ArrowDown") {

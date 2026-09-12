@@ -695,9 +695,189 @@ export type Database = {
         }
         Relationships: []
       }
+      reach_companions: {
+        Row: {
+          created_at: string
+          invited_by: string
+          request_id: string
+          responded_at: string | null
+          status: Database["public"]["Enums"]["reach_companion_status"]
+          student_id: string
+        }
+        Insert: {
+          created_at?: string
+          invited_by: string
+          request_id: string
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["reach_companion_status"]
+          student_id: string
+        }
+        Update: {
+          created_at?: string
+          invited_by?: string
+          request_id?: string
+          responded_at?: string | null
+          status?: Database["public"]["Enums"]["reach_companion_status"]
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reach_companions_invited_by_fkey"
+            columns: ["invited_by"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reach_companions_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "reach_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reach_companions_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reach_documents: {
+        Row: {
+          byte_size: number
+          created_at: string
+          file_name: string
+          id: string
+          mime: string
+          path: string
+          request_id: string
+        }
+        Insert: {
+          byte_size?: number
+          created_at?: string
+          file_name: string
+          id?: string
+          mime?: string
+          path: string
+          request_id: string
+        }
+        Update: {
+          byte_size?: number
+          created_at?: string
+          file_name?: string
+          id?: string
+          mime?: string
+          path?: string
+          request_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reach_documents_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "reach_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reach_requests: {
+        Row: {
+          created_at: string
+          created_by: string
+          destination: string
+          ends_at: string
+          host_address: string
+          host_name: string
+          host_phone: string
+          id: string
+          leave_type: Database["public"]["Enums"]["reach_leave_type"]
+          notes: string
+          starts_at: string
+          status: Database["public"]["Enums"]["reach_request_status"]
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          destination: string
+          ends_at: string
+          host_address?: string
+          host_name?: string
+          host_phone?: string
+          id?: string
+          leave_type: Database["public"]["Enums"]["reach_leave_type"]
+          notes?: string
+          starts_at: string
+          status: Database["public"]["Enums"]["reach_request_status"]
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          destination?: string
+          ends_at?: string
+          host_address?: string
+          host_name?: string
+          host_phone?: string
+          id?: string
+          leave_type?: Database["public"]["Enums"]["reach_leave_type"]
+          notes?: string
+          starts_at?: string
+          status?: Database["public"]["Enums"]["reach_request_status"]
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reach_requests_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reach_requests_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      reach_transports: {
+        Row: {
+          mode: Database["public"]["Enums"]["reach_transport_mode"]
+          request_id: string
+          sort_order: number
+        }
+        Insert: {
+          mode: Database["public"]["Enums"]["reach_transport_mode"]
+          request_id: string
+          sort_order: number
+        }
+        Update: {
+          mode?: Database["public"]["Enums"]["reach_transport_mode"]
+          request_id?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reach_transports_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "reach_requests"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       students: {
         Row: {
           auth_user_id: string | null
+          campus_status: Database["public"]["Enums"]["campus_status"]
           cohort: string
           created_at: string
           email: string | null
@@ -707,6 +887,7 @@ export type Database = {
         }
         Insert: {
           auth_user_id?: string | null
+          campus_status?: Database["public"]["Enums"]["campus_status"]
           cohort: string
           created_at?: string
           email?: string | null
@@ -716,6 +897,7 @@ export type Database = {
         }
         Update: {
           auth_user_id?: string | null
+          campus_status?: Database["public"]["Enums"]["campus_status"]
           cohort?: string
           created_at?: string
           email?: string | null
@@ -724,6 +906,79 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      guard_sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          last_seen_at: string
+          token_hash: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          last_seen_at?: string
+          token_hash: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          last_seen_at?: string
+          token_hash?: string
+        }
+        Relationships: []
+      }
+      reach_crossings: {
+        Row: {
+          at: string
+          direction: Database["public"]["Enums"]["reach_crossing_direction"]
+          id: string
+          request_id: string
+          session_id: string | null
+          student_id: string
+        }
+        Insert: {
+          at?: string
+          direction: Database["public"]["Enums"]["reach_crossing_direction"]
+          id?: string
+          request_id: string
+          session_id?: string | null
+          student_id: string
+        }
+        Update: {
+          at?: string
+          direction?: Database["public"]["Enums"]["reach_crossing_direction"]
+          id?: string
+          request_id?: string
+          session_id?: string | null
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reach_crossings_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "reach_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reach_crossings_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "guard_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reach_crossings_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       teachers: {
         Row: {
@@ -759,7 +1014,23 @@ export type Database = {
         Returns: undefined
       }
       archive_cas: { Args: { p_cas_id: string }; Returns: undefined }
+      attach_reach_documents: {
+        Args: { p_documents: Json; p_request_id: string }
+        Returns: undefined
+      }
+      guard_checkin: {
+        Args: { p_guard_token: string; p_student_ids: string[] }
+        Returns: Json
+      }
+      guard_checkout: {
+        Args: { p_guard_token: string; p_student_ids: string[] }
+        Returns: Json
+      }
+      guard_roster: { Args: { p_guard_token: string }; Returns: Json }
+      guard_require_session: { Args: { p_token: string }; Returns: string }
+      guard_token_hash: { Args: { p_token: string }; Returns: string }
       can_see_cas: { Args: { p_cas_id: string }; Returns: boolean }
+      can_see_reach_request: { Args: { p_request_id: string }; Returns: boolean }
       cancel_cas_session: {
         Args: { p_rest_of_series?: boolean; p_session_id: string }
         Returns: number
@@ -814,6 +1085,25 @@ export type Database = {
         }
         Returns: Json
       }
+      create_reach_request: {
+        Args: {
+          p_companion_student_ids?: string[]
+          p_destination: string
+          p_ends_at: string
+          p_host_address?: string
+          p_host_name?: string
+          p_host_phone?: string
+          p_leave_type: Database["public"]["Enums"]["reach_leave_type"]
+          p_notes?: string
+          p_starts_at?: string | null
+          p_transports: Database["public"]["Enums"]["reach_transport_mode"][]
+        }
+        Returns: Json
+      }
+      delete_reach_request: {
+        Args: { p_request_id: string }
+        Returns: undefined
+      }
       create_pending_event_batch: {
         Args: {
           p_all_day: boolean
@@ -836,6 +1126,10 @@ export type Database = {
       current_student_id: { Args: never; Returns: string }
       current_teacher_id: { Args: never; Returns: string }
       is_cas_leader: { Args: { p_cas_id: string }; Returns: boolean }
+      is_reach_request_creator: {
+        Args: { p_request_id: string }
+        Returns: boolean
+      }
       is_staff: { Args: never; Returns: boolean }
       join_cas: { Args: { p_cas_id: string }; Returns: undefined }
       join_event: {
@@ -844,6 +1138,7 @@ export type Database = {
       }
       leave_cas: { Args: { p_cas_id: string }; Returns: undefined }
       leave_event: { Args: { p_event_id: string }; Returns: undefined }
+      leave_reach_request: { Args: { p_request_id: string }; Returns: undefined }
       moderate_cas_by_token: {
         Args: { p_decision: string; p_token: string }
         Returns: Json
@@ -882,6 +1177,22 @@ export type Database = {
         }
         Returns: undefined
       }
+      update_reach_request: {
+        Args: {
+          p_companion_student_ids?: string[]
+          p_destination: string
+          p_ends_at: string
+          p_host_address?: string
+          p_host_name?: string
+          p_host_phone?: string
+          p_leave_type: Database["public"]["Enums"]["reach_leave_type"]
+          p_notes?: string
+          p_request_id: string
+          p_starts_at?: string | null
+          p_transports: Database["public"]["Enums"]["reach_transport_mode"][]
+        }
+        Returns: Json
+      }
       update_cas_session: {
         Args: {
           p_capacity: number | null
@@ -898,6 +1209,17 @@ export type Database = {
       }
       promote_waitlist: { Args: { p_event_id: string }; Returns: undefined }
       seed_event_responses: { Args: { p_event_id: string }; Returns: undefined }
+      reach_request_is_locked: {
+        Args: {
+          p_status: Database["public"]["Enums"]["reach_request_status"]
+        }
+        Returns: boolean
+      }
+      reach_storage_request_id: { Args: { p_name: string }; Returns: string }
+      respond_reach_invite: {
+        Args: { p_accept: boolean; p_request_id: string }
+        Returns: undefined
+      }
       respond_invite: {
         Args: {
           p_event_id: string
@@ -915,6 +1237,31 @@ export type Database = {
       cas_status: "pending" | "published" | "archived" | "rejected"
       event_mode: "mandatory" | "invite" | "open" | "info"
       event_status: "published" | "cancelled" | "pending" | "rejected"
+      reach_companion_status: "pending" | "accepted" | "declined"
+      reach_leave_type:
+        | "day"
+        | "fri_sat_evening"
+        | "sun_thu_evening"
+        | "mayo_2026"
+        | "medical"
+        | "overnight"
+        | "special"
+      campus_status: "on_campus" | "off_campus"
+      reach_crossing_direction: "out" | "in"
+      reach_request_status:
+        | "pending"
+        | "approved"
+        | "denied"
+        | "cancelled"
+        | "active"
+        | "returned"
+      reach_transport_mode:
+        | "walking"
+        | "car"
+        | "school_transport"
+        | "taxi"
+        | "train"
+        | "uber"
       rsvp_source: "assigned" | "joined"
       rsvp_status: "pending" | "going" | "declined" | "waitlisted"
       target_kind:
@@ -1060,6 +1407,34 @@ export const Constants = {
       cas_status: ["pending", "published", "archived", "rejected"],
       event_mode: ["mandatory", "invite", "open", "info"],
       event_status: ["published", "cancelled"],
+      reach_companion_status: ["pending", "accepted", "declined"],
+      reach_leave_type: [
+        "day",
+        "fri_sat_evening",
+        "sun_thu_evening",
+        "mayo_2026",
+        "medical",
+        "overnight",
+        "special",
+      ],
+      campus_status: ["on_campus", "off_campus"],
+      reach_crossing_direction: ["out", "in"],
+      reach_request_status: [
+        "pending",
+        "approved",
+        "denied",
+        "cancelled",
+        "active",
+        "returned",
+      ],
+      reach_transport_mode: [
+        "walking",
+        "car",
+        "school_transport",
+        "taxi",
+        "train",
+        "uber",
+      ],
       rsvp_source: ["assigned", "joined"],
       rsvp_status: ["pending", "going", "declined", "waitlisted"],
       target_kind: [

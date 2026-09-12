@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "@fontsource-variable/inter/wght.css";
+@import "./reach.css";
 
 @theme {
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
@@ -129,7 +130,7 @@
 }
 
 @utility pb-mobile-nav {
-  padding-bottom: 5rem;
+  padding-bottom: 8rem;
 }
 
 @utility menu-panel {
@@ -333,8 +334,8 @@
   pointer-events: auto;
   position: relative;
   isolation: isolate;
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  display: flex;
+  flex-direction: column;
   width: min(17.25rem, 100%);
   padding: 0.22rem;
   border-radius: 999px;
@@ -351,13 +352,25 @@
   backdrop-filter: blur(32px) saturate(1.85);
 }
 
+.mobile-tab-bar-glass-with-viewer {
+  width: min(18.75rem, 100%);
+  border-radius: 1.55rem;
+}
+
+.mobile-tab-bar-items {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
 .mobile-tab-bar-indicator {
   position: absolute;
   z-index: 0;
-  top: 0.22rem;
-  bottom: 0.22rem;
-  left: 0.22rem;
-  width: calc((100% - 0.44rem) / 4);
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 25%;
   border-radius: 999px;
   background: color-mix(in srgb, var(--color-on-surface) 8%, transparent);
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.55) inset;
@@ -402,6 +415,57 @@
 
 .mobile-tab-bar-item[aria-selected="true"] {
   color: var(--color-on-surface);
+}
+
+.viewing-person {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.4rem 0.28rem 0.2rem 0.75rem;
+  color: var(--color-on-surface);
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  line-height: 1.2;
+}
+
+.viewing-person span {
+  min-width: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.viewing-person-close {
+  display: flex;
+  width: 1.75rem;
+  height: 1.75rem;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  border: 0;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-on-surface) 6%, transparent);
+  color: color-mix(in srgb, var(--color-on-surface-variant) 55%, transparent);
+  cursor: pointer;
+}
+
+.viewing-person-close:focus {
+  outline: none;
+}
+
+.viewing-person-close:focus-visible {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-primary) 22%, transparent);
+}
+
+header .viewing-person {
+  width: auto;
+  max-width: 18rem;
+  padding: 0.3rem 0.3rem 0.3rem 0.75rem;
+  border-radius: 999px;
+  background: var(--color-surface-container-lowest);
 }
 
 @supports not (
@@ -622,4 +686,98 @@ button.luma-day-title:focus-visible {
 .month-cal-cell:focus-visible {
   z-index: 1;
   box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-primary) 28%, transparent);
+}
+
+.gate-scanner {
+  position: relative;
+  background: #000;
+}
+
+.gate-scanner video {
+  display: block;
+  object-fit: cover;
+  background: #000;
+}
+
+.gate-scanner canvas {
+  display: none !important;
+}
+
+.gate-scanner-collapsed {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: 320px;
+  height: 240px;
+  overflow: hidden;
+  opacity: 0.02;
+  pointer-events: none;
+  transform: translateZ(0);
+}
+
+.gate-scanner-collapsed video {
+  width: 320px !important;
+  height: 240px !important;
+}
+
+.gate-scanner-open {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  height: 20rem !important;
+  overflow: hidden;
+  opacity: 1 !important;
+  pointer-events: auto;
+  border-bottom-left-radius: 28px;
+  border-bottom-right-radius: 28px;
+}
+
+.gate-scanner-open video {
+  width: 100% !important;
+  height: 20rem !important;
+}
+
+.gate-scan-dot {
+  position: relative;
+  display: block;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 100%;
+  background: #ff8a2a;
+  box-shadow: 0 0 0 0 rgb(255 138 42 / 55%);
+  animation: gate-scan-pulse 1.4s ease-out infinite;
+}
+
+.gate-scan-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: #ff8a2a;
+  animation: gate-scan-ring 1.4s ease-out infinite;
+}
+
+@keyframes gate-scan-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(0.92);
+    opacity: 0.85;
+  }
+}
+
+@keyframes gate-scan-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
 }

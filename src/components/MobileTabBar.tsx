@@ -1,5 +1,6 @@
 import { Calendar, Compass, Shuffle, Sparkles } from "lucide-react";
 import type { AppTabId } from "./AppHeader";
+import { ViewingPersonLabel } from "./ViewingPersonLabel";
 
 const TABS = [
   { id: "week", hint: "Schedule" },
@@ -12,10 +13,14 @@ export function MobileTabBar({
   tab,
   onTabChange,
   hidden = false,
+  viewingName = null,
+  onBackFromViewing,
 }: {
   tab: AppTabId;
   onTabChange: (tab: AppTabId) => void;
   hidden?: boolean;
+  viewingName?: string | null;
+  onBackFromViewing?: () => void;
 }) {
   const selectedIndex = Math.max(
     0,
@@ -29,29 +34,36 @@ export function MobileTabBar({
       aria-hidden={hidden}
       inert={hidden || undefined}
     >
-      <div role="tablist" aria-label="Views" className="mobile-tab-bar-glass">
-        <span
-          className="mobile-tab-bar-indicator"
-          style={{ transform: `translateX(${selectedIndex * 100}%)` }}
-          aria-hidden
-        />
-        {TABS.map((item) => {
-          const selected = item.id === tab;
-          return (
-            <button
-              key={item.id}
-              type="button"
-              role="tab"
-              aria-label={item.hint}
-              aria-selected={selected}
-              aria-controls={`${item.id}-panel`}
-              className="mobile-tab-bar-item"
-              onClick={() => onTabChange(item.id)}
-            >
-              <TabGlyph id={item.id} selected={selected} />
-            </button>
-          );
-        })}
+      <div
+        className={`mobile-tab-bar-glass ${viewingName ? "mobile-tab-bar-glass-with-viewer" : ""}`}
+      >
+        {viewingName && onBackFromViewing ? (
+          <ViewingPersonLabel name={viewingName} onBack={onBackFromViewing} />
+        ) : null}
+        <div role="tablist" aria-label="Views" className="mobile-tab-bar-items">
+          <span
+            className="mobile-tab-bar-indicator"
+            style={{ transform: `translateX(${selectedIndex * 100}%)` }}
+            aria-hidden
+          />
+          {TABS.map((item) => {
+            const selected = item.id === tab;
+            return (
+              <button
+                key={item.id}
+                type="button"
+                role="tab"
+                aria-label={item.hint}
+                aria-selected={selected}
+                aria-controls={`${item.id}-panel`}
+                className="mobile-tab-bar-item"
+                onClick={() => onTabChange(item.id)}
+              >
+                <TabGlyph id={item.id} selected={selected} />
+              </button>
+            );
+          })}
+        </div>
       </div>
     </nav>
   );
