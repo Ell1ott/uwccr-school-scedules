@@ -9,6 +9,7 @@ import {
   checkoutStudents,
   clearGateToken,
   fetchGateRoster,
+  gateLog,
   loginGate,
   parseStudentQr,
   readGateToken,
@@ -145,19 +146,45 @@ function GateKiosk({ onLock }: { onLock: () => void }) {
 
   function addStudent(id: string) {
     const student = byId.get(id);
-    if (!student) return;
-    setSelectedIds((current) =>
-      current.includes(id) ? current : [...current, id],
-    );
+    if (!student) {
+      gateLog("qr_unknown_student", { id, rosterSize: students.length });
+      return;
+    }
+    setSelectedIds((current) => {
+      if (current.includes(id)) {
+        gateLog("qr_already_selected", { id, name: student.name });
+        return current;
+      }
+      gateLog("qr_selected", { id, name: student.name });
+      return [...current, id];
+    });
     setFlash(student.name);
     window.setTimeout(() => {
       setFlash((current) => (current === student.name ? null : current));
     }, 1600);
   }
 
+  function toggleStudent(id: string) {
+    const student = byId.get(id);
+    if (!student) return;
+    setSelectedIds((current) => {
+      if (current.includes(id)) {
+        gateLog("qr_deselected", { id, name: student.name });
+        return current.filter((selected) => selected !== id);
+      }
+      gateLog("qr_selected", { id, name: student.name });
+      return [...current, id];
+    });
+  }
+
   function onCode(raw: string) {
+    gateLog("qr_decoded", { raw });
     const id = parseStudentQr(raw);
-    if (id) addStudent(id);
+    if (!id) {
+      gateLog("qr_rejected", { raw, reason: "not_uwccr_student" });
+      return;
+    }
+    addStudent(id);
   }
 
   async function run(
@@ -195,9 +222,11 @@ function GateKiosk({ onLock }: { onLock: () => void }) {
     }
   }
 
+  const selectedSet = useMemo(() => new Set(selectedIds), [selectedIds]);
+
   return (
-    <div className="flex min-h-dvh flex-col bg-surface text-on-surface">
-      <header className="flex items-center gap-3 px-container-padding-mobile pt-[calc(env(safe-area-inset-top,0px)+1rem)] pb-3 md:px-container-padding-desktop">
+    <div className="flex min-h-dvh flex-col bg-surface text-on-surface lg:h-dvh lg:overflow-hidden">
+      <header className="flex shrink-0 items-center gap-3 px-container-padding-mobile pt-[calc(env(safe-area-inset-top,0px)+1rem)] pb-3 md:px-6 lg:px-8">
         <div className="min-w-0 flex-1">
           <p className="text-label-sm tracking-[0.14em] text-on-surface-variant uppercase">
             Reach
@@ -219,149 +248,167 @@ function GateKiosk({ onLock }: { onLock: () => void }) {
         </button>
       </header>
 
-      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-5 px-container-padding-mobile pb-safe md:px-container-padding-desktop">
-        <GateScanner onCode={onCode} />
-
-        {error ? <p className="text-body-md text-error">{error}</p> : null}
+      <main className="mx-auto flex w-full max-w-3xl flex-1 flex-col gap-5 px-container-padding-mobile pb-safe md:px-6 lg:max-w-none lg:min-h-0 lg:px-8 lg:pb-6">
+        {error ? <p className="shrink-0 text-body-md text-error">{error}</p> : null}
         {notice ? (
-          <p className="rounded-2xl bg-surface-container px-4 py-3 text-body-md">
+          <p className="shrink-0 rounded-2xl bg-surface-container px-4 py-3 text-body-md">
             {notice}
           </p>
         ) : null}
 
-        <section>
-          <div className="flex items-end justify-between gap-3">
-            <div>
-              <h2 className="text-label-sm tracking-[0.14em] text-on-surface-variant uppercase">
-                Selected
-              </h2>
-              <p className="text-body-md text-on-surface-variant">
-                {selected.length === 0
-                  ? "Scan a pass or tap a name"
-                  : `${selected.length} at the gate`}
-              </p>
+        <div className="flex flex-col gap-5 lg:grid lg:min-h-0 lg:flex-1 lg:grid-cols-[minmax(22rem,1fr)_minmax(28rem,1.15fr)] lg:gap-6 lg:overflow-hidden">
+          <section className="order-2 flex min-h-0 flex-col pb-8 lg:order-1 lg:pb-0">
+            <h2 className="shrink-0 text-label-sm tracking-[0.14em] text-on-surface-variant uppercase">
+              All students
+            </h2>
+            <div className="mt-3 flex shrink-0 items-center gap-2 rounded-2xl bg-surface-container px-3">
+              <Search
+                size={16}
+                strokeWidth={1.75}
+                className="text-on-surface-variant"
+                aria-hidden
+              />
+              <input
+                value={query}
+                onChange={(event) => setQuery(event.target.value)}
+                placeholder="Search names"
+                className="h-12 w-full bg-transparent text-body-md outline-none"
+              />
             </div>
-            {selected.length > 0 ? (
-              <div className="flex gap-2">
+            <div className="mt-3 flex shrink-0 gap-2">
+              {(
+                [
+                  ["all", "All"],
+                  ["on_campus", "On campus"],
+                  ["off_campus", "Off campus"],
+                ] as const
+              ).map(([id, label]) => (
                 <button
+                  key={id}
                   type="button"
-                  disabled={busy || !selected.some(canCheckout)}
-                  className="h-11 rounded-full bg-primary px-4 text-label-sm tracking-wide text-on-primary disabled:opacity-40"
-                  onClick={() =>
-                    void run(
-                      checkoutStudents,
-                      selected.filter(canCheckout).map((student) => student.id),
-                    )
-                  }
+                  className={`h-9 rounded-full px-3 text-label-sm tracking-wide ${
+                    filter === id
+                      ? "bg-primary text-on-primary"
+                      : "bg-surface-container text-on-surface"
+                  }`}
+                  onClick={() => setFilter(id)}
                 >
-                  Sign all out
+                  {label}
                 </button>
-                <button
-                  type="button"
-                  disabled={busy || !selected.some(canCheckin)}
-                  className="h-11 rounded-full bg-residential px-4 text-label-sm tracking-wide text-on-residential disabled:opacity-40"
-                  onClick={() =>
-                    void run(
-                      checkinStudents,
-                      selected.filter(canCheckin).map((student) => student.id),
-                    )
-                  }
-                >
-                  Sign all in
-                </button>
-              </div>
-            ) : null}
-          </div>
-
-          {selected.length > 0 ? (
-            <div className="mt-3 grid gap-3">
-              {selected.map((student) => (
-                <SelectedCard
-                  key={student.id}
-                  student={student}
-                  busy={busy}
-                  onRemove={() =>
-                    setSelectedIds((current) =>
-                      current.filter((id) => id !== student.id),
-                    )
-                  }
-                  onOut={() => void run(checkoutStudents, [student.id])}
-                  onIn={() => void run(checkinStudents, [student.id])}
-                />
               ))}
             </div>
-          ) : null}
-        </section>
+            <ul className="mt-3 divide-y divide-outline-variant/40 overflow-hidden rounded-[24px] bg-surface-container lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+              {roster.map((student) => {
+                const picked = selectedSet.has(student.id);
+                return (
+                  <li key={student.id}>
+                    <button
+                      type="button"
+                      aria-pressed={picked}
+                      className={`flex w-full items-center gap-3 px-4 py-3 text-left ${
+                        picked
+                          ? "bg-secondary-container text-on-secondary-container"
+                          : "hover:bg-surface-container-high"
+                      }`}
+                      onClick={() => toggleStudent(student.id)}
+                    >
+                      <span
+                        className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface-container-lowest text-label-sm font-semibold text-on-surface"
+                        aria-hidden
+                      >
+                        {initials(student.name)}
+                      </span>
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-body-md">
+                          {student.name}
+                        </span>
+                        <span className="block text-label-sm text-on-surface-variant">
+                          {student.cohort}
+                          {student.leave ? ` · ${student.leave.destination}` : ""}
+                        </span>
+                      </span>
+                      <CampusChip status={student.campusStatus} />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
 
-        <section className="pb-8">
-          <h2 className="text-label-sm tracking-[0.14em] text-on-surface-variant uppercase">
-            All students
-          </h2>
-          <div className="mt-3 flex items-center gap-2 rounded-2xl bg-surface-container px-3">
-            <Search
-              size={16}
-              strokeWidth={1.75}
-              className="text-on-surface-variant"
-              aria-hidden
-            />
-            <input
-              value={query}
-              onChange={(event) => setQuery(event.target.value)}
-              placeholder="Search names"
-              className="h-12 w-full bg-transparent text-body-md outline-none"
-            />
-          </div>
-          <div className="mt-3 flex gap-2">
-            {(
-              [
-                ["all", "All"],
-                ["on_campus", "On campus"],
-                ["off_campus", "Off campus"],
-              ] as const
-            ).map(([id, label]) => (
-              <button
-                key={id}
-                type="button"
-                className={`h-9 rounded-full px-3 text-label-sm tracking-wide ${
-                  filter === id
-                    ? "bg-primary text-on-primary"
-                    : "bg-surface-container text-on-surface"
-                }`}
-                onClick={() => setFilter(id)}
-              >
-                {label}
-              </button>
-            ))}
-          </div>
-          <ul className="mt-3 divide-y divide-outline-variant/40 overflow-hidden rounded-[24px] bg-surface-container">
-            {roster.map((student) => (
-              <li key={student.id}>
-                <button
-                  type="button"
-                  className="flex w-full items-center gap-3 px-4 py-3 text-left"
-                  onClick={() => addStudent(student.id)}
-                >
-                  <span
-                    className="flex size-10 shrink-0 items-center justify-center rounded-full bg-surface-container-lowest text-label-sm font-semibold"
-                    aria-hidden
+          <section className="order-1 flex min-h-0 flex-col lg:order-2">
+            <div className="shrink-0">
+              <GateScanner onCode={onCode} />
+            </div>
+            <div className="mt-5 flex shrink-0 items-end justify-between gap-3">
+              <div>
+                <h2 className="text-label-sm tracking-[0.14em] text-on-surface-variant uppercase">
+                  Selected
+                </h2>
+                <p className="text-body-md text-on-surface-variant">
+                  {selected.length === 0
+                    ? "Scan a pass or tap a name"
+                    : `${selected.length} at the gate`}
+                </p>
+              </div>
+              {selected.length > 0 ? (
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    disabled={busy || !selected.some(canCheckout)}
+                    className="h-11 rounded-full bg-primary px-4 text-label-sm tracking-wide text-on-primary disabled:opacity-40"
+                    onClick={() =>
+                      void run(
+                        checkoutStudents,
+                        selected.filter(canCheckout).map((student) => student.id),
+                      )
+                    }
                   >
-                    {initials(student.name)}
-                  </span>
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-body-md">
-                      {student.name}
-                    </span>
-                    <span className="block text-label-sm text-on-surface-variant">
-                      {student.cohort}
-                      {student.leave ? ` · ${student.leave.destination}` : ""}
-                    </span>
-                  </span>
-                  <CampusChip status={student.campusStatus} />
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
+                    Sign all out
+                  </button>
+                  <button
+                    type="button"
+                    disabled={busy || !selected.some(canCheckin)}
+                    className="h-11 rounded-full bg-residential px-4 text-label-sm tracking-wide text-on-residential disabled:opacity-40"
+                    onClick={() =>
+                      void run(
+                        checkinStudents,
+                        selected.filter(canCheckin).map((student) => student.id),
+                      )
+                    }
+                  >
+                    Sign all in
+                  </button>
+                </div>
+              ) : null}
+            </div>
+
+            <div className="mt-3 flex flex-col gap-3 lg:min-h-0 lg:flex-1 lg:overflow-y-auto">
+              {selected.length === 0 ? (
+                <div className="hidden rounded-[24px] border border-dashed border-outline-variant/70 bg-surface-container-low px-6 py-16 text-center lg:block">
+                  <p className="text-title-md tracking-tight">Nobody selected</p>
+                  <p className="mt-2 text-body-md text-on-surface-variant">
+                    Tap a student on the left, or scan their pass.
+                  </p>
+                </div>
+              ) : (
+                selected.map((student) => (
+                  <SelectedCard
+                    key={student.id}
+                    student={student}
+                    busy={busy}
+                    onRemove={() =>
+                      setSelectedIds((current) =>
+                        current.filter((id) => id !== student.id),
+                      )
+                    }
+                    onOut={() => void run(checkoutStudents, [student.id])}
+                    onIn={() => void run(checkinStudents, [student.id])}
+                  />
+                ))
+              )}
+            </div>
+          </section>
+        </div>
       </main>
     </div>
   );

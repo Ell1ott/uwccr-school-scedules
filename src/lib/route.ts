@@ -14,7 +14,7 @@ export type AppRoute =
     }
   | { page: "login" }
   | { page: "admin" }
-  | { page: "reach"; draft?: "new" }
+  | { page: "reach"; draft?: "new" | "edit"; requestId?: string }
   | { page: "gate" }
   | { page: "moderate"; token: string; decision: ModerateDecision | null };
 
@@ -82,6 +82,18 @@ export function parseRoute(pathname: string, search: string): AppRoute {
   if (path === "/admin") return { page: "admin" };
   if (path === "/reach/new") return { page: "reach", draft: "new" };
   if (path === "/reach") return { page: "reach" };
+  if (
+    segments[0] === "reach" &&
+    segments.length === 3 &&
+    segments[2] === "edit" &&
+    segments[1] !== "new"
+  ) {
+    return {
+      page: "reach",
+      draft: "edit",
+      requestId: decodeURIComponent(segments[1]),
+    };
+  }
   if (path === "/gate") return { page: "gate" };
   if (path === "/moderate") {
     return {
@@ -192,7 +204,11 @@ export function toPath(route: AppRoute): string {
     case "admin":
       return "/admin";
     case "reach":
-      return route.draft === "new" ? "/reach/new" : "/reach";
+      if (route.draft === "new") return "/reach/new";
+      if (route.draft === "edit" && route.requestId) {
+        return `/reach/${encodeURIComponent(route.requestId)}/edit`;
+      }
+      return "/reach";
     case "gate":
       return "/gate";
     case "moderate": {

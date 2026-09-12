@@ -1,16 +1,20 @@
 import { ArrowLeft, DoorOpen, FileUp, Plus } from "lucide-react";
-import { useState } from "react";
-import { ReachForm } from "./ReachForm";
+import { useEffect, useRef, useState } from "react";
+import { ReachForm, type ReachFormStep } from "./ReachForm";
 import { StudentQrCard } from "./StudentQrCard";
 import { useAuth } from "../lib/auth";
 import { initials } from "../lib/classDetail";
 import {
+  canManageReachRequest,
+  deleteReachRequest,
   formatReachRange,
   leaveTypeMeta,
+  reachRequestLocked,
   respondReachInvite,
   transportLabel,
   uploadReachDocuments,
   useReachCatalog,
+  type ReachLeaveType,
   type ReachRequest,
   type ReachRequestStatus,
 } from "../lib/reach";
@@ -18,25 +22,41 @@ import type { Student } from "../types";
 
 function statusLabel(status: ReachRequestStatus) {
   if (status === "approved") return "Approved";
-  if (status === "pending") return "Waiting for RC";
+  if (status === "pending") return "Waiting";
   if (status === "denied") return "Declined";
   if (status === "active") return "Out";
   if (status === "returned") return "Back";
   return "Cancelled";
 }
 
+function statusTone(status: ReachRequestStatus) {
+  if (status === "approved" || status === "returned") return "ok";
+  if (status === "pending" || status === "active") return "wait";
+  return "bad";
+}
+
+function stampClass(stamp: "Auto" | "RC" | "Docs") {
+  return stamp === "Auto" ? "auto" : stamp === "Docs" ? "docs" : "rc";
+}
+
+function studentName(students: Student[], id: string) {
+  return students.find((student) => student.id === id)?.name ?? "A student";
+}
+
 export function ReachPage({
   students,
   draft,
+  requestId,
   onBack,
   onOpenLogin,
   onDraftChange,
 }: {
   students: Student[];
-  draft: "new" | null;
+  draft: "new" | "edit" | null;
+  requestId?: string;
   onBack: () => void;
   onOpenLogin?: () => void;
-  onDraftChange: (draft: "new" | null) => void;
+  onDraftChange: (draft: "new" | string | null) => void;
 }) {
   const auth = useAuth();
   const loggedOut = !auth.session || !auth.role;
@@ -44,6 +64,27 @@ export function ReachPage({
   const { requests, loaded, refresh } = useReachCatalog(ready);
   const [notice, setNotice] = useState<string | null>(null);
   const [inviteError, setInviteError] = useState<string | null>(null);
+  const [step, setStep] = useState<ReachFormStep>("kind");
+  const [direction, setDirection] = useState<"forward" | "back">("forward");
+  const [leaveType, setLeaveType] = useState<ReachLeaveType>("day");
+  const primedEdit = useRef<string | null>(null);
+  const editing =
+    draft === "edit" && requestId
+      ? requests.find((request) => request.id === requestId) ?? null
+      : null;
+  const draftMeta = leaveTypeMeta(leaveType);
+
+  useEffect(() => {
+    if (draft !== "edit") {
+      primedEdit.current = null;
+      return;
+    }
+    if (!editing || primedEdit.current === editing.id) return;
+    primedEdit.current = editing.id;
+    setLeaveType(editing.leaveType);
+    setDirection("forward");
+    setStep("details");
+  }, [draft, editing]);
 
   const mine = requests.filter(
     (request) =>
@@ -61,6 +102,7 @@ export function ReachPage({
         companion.studentId === auth.studentId && companion.status === "pending",
     ),
   );
+  const list = auth.role === "staff" ? requests : mine;
 
   async function answerInvite(requestId: string, accept: boolean) {
     setInviteError(null);
@@ -69,254 +111,320 @@ export function ReachPage({
     await refresh();
   }
 
+  const composing = draft === "new" || draft === "edit";
+
   return (
-    <div className="flex min-h-dvh flex-col bg-surface text-on-surface">
-      <header className="flex items-center gap-3 px-container-padding-mobile pt-[calc(env(safe-area-inset-top,0px)+1rem)] pb-4 md:px-container-padding-desktop">
-        <button
-          type="button"
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-surface-container text-on-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-          aria-label="Back to schedules"
-          onClick={draft ? () => onDraftChange(null) : onBack}
-        >
-          <ArrowLeft size={18} strokeWidth={1.75} aria-hidden />
-        </button>
-        <div className="min-w-0 flex-1">
-          <p className="text-label-sm tracking-[0.14em] text-on-surface-variant uppercase">
-            Leave campus
-          </p>
-          <h1 className="text-title-md tracking-tight">
-            {draft === "new" ? "New request" : "Reach"}
-          </h1>
-        </div>
-        {draft || loggedOut || auth.role !== "student" ? null : (
+    <div className="reach-app">
+      <div className="reach-shell">
+        <header className="reach-nav">
           <button
             type="button"
-            className="flex h-10 items-center gap-1.5 rounded-full bg-primary px-3 text-label-sm tracking-wide text-on-primary"
-            onClick={() => onDraftChange("new")}
-          >
-            <Plus size={16} strokeWidth={1.75} aria-hidden />
-            New
-          </button>
-        )}
-      </header>
-
-      <main className="mx-auto flex w-full max-w-2xl flex-1 flex-col px-container-padding-mobile pb-safe md:px-container-padding-desktop">
-        {draft === "new" ? (
-          auth.role === "student" ? (
-            <ReachForm
-              students={students}
-              onDone={(warning) => {
-                setNotice(warning ?? null);
+            aria-label="Back"
+            onClick={() => {
+              if (composing && step === "details") {
+                setDirection("back");
+                setStep("kind");
+                return;
+              }
+              if (composing) {
                 onDraftChange(null);
-                void refresh();
-              }}
-              onCancel={() => onDraftChange(null)}
-            />
-          ) : (
-            <p className="text-body-md text-on-surface-variant">
-              Only students can create leave requests.
-            </p>
-          )
-        ) : loggedOut ? (
-          <div className="mx-auto my-auto w-full max-w-md rounded-[28px] bg-surface-container px-5 py-8 text-center">
-            <DoorOpen
-              size={22}
-              strokeWidth={1.75}
-              className="mx-auto text-residential"
-            />
-            <p className="mt-3 text-title-md tracking-tight">Log in to request leave</p>
-            <p className="mt-2 text-body-md text-on-surface-variant">
-              Same Google account as the schedule. Day leave is auto approved.
-            </p>
+                setStep("kind");
+                return;
+              }
+              onBack();
+            }}
+          >
+            <ArrowLeft size={22} strokeWidth={1.75} aria-hidden />
+          </button>
+          {composing && step === "details" ? (
             <button
               type="button"
-              className="mt-6 h-12 w-full rounded-full bg-primary text-label-sm tracking-wide text-on-primary"
-              onClick={() => onOpenLogin?.()}
+              className="reach-nav-type"
+              aria-label={`Change leave type, currently ${draftMeta.label}`}
+              onClick={() => {
+                setDirection("back");
+                setStep("kind");
+              }}
             >
-              Log in
+              <h1>{draftMeta.label}</h1>
+              <i className={`reach-tag ${stampClass(draftMeta.stamp)}`}>
+                {draftMeta.stamp}
+              </i>
             </button>
-          </div>
-        ) : (
-          <div className="flex flex-col gap-6 pb-10">
-            {auth.role === "staff" ? (
-              <p className="rounded-2xl bg-surface-container px-4 py-3 text-body-md text-on-surface-variant">
-                Staff approvals come later. You can see student requests here.
-              </p>
-            ) : null}
-            {notice ? (
-              <p className="rounded-2xl bg-residential-container px-4 py-3 text-body-md text-on-residential-container">
-                {notice}
-              </p>
-            ) : null}
-            {inviteError ? (
-              <p className="text-body-md text-error">{inviteError}</p>
-            ) : null}
+          ) : (
+            <h1>
+              {draft === "edit"
+                ? "Edit leave"
+                : draft === "new"
+                  ? "New leave"
+                  : "Reach"}
+            </h1>
+          )}
+          {composing ? (
+            <div className="reach-dots" aria-hidden>
+              <i className={step === "kind" ? "on" : ""} />
+              <i className={step === "details" ? "on" : ""} />
+            </div>
+          ) : loggedOut || auth.role !== "student" ? (
+            <button type="button" disabled aria-hidden />
+          ) : (
+            <button
+              type="button"
+              className="reach-new"
+              onClick={() => {
+                setLeaveType("day");
+                setDirection("forward");
+                setStep("kind");
+                onDraftChange("new");
+              }}
+            >
+              <Plus size={20} strokeWidth={2} aria-hidden />
+            </button>
+          )}
+        </header>
 
-            {auth.role === "student" && auth.studentId ? (
-              <StudentQrCard
-                studentId={auth.studentId}
-                name={auth.displayName ?? "Student"}
+        {composing ? (
+          auth.role === "student" ? (
+            draft === "edit" && !loaded ? (
+              <main className="reach-body">
+                <p className="reach-lead">Loading…</p>
+              </main>
+            ) : draft === "edit" && !editing ? (
+              <main className="reach-body">
+                <p className="reach-lead">That leave is gone.</p>
+              </main>
+            ) : draft === "edit" &&
+              editing &&
+              !canManageReachRequest(editing, auth) ? (
+              <main className="reach-body">
+                <p className="reach-lead">
+                  {reachRequestLocked(editing.status)
+                    ? "This leave cannot be changed after sign-out."
+                    : "Only the student who created this leave can change it."}
+                </p>
+              </main>
+            ) : (
+              <ReachForm
+                key={editing?.id ?? "new"}
+                students={students}
+                leaveType={leaveType}
+                step={step}
+                direction={direction}
+                editing={draft === "edit" ? editing : null}
+                onLeaveTypeChange={setLeaveType}
+                onStepChange={(next, way) => {
+                  setDirection(way);
+                  setStep(next);
+                }}
+                onDone={(warning) => {
+                  setNotice(warning ?? null);
+                  setStep("kind");
+                  onDraftChange(null);
+                  void refresh();
+                }}
               />
-            ) : null}
-
-            {invites.length > 0 ? (
-              <section>
-                <h2 className="text-label-sm tracking-[0.14em] text-on-surface-variant uppercase">
-                  Invites
-                </h2>
-                <div className="mt-3 grid gap-3">
-                  {invites.map((request) => (
-                    <article
-                      key={request.id}
-                      className="rounded-[24px] bg-residential-container px-4 py-4"
-                    >
-                      <p className="text-title-md tracking-tight text-on-residential-container">
-                        Join {studentName(students, request.studentId)}
-                      </p>
-                      <p className="mt-1 text-body-md text-on-residential-container/80">
-                        {leaveTypeMeta(request.leaveType).label} · {request.destination}
-                      </p>
-                      <p className="mt-1 text-label-sm text-on-residential-container/70">
-                        {formatReachRange(request.startsAt, request.endsAt)}
-                      </p>
-                      <div className="mt-4 flex gap-2">
-                        <button
-                          type="button"
-                          className="h-10 flex-1 rounded-full bg-residential text-label-sm tracking-wide text-on-residential"
-                          onClick={() => void answerInvite(request.id, true)}
-                        >
-                          Accept
-                        </button>
-                        <button
-                          type="button"
-                          className="h-10 flex-1 rounded-full bg-surface-container-lowest text-label-sm tracking-wide text-on-surface"
-                          onClick={() => void answerInvite(request.id, false)}
-                        >
-                          Decline
-                        </button>
-                      </div>
-                    </article>
-                  ))}
-                </div>
-              </section>
-            ) : null}
-
-            <section>
-              <h2 className="text-label-sm tracking-[0.14em] text-on-surface-variant uppercase">
-                {auth.role === "staff" ? "All requests" : "Your leaves"}
-              </h2>
-              {!loaded ? (
-                <p className="mt-3 text-body-md text-on-surface-variant">Loading…</p>
-              ) : (auth.role === "staff" ? requests : mine).length === 0 ? (
-                <div className="mx-auto mt-10 max-w-sm text-center">
-                  <span className="mx-auto flex size-14 items-center justify-center rounded-full bg-residential-container text-residential">
-                    <DoorOpen size={22} strokeWidth={1.6} aria-hidden />
-                  </span>
-                  <h3 className="mt-5 text-headline-lg-mobile tracking-tight">
-                    No leave yet
-                  </h3>
-                  <p className="mt-2 text-body-md text-on-surface-variant">
-                    Day leave from 6 AM to 6 PM is auto approved. Evenings and
-                    overnights wait for RC.
+            )
+          ) : (
+            <main className="reach-body">
+              <p className="reach-lead">Only students can create leave requests.</p>
+            </main>
+          )
+        ) : (
+          <main className="reach-body">
+            {loggedOut ? (
+              <div className="reach-login">
+                <DoorOpen size={28} strokeWidth={1.5} className="mx-auto text-[var(--reach-muted)]" />
+                <h2>Log in to leave campus</h2>
+                <p>Same Google account as the schedule. Day leave is auto approved.</p>
+                <button type="button" className="reach-cta" onClick={() => onOpenLogin?.()}>
+                  Log in
+                </button>
+              </div>
+            ) : (
+              <>
+                {auth.role === "staff" ? (
+                  <p className="reach-note">
+                    Staff approvals come later. You can see student requests here.
                   </p>
-                </div>
-              ) : (
-                <div className="mt-3 grid gap-3">
-                  {(auth.role === "staff" ? requests : mine).map((request) => (
-                    <ReachRequestCard
-                      key={request.id}
-                      request={request}
-                      students={students}
-                      canAttach={
-                        request.createdBy === auth.profileId ||
-                        request.studentId === auth.studentId
-                      }
-                      onAttached={() => void refresh()}
-                    />
-                  ))}
-                </div>
-              )}
-            </section>
-          </div>
+                ) : null}
+                {notice ? <p className="reach-note">{notice}</p> : null}
+                {inviteError ? <p className="reach-err">{inviteError}</p> : null}
+
+                {auth.role === "student" && auth.studentId ? (
+                  <StudentQrCard
+                    studentId={auth.studentId}
+                    name={auth.displayName ?? "Student"}
+                  />
+                ) : null}
+
+                {invites.length > 0 ? (
+                  <section>
+                    <p className="reach-label">Invites</p>
+                    <div className="grid gap-3">
+                      {invites.map((request) => {
+                        const meta = leaveTypeMeta(request.leaveType);
+                        return (
+                          <article key={request.id} className="reach-card">
+                            <div className="reach-card-top">
+                              <i className={`reach-tag ${stampClass(meta.stamp)}`}>
+                                {meta.shortLabel}
+                              </i>
+                            </div>
+                            <h3>Join {studentName(students, request.studentId)}</h3>
+                            <p>
+                              {request.destination}
+                              <br />
+                              {formatReachRange(request.startsAt, request.endsAt)}
+                            </p>
+                            <div className="reach-actions">
+                              <button
+                                type="button"
+                                className="yes"
+                                onClick={() => void answerInvite(request.id, true)}
+                              >
+                                Accept
+                              </button>
+                              <button
+                                type="button"
+                                className="no"
+                                onClick={() => void answerInvite(request.id, false)}
+                              >
+                                Decline
+                              </button>
+                            </div>
+                          </article>
+                        );
+                      })}
+                    </div>
+                  </section>
+                ) : null}
+
+                <section>
+                  <p className="reach-label">
+                    {auth.role === "staff" ? "All requests" : "Your leaves"}
+                  </p>
+                  {!loaded ? (
+                    <p className="reach-lead">Loading…</p>
+                  ) : list.length === 0 ? (
+                    <div className="reach-empty">
+                      <DoorOpen
+                        size={28}
+                        strokeWidth={1.5}
+                        className="mx-auto text-[var(--reach-muted)]"
+                        aria-hidden
+                      />
+                      <h2>No leave yet</h2>
+                      <p>
+                        Day leave from 6 AM to 6 PM is auto approved. Evenings and
+                        overnights wait for RC.
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="grid gap-3">
+                      {list.map((request) => (
+                        <ReachRequestCard
+                          key={request.id}
+                          request={request}
+                          students={students}
+                          canAttach={
+                            request.createdBy === auth.profileId ||
+                            request.studentId === auth.studentId
+                          }
+                          canManage={canManageReachRequest(request, auth)}
+                          onAttached={() => void refresh()}
+                          onEdit={() => {
+                            setLeaveType(request.leaveType);
+                            setDirection("forward");
+                            setStep("details");
+                            onDraftChange(request.id);
+                          }}
+                          onDeleted={(message) => {
+                            if (message) setNotice(message);
+                            void refresh();
+                          }}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </section>
+              </>
+            )}
+          </main>
         )}
-      </main>
+      </div>
     </div>
   );
-}
-
-function studentName(students: Student[], id: string) {
-  return students.find((student) => student.id === id)?.name ?? "A student";
 }
 
 function ReachRequestCard({
   request,
   students,
   canAttach,
+  canManage,
   onAttached,
+  onEdit,
+  onDeleted,
 }: {
   request: ReachRequest;
   students: Student[];
   canAttach: boolean;
+  canManage: boolean;
   onAttached: () => void;
+  onEdit: () => void;
+  onDeleted: (message: string | null) => void;
 }) {
-  const [attachError, setAttachError] = useState<string | null>(null);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [busy, setBusy] = useState(false);
   const owner = studentName(students, request.studentId);
+  const meta = leaveTypeMeta(request.leaveType);
   const needsDocs =
     request.leaveType === "overnight" && request.documents.length === 0;
 
   async function onFiles(fileList: FileList | null) {
     const files = Array.from(fileList ?? []);
     if (files.length === 0) return;
-    setAttachError(null);
+    setActionError(null);
     const result = await uploadReachDocuments(request.id, files);
-    if (result.error) setAttachError(result.error);
+    if (result.error) setActionError(result.error);
     onAttached();
   }
 
+  async function onDelete() {
+    setBusy(true);
+    const message = await deleteReachRequest(request.id);
+    setBusy(false);
+    if (message) {
+      setActionError(message);
+      setConfirmDelete(false);
+      return;
+    }
+    onDeleted(null);
+  }
+
   return (
-    <article className="rounded-[24px] bg-surface-container px-4 py-4">
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <p className="text-title-md tracking-tight">
-            {leaveTypeMeta(request.leaveType).label}
-          </p>
-          <p className="mt-1 text-body-md text-on-surface-variant">
-            {request.destination}
-          </p>
-        </div>
-        <span
-          className={`rounded-full px-2.5 py-1 text-label-sm tracking-wide ${
-            request.status === "approved" || request.status === "returned"
-              ? "bg-residential-container text-on-residential-container"
-              : request.status === "pending" || request.status === "active"
-                ? "bg-secondary-container text-on-secondary-container"
-                : "bg-error-container text-on-error-container"
-          }`}
-        >
+    <article className="reach-card">
+      <div className="reach-card-top">
+        <i className={`reach-tag ${stampClass(meta.stamp)}`}>{meta.shortLabel}</i>
+        <span className={`reach-status ${statusTone(request.status)}`}>
           {statusLabel(request.status)}
         </span>
       </div>
-      <p className="mt-3 text-label-sm text-on-surface-variant">
+      <h3>{request.destination}</h3>
+      <p>
         {formatReachRange(request.startsAt, request.endsAt)}
-      </p>
-      <p className="mt-1 text-label-sm text-on-surface-variant">
+        <br />
         {request.transports.map(transportLabel).join(" → ")} · {owner}
       </p>
       {request.companions.length > 0 ? (
-        <ul className="mt-3 flex flex-wrap gap-2">
+        <ul className="reach-people">
           {request.companions.map((companion) => (
-            <li
-              key={companion.studentId}
-              className="flex items-center gap-1.5 rounded-full bg-surface-container-lowest py-1 pr-2.5 pl-1 text-label-sm"
-            >
-              <span
-                className="flex size-6 items-center justify-center rounded-full bg-surface-container text-[10px] font-semibold"
-                aria-hidden
-              >
+            <li key={companion.studentId}>
+              <span className="reach-avatar" aria-hidden>
                 {initials(studentName(students, companion.studentId))}
               </span>
               {studentName(students, companion.studentId).split(" ")[0]}
-              <span className="text-on-surface-variant">
+              <span className="text-[var(--reach-muted)]">
                 {companion.status === "accepted"
                   ? "in"
                   : companion.status === "declined"
@@ -328,19 +436,19 @@ function ReachRequestCard({
         </ul>
       ) : null}
       {request.hostName ? (
-        <p className="mt-3 text-body-md text-on-surface-variant">
+        <p>
           Host {request.hostName}
           {request.hostPhone ? ` · ${request.hostPhone}` : ""}
         </p>
       ) : null}
       {request.documents.length > 0 ? (
-        <p className="mt-3 text-label-sm text-on-surface-variant">
+        <p>
           {request.documents.length} document
           {request.documents.length === 1 ? "" : "s"} attached
         </p>
       ) : null}
       {needsDocs && canAttach ? (
-        <label className="mt-3 flex cursor-pointer items-center gap-2 rounded-2xl bg-surface-container-lowest px-3 py-3 text-body-md">
+        <label className="reach-drop">
           <FileUp size={16} strokeWidth={1.75} aria-hidden />
           Add the overnight documents
           <input
@@ -355,7 +463,44 @@ function ReachRequestCard({
           />
         </label>
       ) : null}
-      {attachError ? <p className="mt-2 text-body-md text-error">{attachError}</p> : null}
+      {canManage ? (
+        <div className="reach-actions">
+          {confirmDelete ? (
+            <>
+              <button
+                type="button"
+                className="danger"
+                disabled={busy}
+                onClick={() => void onDelete()}
+              >
+                {busy ? "Deleting…" : "Delete leave"}
+              </button>
+              <button
+                type="button"
+                className="no"
+                disabled={busy}
+                onClick={() => setConfirmDelete(false)}
+              >
+                Keep
+              </button>
+            </>
+          ) : (
+            <>
+              <button type="button" className="yes" onClick={onEdit}>
+                Edit
+              </button>
+              <button
+                type="button"
+                className="no"
+                onClick={() => setConfirmDelete(true)}
+              >
+                Delete
+              </button>
+            </>
+          )}
+        </div>
+      ) : null}
+      {actionError ? <p className="reach-err">{actionError}</p> : null}
     </article>
   );
 }

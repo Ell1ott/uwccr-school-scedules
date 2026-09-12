@@ -1100,6 +1100,10 @@ export type Database = {
         }
         Returns: Json
       }
+      delete_reach_request: {
+        Args: { p_request_id: string }
+        Returns: undefined
+      }
       create_pending_event_batch: {
         Args: {
           p_all_day: boolean
@@ -1172,6 +1176,22 @@ export type Database = {
         }
         Returns: undefined
       }
+      update_reach_request: {
+        Args: {
+          p_companion_student_ids?: string[]
+          p_destination: string
+          p_ends_at: string
+          p_host_address?: string
+          p_host_name?: string
+          p_host_phone?: string
+          p_leave_type: Database["public"]["Enums"]["reach_leave_type"]
+          p_notes?: string
+          p_request_id: string
+          p_starts_at?: string | null
+          p_transports: Database["public"]["Enums"]["reach_transport_mode"][]
+        }
+        Returns: Json
+      }
       update_cas_session: {
         Args: {
           p_capacity: number | null
@@ -1188,6 +1208,12 @@ export type Database = {
       }
       promote_waitlist: { Args: { p_event_id: string }; Returns: undefined }
       seed_event_responses: { Args: { p_event_id: string }; Returns: undefined }
+      reach_request_is_locked: {
+        Args: {
+          p_status: Database["public"]["Enums"]["reach_request_status"]
+        }
+        Returns: boolean
+      }
       reach_storage_request_id: { Args: { p_name: string }; Returns: string }
       respond_reach_invite: {
         Args: { p_accept: boolean; p_request_id: string }

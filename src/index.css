@@ -1,5 +1,6 @@
 @import "tailwindcss";
 @import "@fontsource-variable/inter/wght.css";
+@import "./reach.css";
 
 @theme {
   --font-sans: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
@@ -598,9 +599,96 @@ button.luma-day-title:focus-visible {
   box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--color-primary) 28%, transparent);
 }
 
+.gate-scanner {
+  position: relative;
+  background: #000;
+}
+
 .gate-scanner video {
-  width: 100%;
-  height: 240px;
+  display: block;
   object-fit: cover;
   background: #000;
+}
+
+.gate-scanner canvas {
+  display: none !important;
+}
+
+.gate-scanner-collapsed {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  width: 320px;
+  height: 240px;
+  overflow: hidden;
+  opacity: 0.02;
+  pointer-events: none;
+  transform: translateZ(0);
+}
+
+.gate-scanner-collapsed video {
+  width: 320px !important;
+  height: 240px !important;
+}
+
+.gate-scanner-open {
+  position: relative !important;
+  inset: auto !important;
+  width: 100% !important;
+  height: 20rem !important;
+  overflow: hidden;
+  opacity: 1 !important;
+  pointer-events: auto;
+  border-bottom-left-radius: 28px;
+  border-bottom-right-radius: 28px;
+}
+
+.gate-scanner-open video {
+  width: 100% !important;
+  height: 20rem !important;
+}
+
+.gate-scan-dot {
+  position: relative;
+  display: block;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 100%;
+  background: #ff8a2a;
+  box-shadow: 0 0 0 0 rgb(255 138 42 / 55%);
+  animation: gate-scan-pulse 1.4s ease-out infinite;
+}
+
+.gate-scan-dot::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: #ff8a2a;
+  animation: gate-scan-ring 1.4s ease-out infinite;
+}
+
+@keyframes gate-scan-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+
+  50% {
+    transform: scale(0.92);
+    opacity: 0.85;
+  }
+}
+
+@keyframes gate-scan-ring {
+  0% {
+    transform: scale(1);
+    opacity: 0.55;
+  }
+
+  100% {
+    transform: scale(2.6);
+    opacity: 0;
+  }
 }

@@ -75,10 +75,7 @@ export function CompanionPicker({
                 className="flex items-center gap-1.5 rounded-full bg-residential-container py-1 pr-2 pl-1 text-label-sm tracking-wide text-on-residential-container"
                 onClick={() => remove(student.id)}
               >
-                <span
-                  className="flex size-6 items-center justify-center rounded-full bg-residential text-[10px] font-semibold text-on-residential"
-                  aria-hidden
-                >
+                <span className="reach-avatar" aria-hidden>
                   {initials(student.name)}
                 </span>
                 {student.name.split(" ")[0]}
@@ -181,10 +178,7 @@ export function CompanionPicker({
                   onMouseEnter={() => setActiveIndex(index)}
                   onClick={() => add(student.id)}
                 >
-                  <span
-                    className="flex size-8 shrink-0 items-center justify-center rounded-full bg-surface-container text-label-sm font-semibold"
-                    aria-hidden
-                  >
+                  <span className="reach-avatar" aria-hidden>
                     {initials(student.name)}
                   </span>
                   <span className="min-w-0 flex-1 truncate text-body-md">

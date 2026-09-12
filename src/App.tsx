@@ -549,13 +549,20 @@ function AppShell() {
       <ReachPage
         students={students}
         draft={route.draft ?? null}
+        requestId={route.requestId}
         onBack={goHome}
         onOpenLogin={openLogin}
-        onDraftChange={(next) =>
-          navigate(
-            next === "new" ? { page: "reach", draft: "new" } : { page: "reach" },
-          )
-        }
+        onDraftChange={(next) => {
+          if (next === "new") {
+            navigate({ page: "reach", draft: "new" });
+            return;
+          }
+          if (next) {
+            navigate({ page: "reach", draft: "edit", requestId: next });
+            return;
+          }
+          navigate({ page: "reach" });
+        }}
       />
     );
   }

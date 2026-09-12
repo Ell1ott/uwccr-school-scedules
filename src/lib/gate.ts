@@ -4,6 +4,14 @@ import type { ReachLeaveType, ReachRequestStatus } from "./reach";
 const TOKEN_KEY = "uwccr-gate-token";
 export const STUDENT_QR_PREFIX = "uwccr:student:";
 
+export function gateLog(event: string, details?: Record<string, unknown>) {
+  if (details) {
+    console.info(`[gate] ${event}`, details);
+    return;
+  }
+  console.info(`[gate] ${event}`);
+}
+
 export type CampusStatus = "on_campus" | "off_campus";
 export type GateFilter = "all" | "on_campus" | "off_campus";
 
