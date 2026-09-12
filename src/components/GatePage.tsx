@@ -1,4 +1,4 @@
-import { DoorOpen, LogOut, Search, X } from "lucide-react";
+import { ArrowRight, DoorOpen, LogOut, Search, X } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { GateScanner } from "./GateScanner";
 import {
@@ -17,11 +17,13 @@ import {
   type GateStudent,
 } from "../lib/gate";
 import {
-  formatReachRange,
+  formatReachClock,
+  formatReachDayLabel,
   leaveTypeMeta,
   reachLeaveIsOpen,
 } from "../lib/reach";
 import { searchPeople } from "../lib/people";
+import { crDate } from "../lib/schoolEvents";
 import { initials } from "../lib/classDetail";
 
 export function GatePage() {
@@ -163,6 +165,7 @@ function GateKiosk({ onLock }: { onLock: () => void }) {
       gateLog("qr_selected", { id, name: student.name });
       return [...current, id];
     });
+    setQuery("");
     setFlash(student.name);
     window.setTimeout(() => {
       setFlash((current) => (current === student.name ? null : current));
@@ -180,6 +183,7 @@ function GateKiosk({ onLock }: { onLock: () => void }) {
       gateLog("qr_selected", { id, name: student.name });
       return [...current, id];
     });
+    setQuery("");
   }
 
   function onCode(raw: string) {
@@ -423,6 +427,62 @@ function GateKiosk({ onLock }: { onLock: () => void }) {
   );
 }
 
+function LeaveWindow({
+  startsAt,
+  endsAt,
+}: {
+  startsAt: string;
+  endsAt: string;
+}) {
+  const sameDay = crDate(startsAt) === crDate(endsAt);
+  const startDay = formatReachDayLabel(startsAt);
+  const endDay = formatReachDayLabel(endsAt);
+
+  return (
+    <div className="mt-3 rounded-2xl bg-surface-container px-3 py-3">
+      <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-3">
+        <div>
+          <p className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
+            Out
+          </p>
+          <p className="mt-1 text-headline-lg-mobile tracking-tight tabular-nums">
+            {formatReachClock(startsAt)}
+          </p>
+          {sameDay ? null : (
+            <p className="mt-0.5 text-body-md text-on-surface-variant">
+              {startDay}
+            </p>
+          )}
+        </div>
+        <ArrowRight
+          size={18}
+          strokeWidth={1.75}
+          className="text-on-surface-variant"
+          aria-hidden
+        />
+        <div className="text-right">
+          <p className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
+            Back
+          </p>
+          <p className="mt-1 text-headline-lg-mobile tracking-tight tabular-nums">
+            {formatReachClock(endsAt)}
+          </p>
+          {sameDay ? null : (
+            <p className="mt-0.5 text-body-md text-on-surface-variant">
+              {endDay}
+            </p>
+          )}
+        </div>
+      </div>
+      {sameDay ? (
+        <p className="mt-1 text-center text-body-md text-on-surface-variant">
+          {startDay}
+        </p>
+      ) : null}
+    </div>
+  );
+}
+
 function CampusChip({ status }: { status: GateStudent["campusStatus"] }) {
   const off = status === "off_campus";
   return (
@@ -490,9 +550,7 @@ function SelectedCard({
                 {leaveTypeMeta(leave.leaveType).label}
               </p>
               <p className="mt-1 text-body-md">{leave.destination}</p>
-              <p className="mt-1 text-label-sm text-on-surface-variant">
-                {formatReachRange(leave.startsAt, leave.endsAt)}
-              </p>
+              <LeaveWindow startsAt={leave.startsAt} endsAt={leave.endsAt} />
               {reachLeaveIsOpen(leave.startsAt, leave.endsAt) ? null : (
                 <p className="mt-2 text-body-md text-on-surface-variant">
                   Leave has not started

@@ -19,6 +19,7 @@ import {
   type FormEvent,
   type ReactNode,
 } from "react";
+import { toast, Toaster } from "sonner";
 import { CompanionPicker } from "./CompanionPicker";
 import { useAuth } from "../lib/auth";
 import { useNow } from "../lib/now";
@@ -51,8 +52,26 @@ const ICONS: Record<ReachTransportMode, ReactNode> = {
   uber: <CarFront size={15} strokeWidth={1.75} aria-hidden />,
 };
 
+const FORM_NOTICE = "reach-form-notice";
+
 function stampClass(stamp: "Auto" | "RC" | "Docs") {
   return stamp === "Auto" ? "auto" : stamp === "Docs" ? "docs" : "rc";
+}
+
+function showFormNotice(
+  message: string,
+  tone: "warning" | "error" = "warning",
+) {
+  const title = tone === "error" ? "Could not save" : "Can't send this yet";
+  toast[tone](title, {
+    id: FORM_NOTICE,
+    description: message,
+    duration: Infinity,
+  });
+}
+
+function clearFormNotice() {
+  toast.dismiss(FORM_NOTICE);
 }
 
 function formatTime(date: string, time: string) {
@@ -145,7 +164,6 @@ export function ReachForm({
   );
   const [files, setFiles] = useState<File[]>([]);
   const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const meta = leaveTypeMeta(leaveType);
   const start = startTouched ? { date: startDate, time: startTime } : live;
@@ -172,8 +190,10 @@ export function ReachForm({
     if (step === "details") destRef.current?.focus();
   }, [step]);
 
+  useEffect(() => () => clearFormNotice(), []);
+
   function go(next: ReachFormStep, way: "forward" | "back") {
-    setError(null);
+    clearFormNotice();
     setEditingWhen(null);
     onStepChange(next, way);
   }
@@ -197,18 +217,18 @@ export function ReachForm({
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
-    setError(null);
     if (auth.role !== "student") {
-      setError("Only students can request leave.");
+      showFormNotice("Only students can request leave.", "error");
       return;
     }
     const dest = destination.trim();
     if (!dest) {
-      setError("Say where you are going.");
+      showFormNotice("Say where you are going.");
+      destRef.current?.focus();
       return;
     }
     if (transports.length === 0) {
-      setError("Pick how you are getting there.");
+      showFormNotice("Pick how you are getting there.");
       return;
     }
     if (
@@ -216,11 +236,11 @@ export function ReachForm({
       files.length === 0 &&
       existingDocs.length === 0
     ) {
-      setError("Overnight leave needs at least one document.");
+      showFormNotice("Overnight leave needs at least one document.");
       return;
     }
     if (fileError) {
-      setError(fileError);
+      showFormNotice(fileError);
       return;
     }
     const keepingStart =
@@ -232,11 +252,11 @@ export function ReachForm({
     const endIso = localToIso(end.date, end.time);
     const startMs = startIso ? Date.parse(startIso) : now.getTime();
     if (!keepingStart && startMs < now.getTime() - 90_000) {
-      setError("Start time has to be now or later.");
+      showFormNotice("Start time has to be now or later.");
       return;
     }
     if (Date.parse(endIso) <= startMs) {
-      setError("End time has to be after the start.");
+      showFormNotice("End time has to be after the start.");
       return;
     }
     const windowError = reachLeaveWindowError(
@@ -245,7 +265,7 @@ export function ReachForm({
       endIso,
     );
     if (windowError) {
-      setError(windowError);
+      showFormNotice(windowError);
       return;
     }
     const payload = {
@@ -267,11 +287,12 @@ export function ReachForm({
       : await createReachRequest(payload);
     setBusy(false);
     if (result.error || !result.requestId) {
-      setError(
+      showFormNotice(
         result.error ??
           (editing
             ? "Could not save that leave request."
             : "Could not create that leave request."),
+        "error",
       );
       return;
     }
@@ -632,8 +653,6 @@ export function ReachForm({
               </button>
             )}
           </div>
-
-          {error ? <p className="reach-err">{error}</p> : null}
         </div>
       )}
 
@@ -654,6 +673,19 @@ export function ReachForm({
           </button>
         </div>
       ) : null}
+
+      <Toaster
+        className="reach-toaster"
+        position="bottom-center"
+        richColors
+        closeButton
+        visibleToasts={1}
+        offset={{ bottom: "5.5rem" }}
+        mobileOffset={{
+          bottom: "calc(10rem + env(safe-area-inset-bottom, 0px))",
+        }}
+        toastOptions={{ duration: Infinity }}
+      />
     </form>
   );
 }

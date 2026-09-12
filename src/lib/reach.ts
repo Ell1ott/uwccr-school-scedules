@@ -337,6 +337,28 @@ export function formatReachWhen(iso: string) {
   }).format(new Date(iso));
 }
 
+export function formatReachClock(iso: string) {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: SCHOOL_TZ,
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
+  }).format(new Date(iso));
+}
+
+export function formatReachDayLabel(iso: string) {
+  const date = crDate(iso);
+  const today = crDate(new Date().toISOString());
+  if (date === today) return "Today";
+  if (date === addDays(today, 1)) return "Tomorrow";
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: SCHOOL_TZ,
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+  }).format(new Date(iso));
+}
+
 export function formatReachRange(startsAt: string, endsAt: string) {
   return `${formatReachWhen(startsAt)} → ${formatReachWhen(endsAt)}`;
 }

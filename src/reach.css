@@ -459,6 +459,39 @@
   color: var(--reach-red);
 }
 
+[data-sonner-toaster].reach-toaster {
+  --width: min(28rem, calc(100vw - 2rem));
+  --offset-bottom: 5.5rem;
+  --mobile-offset-bottom: calc(10rem + env(safe-area-inset-bottom, 0px));
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", system-ui,
+    sans-serif;
+}
+
+@media (max-width: 767px) {
+  [data-sonner-toaster].reach-toaster {
+    --offset-bottom: calc(10rem + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+[data-sonner-toaster].reach-toaster [data-sonner-toast] {
+  padding: 0.85rem 1rem;
+  border-radius: 14px;
+  box-shadow:
+    0 10px 28px rgba(28, 28, 30, 0.12),
+    0 0 0 0.5px rgba(28, 28, 30, 0.08);
+}
+
+[data-sonner-toaster].reach-toaster [data-title] {
+  font-size: 15px;
+  font-weight: 600;
+  letter-spacing: -0.02em;
+}
+
+[data-sonner-toaster].reach-toaster [data-description] {
+  font-size: 14px;
+  line-height: 1.35;
+}
+
 .reach-dock {
   position: fixed;
   right: 0;
