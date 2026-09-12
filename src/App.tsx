@@ -623,7 +623,8 @@ function AppShell() {
                 requestId={route.page === "reach" ? route.requestId : undefined}
                 onBack={() => navigate({ page: "reach" })}
                 onOpenLogin={openLogin}
-                embedded
+                hubOpen={hubOpen}
+                onOpenHub={openHub}
                 onDraftChange={(next) => {
                   if (next === "new") {
                     navigate({ page: "reach", draft: "new" });

@@ -124,7 +124,7 @@ export function DayTimeline({
   }, [dayId, paused, week, weekStart]);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex min-h-dvh flex-col">
       <div className="sticky top-0 z-40 bg-surface-container-lowest/80 px-container-padding-mobile pt-[calc(env(safe-area-inset-top,0px)+1rem)] pb-4 shadow-[0_4px_12px_rgba(0,0,0,0.02)] backdrop-blur-md">
         <div className="flex items-end gap-0.5">
           <div
@@ -204,16 +204,16 @@ export function DayTimeline({
 
       <div
         ref={dayPageRef}
-        className="relative mt-2 touch-pan-y overflow-x-hidden overscroll-x-none pb-mobile-nav select-none"
+        className="relative mt-2 min-h-dvh flex-1 touch-pan-y overflow-x-hidden overscroll-x-none pb-mobile-nav select-none"
       >
         <div
           ref={dayTrackRef}
-          className="relative"
+          className="relative min-h-full"
           style={{ transform: translateX(0) }}
         >
           {canGoPrevDay ? (
             <div
-              className="pointer-events-none absolute top-0 left-0 w-full -translate-x-full px-container-padding-mobile py-1"
+              className="pointer-events-none absolute top-0 left-0 min-h-full w-full -translate-x-full px-container-padding-mobile py-1"
               aria-hidden
             >
               <DayEvents
@@ -224,7 +224,7 @@ export function DayTimeline({
               />
             </div>
           ) : null}
-          <div className="px-container-padding-mobile py-1">
+          <div className="min-h-full px-container-padding-mobile py-1">
             <DayEvents
               dayId={dayId}
               weekStart={weekStart}
@@ -236,7 +236,7 @@ export function DayTimeline({
           </div>
           {canGoNextDay ? (
             <div
-              className="pointer-events-none absolute top-0 left-0 w-full translate-x-full px-container-padding-mobile py-1"
+              className="pointer-events-none absolute top-0 left-0 min-h-full w-full translate-x-full px-container-padding-mobile py-1"
               aria-hidden
             >
               <DayEvents
@@ -325,7 +325,7 @@ function DayEvents({
   const timedEvents = events.filter((event) => !event.allDay);
 
   return (
-    <div ref={listRef} className="relative flex flex-col gap-3">
+    <div ref={listRef} className="relative flex min-h-full flex-col gap-3">
       {allDayEvents.length > 0 ? (
         <div className="mb-1 flex flex-col gap-1.5">
           {allDayEvents.map((event) => (
