@@ -27,6 +27,56 @@ export function EventCard({
   const tone = toneForEvent(event, palette);
   const padding = compact ? "px-2.5 py-2" : "px-3 py-2.5";
   const minHeight = fill || compact ? "" : "min-h-[7.5rem]";
+
+  if (event.allDay) {
+    const interactive =
+      (event.kind === "class" ||
+        event.kind === "school_event" ||
+        event.kind === "cas") &&
+      Boolean(onOpen);
+    const className = `flex h-8 w-full min-w-0 items-center gap-1.5 overflow-hidden rounded-lg px-2.5 text-left text-[13px] font-semibold ${tone.bg} ${tone.text} ${
+      event.cancelled ? "opacity-70" : ""
+    } ${
+      interactive
+        ? "appearance-none cursor-pointer hover:brightness-[0.97] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/30"
+        : ""
+    }`;
+    const style = tone.bgColor ? { backgroundColor: tone.bgColor } : undefined;
+    const body = (
+      <>
+        {event.kind === "school_event" ? (
+          <EventIcon name="sparkles" size={14} />
+        ) : event.kind === "cas" ? (
+          <EventIcon name="users" size={14} />
+        ) : event.icon ? (
+          <EventIcon name={event.icon} size={14} />
+        ) : null}
+        <span className={`min-w-0 truncate ${event.cancelled ? "line-through" : ""}`}>
+          {event.title}
+        </span>
+      </>
+    );
+    if (interactive) {
+      return (
+        <button
+          type="button"
+          className={className}
+          style={style}
+          aria-haspopup="dialog"
+          aria-label={`${event.title} details`}
+          onClick={() => onOpen?.(event)}
+        >
+          {body}
+        </button>
+      );
+    }
+    return (
+      <div className={className} style={style}>
+        {body}
+      </div>
+    );
+  }
+
   const live = dayId && !isBandKind(event.kind) ? (
     <LiveNowBadge
       dayId={dayId}
