@@ -107,13 +107,13 @@ export function ReachForm({
     () =>
       editing
         ? crDate(editing.endsAt)
-        : suggestedEnd("day", live.date, live.time).date,
+        : suggestedEnd("day", live.date).date,
   );
   const [endTime, setEndTime] = useState(
     () =>
       editing
         ? crTime(editing.endsAt)
-        : suggestedEnd("day", live.date, live.time).time,
+        : suggestedEnd("day", live.date).time,
   );
   const [editingWhen, setEditingWhen] = useState<null | "start" | "end">(null);
   const [transports, setTransports] = useState<ReachTransportMode[]>(
@@ -150,7 +150,7 @@ export function ReachForm({
   const start = startTouched ? { date: startDate, time: startTime } : live;
   const end = endTouched
     ? { date: endDate, time: endTime }
-    : suggestedEnd(leaveType, start.date, start.time);
+    : suggestedEnd(leaveType, start.date);
   const existingDocs = editing?.documents ?? [];
   const showHost = meta.emphasizeHost || hostOpen;
   const showNotes = notesOpen || notes.trim().length > 0;

@@ -193,7 +193,6 @@ export function crNowStamp(now: Date): { date: string; time: string } {
 export function suggestedEnd(
   type: ReachLeaveType,
   startDate: string,
-  startTime: string,
 ): { date: string; time: string } {
   const timeByType: Record<ReachLeaveType, string> = {
     day: "18:00",
