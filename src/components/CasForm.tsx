@@ -6,7 +6,7 @@ import {
   updateCas,
   type CasGroup,
 } from "../lib/cas";
-import { compareNames, matchesQuery } from "../lib/people";
+import { searchPeople } from "../lib/people";
 import type { Student } from "../types";
 
 export function CasForm({
@@ -32,10 +32,7 @@ export function CasForm({
   const [notifyToken, setNotifyToken] = useState<string | null>(null);
   const [createdId, setCreatedId] = useState<string | null>(null);
 
-  const candidates = students
-    .filter((student) => matchesQuery(student.name, query))
-    .sort((a, b) => compareNames(a.name, b.name))
-    .slice(0, 8);
+  const candidates = searchPeople(students, query).slice(0, 8);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();

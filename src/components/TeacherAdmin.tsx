@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, type FormEvent } from "react";
 import { track } from "../lib/analytics";
-import { matchesQuery } from "../lib/people";
+import { searchPeople } from "../lib/people";
 import { SUPABASE_ANON_KEY, functionsUrl, supabaseConfigured } from "../lib/supabase";
 import type { Student, Teacher } from "../types";
 import { FloatingTabs } from "./FloatingTabs";
@@ -111,16 +111,11 @@ export function TeacherAdmin({
   const loginUrl = `${typeof window !== "undefined" ? window.location.origin : ""}/login`;
 
   const filteredTeachers = useMemo(
-    () => teachers.filter((teacher) => matchesQuery(teacher.name, query)),
+    () => searchPeople(teachers, query),
     [teachers, query],
   );
   const filteredStudents = useMemo(
-    () =>
-      students.filter(
-        (student) =>
-          matchesQuery(student.name, query) ||
-          (student.email ?? "").toLowerCase().includes(query.trim().toLowerCase()),
-      ),
+    () => searchPeople(students, query, [(student) => student.email ?? ""]),
     [students, query],
   );
 

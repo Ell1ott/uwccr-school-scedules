@@ -1138,6 +1138,7 @@ export type Database = {
       }
       leave_cas: { Args: { p_cas_id: string }; Returns: undefined }
       leave_event: { Args: { p_event_id: string }; Returns: undefined }
+      leave_reach_request: { Args: { p_request_id: string }; Returns: undefined }
       moderate_cas_by_token: {
         Args: { p_decision: string; p_token: string }
         Returns: Json

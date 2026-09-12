@@ -1,7 +1,7 @@
 import { Search, X } from "lucide-react";
 import { useId, useMemo, useState } from "react";
 import { initials } from "../lib/classDetail";
-import { compareNames, matchesQuery } from "../lib/people";
+import { compareNames, searchPeople } from "../lib/people";
 import type { Student } from "../types";
 
 export function CompanionPicker({
@@ -33,20 +33,16 @@ export function CompanionPicker({
     const me = excludeId
       ? students.find((student) => student.id === excludeId)
       : undefined;
-    const filtered = query.trim()
-      ? pool.filter((student) => matchesQuery(student.name, query))
-      : pool;
+    if (query.trim()) return searchPeople(pool, query).slice(0, 12);
     const cohort = me
-      ? filtered.filter((student) => student.cohort === me.cohort)
+      ? pool.filter((student) => student.cohort === me.cohort)
       : [];
     const rest = me
-      ? filtered.filter((student) => student.cohort !== me.cohort)
-      : filtered;
+      ? pool.filter((student) => student.cohort !== me.cohort)
+      : pool;
     cohort.sort((a, b) => compareNames(a.name, b.name));
     rest.sort((a, b) => compareNames(a.name, b.name));
-    return query.trim()
-      ? [...cohort, ...rest].slice(0, 12)
-      : [...cohort, ...rest].slice(0, 16);
+    return [...cohort, ...rest].slice(0, 16);
   }, [students, excludeId, selectedIds, query]);
 
   const myCohort = excludeId

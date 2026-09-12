@@ -18,7 +18,7 @@ import {
 } from "../lib/cas";
 import { useNow } from "../lib/now";
 import { LinkifiedText } from "../lib/linkify";
-import { compareNames, matchesQuery } from "../lib/people";
+import { searchPeople } from "../lib/people";
 import type { Student, Teacher } from "../types";
 import { BottomSheet, SheetHandle } from "./BottomSheet";
 import { EventsMonthCalendar } from "./EventsMonthCalendar";
@@ -114,20 +114,16 @@ export function CasDetail({
     if (!q) return [];
     const existing = new Set(group.leaders.map((leader) => leader.profileId));
     const people: { kind: "student" | "teacher"; id: string; name: string }[] = [
-      ...students
-        .filter((student) => matchesQuery(student.name, q))
-        .map((student) => ({
-          kind: "student" as const,
-          id: student.id,
-          name: student.name,
-        })),
-      ...teachers
-        .filter((teacher) => matchesQuery(teacher.name, q))
-        .map((teacher) => ({
-          kind: "teacher" as const,
-          id: teacher.id,
-          name: teacher.name,
-        })),
+      ...students.map((student) => ({
+        kind: "student" as const,
+        id: student.id,
+        name: student.name,
+      })),
+      ...teachers.map((teacher) => ({
+        kind: "teacher" as const,
+        id: teacher.id,
+        name: teacher.name,
+      })),
     ].filter((person) => {
       const already = group.leaders.some(
         (leader) =>
@@ -136,8 +132,7 @@ export function CasDetail({
       );
       return !already && !existing.has(person.id);
     });
-    people.sort((a, b) => compareNames(a.name, b.name));
-    return people.slice(0, 8);
+    return searchPeople(people, q).slice(0, 8);
   }, [leaderQuery, students, teachers, group.leaders]);
 
   async function run(action: () => Promise<string | null>) {

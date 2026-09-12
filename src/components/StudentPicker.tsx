@@ -3,7 +3,7 @@ import { useId, useMemo, useRef, useState } from "react";
 import { useDismissible } from "../hooks/useDismissible";
 import {
   compareNames,
-  matchesQuery,
+  searchPeople,
   selectedStudent,
   selectedTeacher,
 } from "../lib/people";
@@ -48,23 +48,20 @@ export function StudentPicker({
 
   const results = useMemo(() => {
     const hits: Hit[] = [
-      ...students
-        .filter((student) => matchesQuery(student.name, query))
-        .map((student) => ({
-          kind: "student" as const,
-          id: student.id,
-          name: student.name,
-          badge: student.cohort,
-        })),
-      ...teachers
-        .filter((teacher) => matchesQuery(teacher.name, query))
-        .map((teacher) => ({
-          kind: "teacher" as const,
-          id: teacher.id,
-          name: teacher.name,
-          badge: "Teacher",
-        })),
+      ...students.map((student) => ({
+        kind: "student" as const,
+        id: student.id,
+        name: student.name,
+        badge: student.cohort,
+      })),
+      ...teachers.map((teacher) => ({
+        kind: "teacher" as const,
+        id: teacher.id,
+        name: teacher.name,
+        badge: "Teacher",
+      })),
     ];
+    if (query.trim()) return searchPeople(hits, query);
     hits.sort((a, b) => compareNames(a.name, b.name));
     return hits;
   }, [students, teachers, query]);

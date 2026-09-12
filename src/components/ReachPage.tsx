@@ -5,9 +5,11 @@ import { StudentQrCard } from "./StudentQrCard";
 import { useAuth } from "../lib/auth";
 import { initials } from "../lib/classDetail";
 import {
+  canLeaveReachRequest,
   canManageReachRequest,
   deleteReachRequest,
   formatReachRange,
+  leaveReachRequest,
   leaveTypeMeta,
   reachRequestLocked,
   respondReachInvite,
@@ -331,6 +333,7 @@ export function ReachPage({
                             request.studentId === auth.studentId
                           }
                           canManage={canManageReachRequest(request, auth)}
+                          canLeave={canLeaveReachRequest(request, auth)}
                           onAttached={() => void refresh()}
                           onEdit={() => {
                             setLeaveType(request.leaveType);
@@ -339,6 +342,10 @@ export function ReachPage({
                             onDraftChange(request.id);
                           }}
                           onDeleted={(message) => {
+                            if (message) setNotice(message);
+                            void refresh();
+                          }}
+                          onLeft={(message) => {
                             if (message) setNotice(message);
                             void refresh();
                           }}
@@ -361,20 +368,25 @@ function ReachRequestCard({
   students,
   canAttach,
   canManage,
+  canLeave,
   onAttached,
   onEdit,
   onDeleted,
+  onLeft,
 }: {
   request: ReachRequest;
   students: Student[];
   canAttach: boolean;
   canManage: boolean;
+  canLeave: boolean;
   onAttached: () => void;
   onEdit: () => void;
   onDeleted: (message: string | null) => void;
+  onLeft: (message: string | null) => void;
 }) {
   const [actionError, setActionError] = useState<string | null>(null);
   const [confirmDelete, setConfirmDelete] = useState(false);
+  const [confirmLeave, setConfirmLeave] = useState(false);
   const [busy, setBusy] = useState(false);
   const owner = studentName(students, request.studentId);
   const meta = leaveTypeMeta(request.leaveType);
@@ -400,6 +412,18 @@ function ReachRequestCard({
       return;
     }
     onDeleted(null);
+  }
+
+  async function onLeave() {
+    setBusy(true);
+    const message = await leaveReachRequest(request.id);
+    setBusy(false);
+    if (message) {
+      setActionError(message);
+      setConfirmLeave(false);
+      return;
+    }
+    onLeft("You are no longer on that leave.");
   }
 
   return (
@@ -497,6 +521,38 @@ function ReachRequestCard({
                 Delete
               </button>
             </>
+          )}
+        </div>
+      ) : null}
+      {canLeave ? (
+        <div className="reach-actions">
+          {confirmLeave ? (
+            <>
+              <button
+                type="button"
+                className="danger"
+                disabled={busy}
+                onClick={() => void onLeave()}
+              >
+                {busy ? "Leaving…" : "Yes, leave"}
+              </button>
+              <button
+                type="button"
+                className="no"
+                disabled={busy}
+                onClick={() => setConfirmLeave(false)}
+              >
+                Stay
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              className="no"
+              onClick={() => setConfirmLeave(true)}
+            >
+              Leave
+            </button>
           )}
         </div>
       ) : null}

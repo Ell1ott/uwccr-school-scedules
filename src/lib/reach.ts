@@ -181,6 +181,20 @@ export function canManageReachRequest(
   );
 }
 
+export function canLeaveReachRequest(
+  request: ReachRequest,
+  auth: {
+    role: string | null;
+    studentId: string | null;
+  },
+) {
+  if (auth.role !== "student" || !auth.studentId) return false;
+  return request.companions.some(
+    (companion) =>
+      companion.studentId === auth.studentId && companion.status === "accepted",
+  );
+}
+
 export function transportLabel(mode: ReachTransportMode) {
   return REACH_TRANSPORTS.find((item) => item.id === mode)?.label ?? mode;
 }
@@ -576,6 +590,16 @@ export async function respondReachInvite(
   const { error } = await supabase.rpc("respond_reach_invite", {
     p_request_id: requestId,
     p_accept: accept,
+  });
+  return error?.message ?? null;
+}
+
+export async function leaveReachRequest(
+  requestId: string,
+): Promise<string | null> {
+  if (!supabase) return "Login is not configured yet.";
+  const { error } = await supabase.rpc("leave_reach_request", {
+    p_request_id: requestId,
   });
   return error?.message ?? null;
 }

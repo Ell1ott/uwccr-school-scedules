@@ -17,7 +17,7 @@ import {
   type GateStudent,
 } from "../lib/gate";
 import { formatReachRange, leaveTypeMeta } from "../lib/reach";
-import { matchesQuery } from "../lib/people";
+import { searchPeople } from "../lib/people";
 import { initials } from "../lib/classDetail";
 
 export function GatePage() {
@@ -138,10 +138,11 @@ function GateKiosk({ onLock }: { onLock: () => void }) {
     .filter((student): student is GateStudent => Boolean(student));
 
   const roster = useMemo(() => {
-    return students.filter((student) => {
-      if (filter !== "all" && student.campusStatus !== filter) return false;
-      return matchesQuery(student.name, query);
-    });
+    const pool =
+      filter === "all"
+        ? students
+        : students.filter((student) => student.campusStatus === filter);
+    return searchPeople(pool, query);
   }, [students, filter, query]);
 
   function addStudent(id: string) {
@@ -209,6 +210,10 @@ function GateKiosk({ onLock }: { onLock: () => void }) {
       return;
     }
     await refresh();
+    if (result.signed.length) {
+      const done = new Set(result.signed);
+      setSelectedIds((current) => current.filter((id) => !done.has(id)));
+    }
     if (result.blocked.length) {
       const names = result.blocked
         .map((item) => {

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { X } from "lucide-react";
 import { BLOCK_LETTERS, offeringsForCohort } from "../lib/classCatalog";
-import { matchesQuery } from "../lib/people";
+import { searchPeople } from "../lib/people";
 import { COHORTS } from "../lib/school";
 import type { EventTarget } from "../lib/schoolEvents";
 import { expandAudience } from "../lib/schoolEvents";
@@ -29,10 +29,7 @@ export function AudiencePicker({
       .map((target) => target.payload.student_id),
   );
   const matches = useMemo(
-    () =>
-      students
-        .filter((student) => matchesQuery(student.name, query))
-        .slice(0, 8),
+    () => searchPeople(students, query).slice(0, 8),
     [students, query],
   );
   const count = expandAudience(students, targets).length;
