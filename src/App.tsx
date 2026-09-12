@@ -19,6 +19,8 @@ import { EventsPage } from "./components/EventsPage";
 import { FeedbackSheet } from "./components/FeedbackSheet";
 import { MobileHub } from "./components/MobileHub";
 import { ModerateEventPage } from "./components/ModerateEventPage";
+import { GatePage } from "./components/GatePage";
+import { ReachPage } from "./components/ReachPage";
 import { StudentRoster } from "./components/StudentRoster";
 import { DayTimeline } from "./components/DayTimeline";
 import { TeacherAdmin } from "./components/TeacherAdmin";
@@ -538,6 +540,26 @@ function AppShell() {
     return <ModerateEventPage onDone={() => navigate({ page: "week" })} />;
   }
 
+  if (route.page === "gate") {
+    return <GatePage />;
+  }
+
+  if (route.page === "reach") {
+    return (
+      <ReachPage
+        students={students}
+        draft={route.draft ?? null}
+        onBack={goHome}
+        onOpenLogin={openLogin}
+        onDraftChange={(next) =>
+          navigate(
+            next === "new" ? { page: "reach", draft: "new" } : { page: "reach" },
+          )
+        }
+      />
+    );
+  }
+
   return (
     <PaletteProvider
       palette={palette}
@@ -557,6 +579,7 @@ function AppShell() {
           onSelect={choosePerson}
           onOpenLogin={openLogin}
           onOpenFeedback={openFeedback}
+          onOpenReach={() => navigate({ page: "reach" })}
         />
 
         <main>
@@ -781,6 +804,14 @@ function AppShell() {
             onOpenLogin={openLogin}
             onOpenAdmin={openAdmin}
             onOpenFeedback={openFeedback}
+            onOpenReach={() => {
+              setHubOpen(false);
+              navigate({ page: "reach" });
+            }}
+            onOpenGate={() => {
+              setHubOpen(false);
+              navigate({ page: "gate" });
+            }}
           />
         ) : null}
       </div>

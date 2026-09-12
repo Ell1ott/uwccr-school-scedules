@@ -21,6 +21,9 @@ verify_jwt = false
 [functions.link-google-profile]
 verify_jwt = true
 
+[functions.guard-login]
+verify_jwt = false
+
 [auth.external.google]
 enabled = true
 client_id = "884762771241-olseorkgvkte6or3b44ssi10mjal12k5.apps.googleusercontent.com"

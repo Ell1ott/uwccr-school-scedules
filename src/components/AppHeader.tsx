@@ -1,4 +1,4 @@
-import { Calendar, Compass, MessageSquare, Shuffle, Sparkles } from "lucide-react";
+import { Calendar, Compass, DoorOpen, MessageSquare, Shuffle, Sparkles } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import { useAuth } from "../lib/auth";
 import type { SelectedPerson, Student, Teacher } from "../types";
@@ -160,6 +160,7 @@ export function AppHeader({
   onSelect,
   onOpenLogin,
   onOpenFeedback,
+  onOpenReach,
 }: {
   tab: AppTabId;
   onTabChange: (tab: AppTabId) => void;
@@ -171,6 +172,7 @@ export function AppHeader({
   onSelect: (person: SelectedPerson) => void;
   onOpenLogin?: () => void;
   onOpenFeedback?: () => void;
+  onOpenReach?: () => void;
 }) {
   const auth = useAuth();
 
@@ -188,6 +190,16 @@ export function AppHeader({
           <AppTabs tab={tab} onTabChange={onTabChange} />
         </div>
         <div className="ml-auto flex min-w-0 items-center gap-2">
+          {onOpenReach ? (
+            <button
+              type="button"
+              className="flex h-8.5 shrink-0 items-center gap-1.5 rounded-full bg-surface-container-lowest px-2.5 text-label-sm tracking-wide text-on-surface-variant"
+              onClick={onOpenReach}
+            >
+              <DoorOpen size={14} strokeWidth={1.75} aria-hidden />
+              Reach
+            </button>
+          ) : null}
           {onOpenFeedback ? (
             <button
               type="button"

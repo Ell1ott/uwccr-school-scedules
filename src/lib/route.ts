@@ -14,6 +14,8 @@ export type AppRoute =
     }
   | { page: "login" }
   | { page: "admin" }
+  | { page: "reach"; draft?: "new" }
+  | { page: "gate" }
   | { page: "moderate"; token: string; decision: ModerateDecision | null };
 
 type RouteHistoryState = {
@@ -78,6 +80,9 @@ export function parseRoute(pathname: string, search: string): AppRoute {
 
   if (path === "/login") return { page: "login" };
   if (path === "/admin") return { page: "admin" };
+  if (path === "/reach/new") return { page: "reach", draft: "new" };
+  if (path === "/reach") return { page: "reach" };
+  if (path === "/gate") return { page: "gate" };
   if (path === "/moderate") {
     return {
       page: "moderate",
@@ -186,6 +191,10 @@ export function toPath(route: AppRoute): string {
       return "/login";
     case "admin":
       return "/admin";
+    case "reach":
+      return route.draft === "new" ? "/reach/new" : "/reach";
+    case "gate":
+      return "/gate";
     case "moderate": {
       const params = new URLSearchParams();
       if (route.token) params.set("token", route.token);
@@ -236,7 +245,12 @@ export function previousRoute(): AppRoute | null {
   const from = (window.history.state as RouteHistoryState | null)?.from;
   if (typeof from !== "string" || !from) return null;
   const route = parseHref(from);
-  if (route.page === "login" || route.page === "admin" || route.page === "moderate") {
+  if (
+    route.page === "login" ||
+    route.page === "admin" ||
+    route.page === "moderate" ||
+    route.page === "gate"
+  ) {
     return null;
   }
   return route;

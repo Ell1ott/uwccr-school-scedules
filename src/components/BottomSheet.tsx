@@ -66,6 +66,7 @@ export function BottomSheet({
       open
       onOpenChange={handleOpenChange(onClose)}
       shouldScaleBackground={false}
+      repositionInputs={false}
     >
       <Drawer.Portal>
         <Drawer.Overlay
@@ -74,7 +75,7 @@ export function BottomSheet({
         <Drawer.Content
           aria-labelledby={labelledBy}
           aria-describedby={undefined}
-          className={`${PANEL} ${PANEL_SHADOW} fixed right-0 bottom-0 left-0 z-[91] mx-auto max-h-[88dvh] rounded-t-[28px] ${panelClassName ?? ""}`}
+          className={`${PANEL} ${PANEL_SHADOW} fixed right-0 bottom-0 left-0 z-[91] mx-auto max-h-[88svh] rounded-t-[28px] ${panelClassName ?? ""}`}
         >
           <VisuallyHidden.Root>
             <Drawer.Title>{overlayLabel}</Drawer.Title>

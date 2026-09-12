@@ -877,6 +877,7 @@ export type Database = {
       students: {
         Row: {
           auth_user_id: string | null
+          campus_status: Database["public"]["Enums"]["campus_status"]
           cohort: string
           created_at: string
           email: string | null
@@ -886,6 +887,7 @@ export type Database = {
         }
         Insert: {
           auth_user_id?: string | null
+          campus_status?: Database["public"]["Enums"]["campus_status"]
           cohort: string
           created_at?: string
           email?: string | null
@@ -895,6 +897,7 @@ export type Database = {
         }
         Update: {
           auth_user_id?: string | null
+          campus_status?: Database["public"]["Enums"]["campus_status"]
           cohort?: string
           created_at?: string
           email?: string | null
@@ -903,6 +906,79 @@ export type Database = {
           name?: string
         }
         Relationships: []
+      }
+      guard_sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          id: string
+          last_seen_at: string
+          token_hash: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at: string
+          id?: string
+          last_seen_at?: string
+          token_hash: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          id?: string
+          last_seen_at?: string
+          token_hash?: string
+        }
+        Relationships: []
+      }
+      reach_crossings: {
+        Row: {
+          at: string
+          direction: Database["public"]["Enums"]["reach_crossing_direction"]
+          id: string
+          request_id: string
+          session_id: string | null
+          student_id: string
+        }
+        Insert: {
+          at?: string
+          direction: Database["public"]["Enums"]["reach_crossing_direction"]
+          id?: string
+          request_id: string
+          session_id?: string | null
+          student_id: string
+        }
+        Update: {
+          at?: string
+          direction?: Database["public"]["Enums"]["reach_crossing_direction"]
+          id?: string
+          request_id?: string
+          session_id?: string | null
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reach_crossings_request_id_fkey"
+            columns: ["request_id"]
+            isOneToOne: false
+            referencedRelation: "reach_requests"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reach_crossings_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "guard_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reach_crossings_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       teachers: {
         Row: {
@@ -942,6 +1018,17 @@ export type Database = {
         Args: { p_documents: Json; p_request_id: string }
         Returns: undefined
       }
+      guard_checkin: {
+        Args: { p_guard_token: string; p_student_ids: string[] }
+        Returns: Json
+      }
+      guard_checkout: {
+        Args: { p_guard_token: string; p_student_ids: string[] }
+        Returns: Json
+      }
+      guard_roster: { Args: { p_guard_token: string }; Returns: Json }
+      guard_require_session: { Args: { p_token: string }; Returns: string }
+      guard_token_hash: { Args: { p_token: string }; Returns: string }
       can_see_cas: { Args: { p_cas_id: string }; Returns: boolean }
       can_see_reach_request: { Args: { p_request_id: string }; Returns: boolean }
       cancel_cas_session: {
@@ -1132,7 +1219,15 @@ export type Database = {
         | "medical"
         | "overnight"
         | "special"
-      reach_request_status: "pending" | "approved" | "denied" | "cancelled"
+      campus_status: "on_campus" | "off_campus"
+      reach_crossing_direction: "out" | "in"
+      reach_request_status:
+        | "pending"
+        | "approved"
+        | "denied"
+        | "cancelled"
+        | "active"
+        | "returned"
       reach_transport_mode:
         | "walking"
         | "car"
@@ -1295,7 +1390,16 @@ export const Constants = {
         "overnight",
         "special",
       ],
-      reach_request_status: ["pending", "approved", "denied", "cancelled"],
+      campus_status: ["on_campus", "off_campus"],
+      reach_crossing_direction: ["out", "in"],
+      reach_request_status: [
+        "pending",
+        "approved",
+        "denied",
+        "cancelled",
+        "active",
+        "returned",
+      ],
       reach_transport_mode: [
         "walking",
         "car",

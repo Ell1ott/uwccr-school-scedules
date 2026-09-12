@@ -102,10 +102,20 @@ export function StudentPicker({
             setActiveIndex(0);
             setOpen(true);
           }}
-          onFocus={() => {
+          onFocus={(event) => {
             setOpen(true);
             setQuery("");
             setActiveIndex(0);
+            const field = event.currentTarget;
+            requestAnimationFrame(() => {
+              const scroller = field.closest(".sheet-scroll");
+              if (!(scroller instanceof HTMLElement)) return;
+              const box = field.getBoundingClientRect();
+              const area = scroller.getBoundingClientRect();
+              if (box.top < area.top || box.bottom > area.bottom) {
+                scroller.scrollTop += box.top - area.top - 12;
+              }
+            });
           }}
           onKeyDown={(e) => {
             if (e.key === "ArrowDown") {
