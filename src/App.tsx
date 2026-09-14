@@ -580,8 +580,6 @@ function AppShell() {
           teachers={teachers}
           selected={selected}
           onSelect={choosePerson}
-          viewingName={viewingOtherName}
-          onBackFromViewing={goBackToOwnSchedule}
         />
 
         <main>
