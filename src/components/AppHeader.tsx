@@ -1,15 +1,16 @@
-import { Calendar, CircleUser, Sparkles } from "lucide-react";
+import { Calendar, CircleUser, Shuffle, Sparkles } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import type { SelectedPerson, Student, Teacher } from "../types";
 import { StudentPicker } from "./StudentPicker";
 import { ViewingPersonLabel } from "./ViewingPersonLabel";
 import { WeekNav } from "./WeekNav";
 
-export type AppTabId = "week" | "events" | "cas" | "reach" | "more";
+export type AppTabId = "week" | "classes" | "events" | "cas" | "reach" | "more";
 
 const APP_TABS = [
   { id: "week", label: "Week" },
   { id: "events", label: "Events" },
+  { id: "classes", label: "Try classes" },
   { id: "more", label: "More" },
 ] as const;
 
@@ -93,6 +94,11 @@ function FolderTabFace({ selected }: { selected: boolean }) {
 }
 
 function TabIcon({ id }: { id: AppTabId }) {
+  if (id === "classes") {
+    return (
+      <Shuffle size={16} strokeWidth={1.75} className="shrink-0" aria-hidden />
+    );
+  }
   if (id === "events") {
     return (
       <Sparkles size={16} strokeWidth={1.75} className="shrink-0" aria-hidden />

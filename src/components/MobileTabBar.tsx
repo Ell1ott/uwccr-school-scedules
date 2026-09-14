@@ -21,7 +21,8 @@ export function MobileTabBar({
   viewingName?: string | null;
   onBackFromViewing?: () => void;
 }) {
-  const selectedIndex = TABS.findIndex((item) => item.id === tab);
+  const highlighted = tab === "classes" ? "more" : tab;
+  const selectedIndex = TABS.findIndex((item) => item.id === highlighted);
 
   return (
     <nav
@@ -45,7 +46,7 @@ export function MobileTabBar({
             />
           ) : null}
           {TABS.map((item) => {
-            const selected = item.id === tab;
+            const selected = item.id === highlighted;
             return (
               <button
                 key={item.id}

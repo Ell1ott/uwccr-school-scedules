@@ -83,7 +83,7 @@ export function MorePage({
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-[18px] bg-surface-container-low">
+        <section className="overflow-hidden rounded-[18px] bg-surface-container-low md:hidden">
           <button
             type="button"
             className="flex min-h-14 w-full items-center gap-3 px-4 text-left focus:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary/20"

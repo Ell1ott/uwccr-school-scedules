@@ -108,7 +108,8 @@ function eventsListRoute(route: AppRoute): AppRoute {
 }
 
 function tabFromRoute(route: AppRoute): AppTabId {
-  if (route.page === "try-classes" || route.page === "more") return "more";
+  if (route.page === "try-classes") return "classes";
+  if (route.page === "more") return "more";
   if (route.page === "events") return "events";
   if (route.page === "cas") return "cas";
   if (route.page === "reach") return "reach";
@@ -116,6 +117,7 @@ function tabFromRoute(route: AppRoute): AppTabId {
 }
 
 function routeFromTab(tab: AppTabId): AppRoute {
+  if (tab === "classes") return { page: "try-classes" };
   if (tab === "more") return { page: "more" };
   if (tab === "events") return { page: "events" };
   if (tab === "cas") return { page: "cas" };
@@ -284,11 +286,10 @@ function AppShell() {
   }, [auth.teacherId, auth.studentId, choosePerson]);
 
   function chooseTab(next: AppTabId) {
-    if (next === tab && !(route.page === "try-classes" && next === "more")) {
-      return;
-    }
+    if (next === tab) return;
     setOpenEvent(null);
-    if (route.page === "try-classes") track("class_chooser_closed");
+    if (next === "classes") track("class_chooser_opened");
+    else if (tab === "classes") track("class_chooser_closed");
     if (next === "events") track("events_opened");
     if (next === "cas") track("cas_opened");
     if (next === "reach") track("reach_opened");
@@ -587,7 +588,7 @@ function AppShell() {
           <div className="md:-mt-px md:rounded-t-2xl md:shadow-[0_-12px_32px_rgba(4,22,39,0.06)]">
             <div className="min-h-dvh bg-surface-container-lowest md:min-h-[calc(100dvh-3rem-env(safe-area-inset-top,0px))] md:rounded-t-2xl">
           {route.page === "try-classes" ? (
-            <div id="more-panel" role="tabpanel" aria-labelledby="tab-more">
+            <div id="classes-panel" role="tabpanel" aria-labelledby="tab-classes">
               <ClassChooser
                 students={students}
                 currentStudent={student}
