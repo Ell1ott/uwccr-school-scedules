@@ -357,7 +357,7 @@
   isolation: isolate;
   display: flex;
   flex-direction: column;
-  width: min(20.5rem, 100%);
+  width: min(13.5rem, 100%);
   padding: 0.22rem;
   border-radius: 999px;
   background: color-mix(
@@ -382,7 +382,7 @@
   position: relative;
   isolation: isolate;
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
 }
 
 .mobile-tab-bar-indicator {
@@ -391,7 +391,7 @@
   top: 0;
   bottom: 0;
   left: 0;
-  width: 20%;
+  width: calc(100% / 3);
   border-radius: 999px;
   background: color-mix(in srgb, var(--color-on-surface) 8%, transparent);
   box-shadow: 0 1px 0 rgba(255, 255, 255, 0.55) inset;

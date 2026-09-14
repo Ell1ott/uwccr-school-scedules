@@ -1,12 +1,10 @@
-import { Calendar, CircleUser, Compass, DoorOpen, Sparkles } from "lucide-react";
+import { Calendar, CircleUser, Sparkles } from "lucide-react";
 import type { AppTabId } from "./AppHeader";
 import { ViewingPersonLabel } from "./ViewingPersonLabel";
 
 const TABS = [
   { id: "week", hint: "Schedule" },
   { id: "events", hint: "Events" },
-  { id: "cas", hint: "CAS" },
-  { id: "reach", hint: "Reach" },
   { id: "more", hint: "More" },
 ] as const satisfies readonly { id: AppTabId; hint: string }[];
 
@@ -23,10 +21,7 @@ export function MobileTabBar({
   viewingName?: string | null;
   onBackFromViewing?: () => void;
 }) {
-  const selectedIndex = Math.max(
-    0,
-    TABS.findIndex((item) => item.id === tab),
-  );
+  const selectedIndex = TABS.findIndex((item) => item.id === tab);
 
   return (
     <nav
@@ -42,11 +37,13 @@ export function MobileTabBar({
           <ViewingPersonLabel name={viewingName} onBack={onBackFromViewing} />
         ) : null}
         <div role="tablist" aria-label="Views" className="mobile-tab-bar-items">
-          <span
-            className="mobile-tab-bar-indicator"
-            style={{ transform: `translateX(${selectedIndex * 100}%)` }}
-            aria-hidden
-          />
+          {selectedIndex >= 0 ? (
+            <span
+              className="mobile-tab-bar-indicator"
+              style={{ transform: `translateX(${selectedIndex * 100}%)` }}
+              aria-hidden
+            />
+          ) : null}
           {TABS.map((item) => {
             const selected = item.id === tab;
             return (
@@ -80,8 +77,6 @@ function TabGlyph({ id, selected }: { id: AppTabId; selected: boolean }) {
   };
 
   if (id === "events") return <Sparkles {...props} />;
-  if (id === "cas") return <Compass {...props} />;
-  if (id === "reach") return <DoorOpen {...props} />;
   if (id === "more") return <CircleUser {...props} />;
   return <Calendar {...props} />;
 }

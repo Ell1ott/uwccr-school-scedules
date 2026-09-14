@@ -1,4 +1,4 @@
-import { Calendar, CircleUser, Compass, DoorOpen, Sparkles } from "lucide-react";
+import { Calendar, CircleUser, Sparkles } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import type { SelectedPerson, Student, Teacher } from "../types";
 import { StudentPicker } from "./StudentPicker";
@@ -10,8 +10,6 @@ export type AppTabId = "week" | "events" | "cas" | "reach" | "more";
 const APP_TABS = [
   { id: "week", label: "Week" },
   { id: "events", label: "Events" },
-  { id: "cas", label: "CAS" },
-  { id: "reach", label: "Reach" },
   { id: "more", label: "More" },
 ] as const;
 
@@ -98,16 +96,6 @@ function TabIcon({ id }: { id: AppTabId }) {
   if (id === "events") {
     return (
       <Sparkles size={16} strokeWidth={1.75} className="shrink-0" aria-hidden />
-    );
-  }
-  if (id === "cas") {
-    return (
-      <Compass size={16} strokeWidth={1.75} className="shrink-0" aria-hidden />
-    );
-  }
-  if (id === "reach") {
-    return (
-      <DoorOpen size={16} strokeWidth={1.75} className="shrink-0" aria-hidden />
     );
   }
   if (id === "more") {
