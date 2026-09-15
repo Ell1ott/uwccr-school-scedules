@@ -335,7 +335,7 @@
   position: fixed;
   z-index: 85;
   right: 0;
-  bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+  bottom: calc(0.70rem + env(safe-area-inset-bottom, 0px));
   left: 0;
   display: flex;
   justify-content: center;
