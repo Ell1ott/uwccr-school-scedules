@@ -17,7 +17,6 @@ import { EventForm } from "./EventForm";
 import { EventListCard } from "./EventListCard";
 import { EventsMonthCalendar } from "./EventsMonthCalendar";
 import { FloatingTabs } from "./FloatingTabs";
-import { MobileHubButton } from "./MobileHub";
 
 function emptyCopy(
   filter: EventFilterId,
@@ -47,8 +46,6 @@ export function EventsPage({
   onDraftChange,
   onOpenLogin,
   onOpenEvent,
-  hubOpen,
-  onOpenHub,
 }: {
   students: Student[];
   events: SchoolEvent[];
@@ -56,8 +53,6 @@ export function EventsPage({
   onDraftChange: (draft: "create" | SchoolEvent | null) => void;
   onOpenLogin?: () => void;
   onOpenEvent: (event: SchoolEvent) => void;
-  hubOpen?: boolean;
-  onOpenHub?: () => void;
 }) {
   const auth = useAuth();
   const now = useNow();
@@ -154,25 +149,16 @@ export function EventsPage({
                 </p>
                 <h1 className="text-headline-lg-mobile tracking-tight">Events</h1>
               </div>
-              <div className="flex items-center gap-2">
-                {auth.role === "staff" || auth.role === "student" ? (
-                  <button
-                    type="button"
-                    className="flex h-10 items-center gap-1.5 rounded-full bg-primary px-3 text-label-sm tracking-wide text-on-primary"
-                    onClick={() => onDraftChange("create")}
-                  >
-                    <CalendarPlus size={16} strokeWidth={1.75} aria-hidden />
-                    New
-                  </button>
-                ) : null}
-                {onOpenHub ? (
-                  <MobileHubButton
-                    className="md:hidden"
-                    expanded={hubOpen}
-                    onClick={onOpenHub}
-                  />
-                ) : null}
-              </div>
+              {auth.role === "staff" || auth.role === "student" ? (
+                <button
+                  type="button"
+                  className="hidden h-10 items-center gap-1.5 rounded-full bg-primary px-3 text-label-sm tracking-wide text-on-primary md:flex"
+                  onClick={() => onDraftChange("create")}
+                >
+                  <CalendarPlus size={16} strokeWidth={1.75} aria-hidden />
+                  New
+                </button>
+              ) : null}
             </div>
             {loggedOut ? null : (
               <div className="mt-4 overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">

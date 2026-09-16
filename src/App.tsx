@@ -9,6 +9,7 @@ import {
 import studentsFile from "./data/students.json" with { type: "json" };
 import { withStudentEmails } from "./data/studentEmails";
 import { DAYS } from "./data/weekTemplate";
+import { AccountActionPanel } from "./components/AccountActionPanel";
 import { AppHeader, type AppTabId } from "./components/AppHeader";
 import { ClassChooser } from "./components/ClassChooser";
 import { ClassDetailSheet } from "./components/ClassDetailSheet";
@@ -17,12 +18,14 @@ import { CasPage, type CasDraft } from "./components/CasPage";
 import { CasSessionSheet } from "./components/CasSessionSheet";
 import { EventsPage } from "./components/EventsPage";
 import { FeedbackSheet } from "./components/FeedbackSheet";
+import { LoginForm } from "./components/LoginForm";
 import { MobileHub } from "./components/MobileHub";
 import { MobileTabBar } from "./components/MobileTabBar";
 import { ModerateEventPage } from "./components/ModerateEventPage";
 import { MorePage } from "./components/MorePage";
 import { GatePage } from "./components/GatePage";
 import { ReachPage } from "./components/ReachPage";
+import { ScheduleControls } from "./components/ScheduleControls";
 import { StudentRoster } from "./components/StudentRoster";
 import { DayTimeline } from "./components/DayTimeline";
 import { TeacherAdmin } from "./components/TeacherAdmin";
@@ -125,6 +128,14 @@ function routeFromTab(tab: AppTabId): AppRoute {
   return { page: "week" };
 }
 
+function dockActionKind(
+  tab: AppTabId,
+): "week" | "events" | "account" {
+  if (tab === "events") return "events";
+  if (tab === "more" || tab === "classes") return "account";
+  return "week";
+}
+
 export default function App() {
   return (
     <AuthProvider>
@@ -163,6 +174,7 @@ function AppShell() {
   const [openEvent, setOpenEvent] = useState<ScheduleEvent | null>(null);
   const [feedbackOpen, setFeedbackOpen] = useState(false);
   const [hubOpen, setHubOpen] = useState(false);
+  const [actionOpen, setActionOpen] = useState(false);
   const communityMeeting = weekHasCommunityMeeting(weekStart);
   const selectedRef = useRef(selected);
   selectedRef.current = selected;
@@ -287,6 +299,7 @@ function AppShell() {
 
   function chooseTab(next: AppTabId) {
     if (next === tab) return;
+    setActionOpen(false);
     setOpenEvent(null);
     if (next === "classes") track("class_chooser_opened");
     else if (tab === "classes") track("class_chooser_closed");
@@ -524,9 +537,45 @@ function AppShell() {
   }
 
   function openHub() {
+    setActionOpen(false);
     setHubOpen(true);
     track("schedule_menu_opened");
   }
+
+  const overlayOpen = Boolean(
+    openEvent ||
+      openSchoolEvent ||
+      openCasSession ||
+      feedbackOpen ||
+      hubOpen,
+  );
+  const canCreateEvent = auth.role === "staff" || auth.role === "student";
+  const actionKind = dockActionKind(tab);
+
+  useEffect(() => {
+    if (overlayOpen) setActionOpen(false);
+  }, [overlayOpen]);
+
+  function closeAction() {
+    setActionOpen(false);
+  }
+
+  function openAction() {
+    if (actionKind === "events" && canCreateEvent) {
+      onDraftChange("create");
+      return;
+    }
+    setActionOpen(true);
+  }
+
+  const actionLabel =
+    actionKind === "events"
+      ? "New event"
+      : actionKind === "account"
+        ? auth.displayName
+          ? "Account"
+          : "Log in"
+        : "Schedule options";
 
   const canManageEvent = Boolean(
     openEvent &&
@@ -602,8 +651,6 @@ function AppShell() {
           ) : tab === "more" ? (
             <div id="more-panel" role="tabpanel" aria-labelledby="tab-more">
               <MorePage
-                hubOpen={hubOpen}
-                onOpenHub={openHub}
                 onOpenLogin={openLogin}
                 onOpenFeedback={openFeedback}
                 onOpenGate={() => navigate({ page: "gate" })}
@@ -648,8 +695,6 @@ function AppShell() {
                 onOpenEvent={(event) =>
                   navigate({ page: "events", eventId: event.id })
                 }
-                hubOpen={hubOpen}
-                onOpenHub={openHub}
               />
             </div>
           ) : tab === "cas" ? (
@@ -684,8 +729,6 @@ function AppShell() {
                   onSelect={(person) => choosePerson(person, "roster")}
                   onOpenLogin={openLogin}
                   onOpenFeedback={openFeedback}
-                  hubOpen={hubOpen}
-                  onOpenHub={openHub}
                 />
               ) : (
                 <>
@@ -711,10 +754,9 @@ function AppShell() {
                           openSchoolEvent ||
                           openCasSession ||
                           feedbackOpen ||
-                          hubOpen,
+                          hubOpen ||
+                          actionOpen,
                       )}
-                      hubOpen={hubOpen}
-                      onOpenHub={openHub}
                     />
                   </div>
                 </>
@@ -799,15 +841,48 @@ function AppShell() {
         <MobileTabBar
           tab={tab}
           onTabChange={chooseTab}
-          hidden={Boolean(
-            openEvent ||
-              openSchoolEvent ||
-              openCasSession ||
-              feedbackOpen ||
-              hubOpen,
-          )}
+          hidden={overlayOpen || eventDraft === "create"}
           viewingName={viewingOtherName}
           onBackFromViewing={goBackToOwnSchedule}
+          expanded={actionOpen}
+          onExpand={openAction}
+          onCollapse={closeAction}
+          actionLabel={actionLabel}
+          signedIn={Boolean(auth.displayName)}
+          actionPanel={
+            actionKind === "events" ? (
+              <div>
+                <p className="text-body-md text-on-surface-variant">
+                  Log in to post a gathering. Anyone can still browse the
+                  calendar.
+                </p>
+                <div className="mt-4">
+                  <LoginForm compact />
+                </div>
+              </div>
+            ) : actionKind === "account" ? (
+              <AccountActionPanel onAdmin={openAdmin} />
+            ) : (
+              <ScheduleControls
+                students={students}
+                teachers={teachers}
+                selected={selected}
+                dayId={dayId}
+                weekStart={weekStart}
+                onSelect={(person) => {
+                  choosePerson(person);
+                  setActionOpen(false);
+                  chooseTab("week");
+                }}
+                onWeekChange={chooseWeek}
+                onPickDay={(id) => {
+                  chooseDay(id);
+                  setActionOpen(false);
+                  chooseTab("week");
+                }}
+              />
+            )
+          }
         />
         {hubOpen ? (
           <MobileHub

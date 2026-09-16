@@ -1,20 +1,15 @@
 import { DoorOpen, MessageSquare, Shuffle } from "lucide-react";
 import { useAuth } from "../lib/auth";
 import { initials } from "../lib/classDetail";
-import { MobileHubButton } from "./MobileHub";
 import { PalettePicker } from "./PalettePicker";
 
 export function MorePage({
-  hubOpen,
-  onOpenHub,
   onOpenLogin,
   onOpenFeedback,
   onOpenGate,
   onOpenAdmin,
   onOpenTryClasses,
 }: {
-  hubOpen?: boolean;
-  onOpenHub?: () => void;
   onOpenLogin?: () => void;
   onOpenFeedback?: () => void;
   onOpenGate?: () => void;
@@ -37,13 +32,6 @@ export function MorePage({
             </p>
             <h1 className="text-headline-lg-mobile tracking-tight">More</h1>
           </div>
-          {onOpenHub ? (
-            <MobileHubButton
-              className="md:hidden"
-              expanded={hubOpen}
-              onClick={onOpenHub}
-            />
-          ) : null}
         </div>
       </div>
 

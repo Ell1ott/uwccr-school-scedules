@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-12T18:30:59.626670+00:00",
+  "generatedAt": "2026-09-15T20:00:46.417267+00:00",
   "source": "https://docs.google.com/spreadsheets/d/1pGFqN1XrL4T_NDr_a9fkAmuwMf5ob3e_0_f6_uFDC8c/export?format=xlsx&gid=0 + IB2 Class list 2025-2026.xlsx",
   "students": [
     {
@@ -889,6 +889,12 @@
       "name": "Daniel Marcelo Vargas Mata",
       "cohort": "IB1",
       "blocks": {
+        "A": {
+          "subject": "Anthropology",
+          "level": "HL",
+          "teacher": "Jeff L",
+          "room": "12"
+        },
         "B": {
           "subject": "Visual Arts",
           "level": "HL",
@@ -900,12 +906,6 @@
           "level": "HL",
           "teacher": "Heidy",
           "room": "9"
-        },
-        "D": {
-          "subject": "Global Politics",
-          "level": "HL",
-          "teacher": "Ryan",
-          "room": "10"
         },
         "E": {
           "subject": "Spanish Lang & Lit",
@@ -2816,12 +2816,6 @@
       "name": "Maithe Antonia Gonzalez Concha",
       "cohort": "IB1",
       "blocks": {
-        "A": {
-          "subject": "Spanish Lang & Lit",
-          "level": "HL",
-          "teacher": "Rolando",
-          "room": "5"
-        },
         "B": {
           "subject": "Global Politics",
           "level": "HL",
@@ -2830,7 +2824,7 @@
         },
         "C": {
           "subject": "History",
-          "level": "SL",
+          "level": "HL",
           "teacher": "Norman",
           "room": "11"
         },
@@ -2838,6 +2832,12 @@
           "subject": "English B",
           "level": "HL",
           "teacher": "Mauricio",
+          "room": "5"
+        },
+        "E": {
+          "subject": "Spanish Lang & Lit",
+          "level": "SL",
+          "teacher": "Rolando",
           "room": "5"
         },
         "F": {

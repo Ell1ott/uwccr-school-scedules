@@ -6,7 +6,6 @@ import { compareNames, searchPeople } from "../lib/people";
 import { subjectSummary } from "../lib/teachers";
 import type { PersonKind, SelectedPerson, Student, Teacher } from "../types";
 import { FloatingTabs } from "./FloatingTabs";
-import { MobileHubButton } from "./MobileHub";
 
 const ROSTER_TABS = [
   { id: "student", label: "Students" },
@@ -70,16 +69,12 @@ export function StudentRoster({
   onSelect,
   onOpenLogin,
   onOpenFeedback,
-  hubOpen,
-  onOpenHub,
 }: {
   students: Student[];
   teachers: Teacher[];
   onSelect: (person: SelectedPerson) => void;
   onOpenLogin?: () => void;
   onOpenFeedback?: () => void;
-  hubOpen?: boolean;
-  onOpenHub?: () => void;
 }) {
   const [tab, setTab] = useState<PersonKind>("student");
   const [query, setQuery] = useState("");
@@ -129,13 +124,6 @@ export function StudentRoster({
             Find yourself
           </h2>
         </div>
-        {onOpenHub ? (
-          <MobileHubButton
-            className="md:hidden"
-            expanded={hubOpen}
-            onClick={onOpenHub}
-          />
-        ) : null}
       </div>
       <div className="pb-6">
         <p className="mt-0 max-w-lg text-body-md text-on-surface-variant">

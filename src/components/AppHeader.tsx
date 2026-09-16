@@ -1,4 +1,4 @@
-import { Calendar, CircleUser, Shuffle, Sparkles } from "lucide-react";
+import { Calendar, Settings, Shuffle, Sparkles } from "lucide-react";
 import { useLayoutEffect, useRef, useState } from "react";
 import type { SelectedPerson, Student, Teacher } from "../types";
 import { StudentPicker } from "./StudentPicker";
@@ -105,7 +105,7 @@ function TabIcon({ id }: { id: AppTabId }) {
   }
   if (id === "more") {
     return (
-      <CircleUser size={16} strokeWidth={1.75} className="shrink-0" aria-hidden />
+      <Settings size={16} strokeWidth={1.75} className="shrink-0" aria-hidden />
     );
   }
 

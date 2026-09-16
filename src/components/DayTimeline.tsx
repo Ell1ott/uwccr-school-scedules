@@ -16,7 +16,6 @@ import { minutesOfDay } from "../lib/now";
 import { scrollAppToTop } from "../lib/scroll";
 import type { DayId, ScheduleEvent } from "../types";
 import { EventCard } from "./EventCard";
-import { MobileHubButton } from "./MobileHub";
 
 const LINE_HALF_PX = 4;
 
@@ -32,8 +31,6 @@ export function DayTimeline({
   onClassClick,
   weekStart,
   paused = false,
-  hubOpen,
-  onOpenHub,
   banner,
 }: {
   dayId: DayId;
@@ -45,8 +42,6 @@ export function DayTimeline({
   onClassClick?: (event: ScheduleEvent) => void;
   weekStart: string;
   paused?: boolean;
-  hubOpen?: boolean;
-  onOpenHub?: () => void;
   banner?: ReactNode;
 }) {
   const listRef = useRef<HTMLDivElement>(null);
@@ -190,14 +185,6 @@ export function DayTimeline({
               })}
             </div>
           </div>
-          {onOpenHub ? (
-            <MobileHubButton
-              size="sm"
-              className="-mr-1.5"
-              expanded={hubOpen}
-              onClick={onOpenHub}
-            />
-          ) : null}
         </div>
       </div>
       {banner ? <div className="pt-3">{banner}</div> : null}
