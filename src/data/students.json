@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-17T14:43:37.176883+00:00",
+  "generatedAt": "2026-09-17T16:54:16.287325+00:00",
   "source": "https://docs.google.com/spreadsheets/d/1pGFqN1XrL4T_NDr_a9fkAmuwMf5ob3e_0_f6_uFDC8c/export?format=xlsx&gid=0 + IB2 Class list 2025-2026.xlsx + IB2 list (1).xlsx + OPEN HOUSE DISTRIBUITION.xlsx",
   "students": [
     {
@@ -3756,6 +3756,12 @@
       "country": "Israel",
       "house": "Malpaís",
       "blocks": {
+        "A": {
+          "subject": "Anthropology",
+          "level": "HL",
+          "teacher": "Jeff L",
+          "room": "12"
+        },
         "B": {
           "subject": "Visual Arts",
           "level": "HL",
@@ -3767,12 +3773,6 @@
           "level": "HL",
           "teacher": "Heidy",
           "room": "9"
-        },
-        "D": {
-          "subject": "Global Politics",
-          "level": "HL",
-          "teacher": "Ryan",
-          "room": "10"
         },
         "E": {
           "subject": "Spanish AB",
