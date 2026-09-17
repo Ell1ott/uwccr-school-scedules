@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-15T20:00:46.417267+00:00",
+  "generatedAt": "2026-09-17T14:43:37.176883+00:00",
   "source": "https://docs.google.com/spreadsheets/d/1pGFqN1XrL4T_NDr_a9fkAmuwMf5ob3e_0_f6_uFDC8c/export?format=xlsx&gid=0 + IB2 Class list 2025-2026.xlsx + IB2 list (1).xlsx + OPEN HOUSE DISTRIBUITION.xlsx",
   "students": [
     {
@@ -992,13 +992,13 @@
         },
         "C": {
           "subject": "History",
-          "level": "SL",
+          "level": "HL",
           "teacher": "Norman",
           "room": "11"
         },
         "D": {
           "subject": "English B",
-          "level": "HL",
+          "level": "SL",
           "teacher": "Mauricio",
           "room": "5"
         },
@@ -1873,7 +1873,7 @@
         },
         "D": {
           "subject": "English B",
-          "level": "HL",
+          "level": "SL",
           "teacher": "Mauricio",
           "room": "5"
         },
@@ -2065,6 +2065,12 @@
       "country": "Bulgaria",
       "house": "Tortuguero",
       "blocks": {
+        "A": {
+          "subject": "Global Politics",
+          "level": "HL",
+          "teacher": "Tiya",
+          "room": "2"
+        },
         "B": {
           "subject": "Economics",
           "level": "HL",
@@ -2072,22 +2078,16 @@
           "room": "9"
         },
         "C": {
-          "subject": "Global Politics",
+          "subject": "Math Analysis and Approaches",
           "level": "HL",
-          "teacher": "Tiya",
-          "room": "2"
+          "teacher": "Chris",
+          "room": "8"
         },
         "D": {
           "subject": "Physics",
           "level": "HL",
           "teacher": "Erick",
           "room": "14"
-        },
-        "E": {
-          "subject": "Math Analysis and Approaches",
-          "level": "SL",
-          "teacher": "JD",
-          "room": "10"
         },
         "F": {
           "subject": "Spanish AB",
@@ -3034,6 +3034,12 @@
       "country": "El Salvador",
       "house": "Coco",
       "blocks": {
+        "A": {
+          "subject": "Biology",
+          "level": "SL",
+          "teacher": "Jeff",
+          "room": "15"
+        },
         "B": {
           "subject": "Theatre",
           "level": "HL",
@@ -3069,12 +3075,6 @@
           "level": "TOK",
           "teacher": "Norman",
           "room": "11"
-        },
-        "H": {
-          "subject": "ESS",
-          "level": "SL",
-          "teacher": "Heidy",
-          "room": "9"
         }
       }
     },
@@ -3427,6 +3427,12 @@
           "subject": "Spanish B",
           "level": "SL",
           "teacher": "Paula",
+          "room": "2"
+        },
+        "G": {
+          "subject": "TOK",
+          "level": "TOK",
+          "teacher": "Tiya",
           "room": "2"
         },
         "H": {
@@ -6153,12 +6159,6 @@
           "teacher": "Jeff N.",
           "room": "15"
         },
-        "C": {
-          "subject": "Psychology",
-          "level": "HL",
-          "teacher": "Karlina",
-          "room": "4"
-        },
         "D": {
           "subject": "Anthropology",
           "level": "HL",
@@ -8454,18 +8454,10 @@
           "room": "8"
         },
         "H": {
-          "subject": "English Lang & Lit",
+          "subject": "SSST",
           "level": "SL",
-          "teacher": "Sofía",
-          "room": "17",
-          "extras": [
-            {
-              "subject": "SSST",
-              "level": "SL",
-              "teacher": "Rolando",
-              "room": "5"
-            }
-          ]
+          "teacher": "Rolando",
+          "room": "5"
         }
       }
     },
@@ -8561,15 +8553,7 @@
           "subject": "Spanish AB",
           "level": "SL",
           "teacher": "Andrés",
-          "room": "1",
-          "extras": [
-            {
-              "subject": "ESS",
-              "level": "SL",
-              "teacher": "Heidy",
-              "room": "9"
-            }
-          ]
+          "room": "1"
         },
         "H": {
           "subject": "Math Applications and Interpretation",
@@ -9165,11 +9149,11 @@
           "teacher": "QQ",
           "room": "1"
         },
-        "E": {
+        "D": {
           "subject": "English Lang & Lit",
-          "level": "SL",
+          "level": "HL",
           "teacher": "Sofía",
-          "room": "17"
+          "room": "16"
         },
         "F": {
           "subject": "ESS",
