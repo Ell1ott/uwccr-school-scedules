@@ -20,13 +20,13 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "alejandra-bremont-strakova",
-    "name": "Alejandra Bremont Straková",
+    "name": "Ale Bremont Straková (Alejandra)",
     "cohort": "IB1",
     "email": "ale.bremont.28@uwccostarica.org"
   },
   {
     "id": "alexander-kuntz-kristiansen",
-    "name": "Alexander Kuntz Kristiansen",
+    "name": "Alex Kristiansen (Alexander Kuntz Aa)",
     "cohort": "IB1",
     "email": "alexander.kristiansen.28@uwccostarica.org"
   },
@@ -56,13 +56,13 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "bastiaan-marc-scheurwater",
-    "name": "Bastiaan Marc Scheurwater",
+    "name": "Bas Scheurwater (Bastiaan Marc)",
     "cohort": "IB1",
     "email": "bas.scheurwater.28@uwccostarica.org"
   },
   {
     "id": "benjamin-tomas-esteban-oppenheimer",
-    "name": "Benjamín Tomás Esteban Oppenheímer",
+    "name": "Beni Esteban Oppenheímer (Benjamín Tomás)",
     "cohort": "IB1",
     "email": "beni.esteban.28@uwccostarica.org"
   },
@@ -98,7 +98,7 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "chun-ying-lai",
-    "name": "Chun-Ying Lai",
+    "name": "Jimmy Lai (Chun-Ying)",
     "cohort": "IB1",
     "email": "jimmy.lai.28@uwccostarica.org"
   },
@@ -116,13 +116,13 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "daniel-marcelo-vargas-mata",
-    "name": "Daniel Marcelo Vargas Mata",
+    "name": "Marcelo Vargas Mata (Daniel)",
     "cohort": "IB1",
     "email": "marcelo.vargas.28@uwccostarica.org"
   },
   {
     "id": "daniela-de-los-angeles-barquero-montoya",
-    "name": "Daniela De Los Angeles Barquero Montoya",
+    "name": "Angeles Barquero Montoya (Daniela)",
     "cohort": "IB1",
     "email": "angeles.barquero.28@uwccostarica.org"
   },
@@ -158,7 +158,7 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ella-sophia-shaw",
-    "name": "Ella Sophia Shaw",
+    "name": "Sophia Shaw (Ella)",
     "cohort": "IB1",
     "email": "ella.shaw.28@uwccostarica.org"
   },
@@ -176,7 +176,7 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "en-ting-chen",
-    "name": "En-Ting Chen",
+    "name": "Vanessa Chen (En-Ting)",
     "cohort": "IB1",
     "email": "vanessa.chen.28@uwccostarica.org"
   },
@@ -194,7 +194,7 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ernesto-horacio-geymonat-armand-ugon",
-    "name": "Ernesto Horacio Geymonat Armand Ugon",
+    "name": "Ernest Geymonat Armand Ugon (Ernesto Horacio)",
     "cohort": "IB1",
     "email": "ernesto.geymonat.28@uwccostarica.org"
   },
@@ -212,7 +212,7 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "fiorella-jazmin-melgarejo-esquivel",
-    "name": "Fiorella Jazmin Melgarejo Esquivel",
+    "name": "Fio Melgarejo Esquivel (Fiorella Jazmin)",
     "cohort": "IB1",
     "email": "fio.melgarejo.28@uwccostarica.org"
   },
@@ -224,7 +224,7 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "glynnes-enidt-brett-ortiz",
-    "name": "Glynnes Enidt Brett Ortiz",
+    "name": "Enid Brett Ortiz (Glynnes Enidt)",
     "cohort": "IB1",
     "email": "enid.brett.28@uwccostarica.org"
   },
@@ -266,7 +266,7 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "javier-fuentes-hermoso",
-    "name": "Javier Fuentes Hermoso",
+    "name": "Javi Fuentes Hermoso (Javier)",
     "cohort": "IB1",
     "email": "javi.fuentes.28@uwccostarica.org"
   },
@@ -283,8 +283,14 @@ export const ROSTER: RosterStudent[] = [
     "email": "justin.kwikiriza.28@uwccostarica.org"
   },
   {
+    "id": "kaiyi-xu-austin",
+    "name": "Austin Xu (Kaiyi)",
+    "cohort": "IB1",
+    "email": null
+  },
+  {
     "id": "katalina-segura-alfaro",
-    "name": "Katalina Segura Alfaro",
+    "name": "Kata Segura Alfaro (Katalina)",
     "cohort": "IB1",
     "email": "kata.segura.28@uwccostarica.org"
   },
@@ -338,7 +344,7 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "luis-lozano-samper",
-    "name": "Luis Lozano Samper",
+    "name": "Luis Lozano Samper (Luisa Ignacio)",
     "cohort": "IB1",
     "email": "luis.lozano.28@uwccostarica.org"
   },
@@ -356,19 +362,19 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "maria-fernanda-castillo-cuellar",
-    "name": "Maria Fernanda Castillo Cuellar",
+    "name": "Mafer Castillo Cuellar (María Fernanda)",
     "cohort": "IB1",
     "email": "maria.castillo.28@uwccostarica.org"
   },
   {
     "id": "maria-jose-candelas-vargas",
-    "name": "Maria José Candelas Vargas",
+    "name": "Majo Candelas Vargas (Maria José)",
     "cohort": "IB1",
     "email": "mariajose.candelas.28@uwccostarica.org"
   },
   {
     "id": "maria-panagiota-kaoudi",
-    "name": "Maria Panagiota Kaoudi",
+    "name": "Maritina Kaoudi (Maria Panagiota)",
     "cohort": "IB1",
     "email": "maritina.kaoudi.28@uwccostarica.org"
   },
@@ -410,7 +416,7 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "mpundu-herve-impano",
-    "name": "Mpundu Hervé Impano",
+    "name": "Hervé Impano (Mpundu)",
     "cohort": "IB1",
     "email": "herve.impano.28@uwccostarica.org"
   },
@@ -488,7 +494,7 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "rudy-eduardo-siguan-ixcal",
-    "name": "Rudy Eduardo Siguan Ixcal",
+    "name": "Eduardo Siguan Ixcal (Rudy)",
     "cohort": "IB1",
     "email": "eduardo.siguan.28@uwccostarica.org"
   },
@@ -500,7 +506,7 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "samuel-grey-villarreal-montoya",
-    "name": "Samuel Grey Villarreal Montoya",
+    "name": "Sam Villarreal Montoya (Samuel Grey)",
     "cohort": "IB1",
     "email": "sam.villarreal.28@uwccostarica.org"
   },
@@ -536,7 +542,7 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "sonam-jourden",
-    "name": "Sonam Jourden",
+    "name": "Jourden (Sonam)",
     "cohort": "IB1",
     "email": "sonam.jourden.28@uwccostarica.org"
   },
@@ -554,13 +560,13 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "tenzin-norsang",
-    "name": "Tenzin Norsang",
+    "name": "Norsang (Tenzin)",
     "cohort": "IB1",
     "email": "tenzin.norsang.28@uwccostarica.org"
   },
   {
     "id": "teresa-camarundin-campos",
-    "name": "Teresa Camarundin Campos",
+    "name": "Teresa Camarudin Campos",
     "cohort": "IB1",
     "email": "teresa.camarudin.28@uwccostarica.org"
   },
@@ -596,13 +602,13 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "zachary-lewis-evans",
-    "name": "Zachary Lewis Evans",
+    "name": "Zach Evans (Zachary Lewis)",
     "cohort": "IB1",
     "email": "zach.evans.28@uwccostarica.org"
   },
   {
     "id": "zhixuan-li-ethan",
-    "name": "Zhixuan Li (Ethan)",
+    "name": "Ethan Li (Zhixuan)",
     "cohort": "IB1",
     "email": "ethan.li.28@uwccostarica.org"
   },
@@ -620,21 +626,15 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ib2-agne-meckovskyte",
-    "name": "Agne Mečkovskytė",
+    "name": "Agnė Mečkovskytė",
     "cohort": "IB2",
     "email": "agne.meckovskyte.27@uwccostarica.org"
   },
   {
     "id": "ib2-aileen-marcela-lopez-diaz",
-    "name": "Aileen Marcela López Díaz",
+    "name": "Marcela López Díaz (Aileen)",
     "cohort": "IB2",
     "email": "aileen.lopez.27@uwccostarica.org"
-  },
-  {
-    "id": "ib2-alejandro-daniel-portillo-cabral",
-    "name": "Alejandro Daniel Portillo Cabral",
-    "cohort": "IB2",
-    "email": "alejandro.portillo.27@uwccostarica.org"
   },
   {
     "id": "ib2-alina-araya-hernandez",
@@ -650,19 +650,19 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ib2-amelia-balwit",
-    "name": "Amelia Balwit",
+    "name": "Amelia Lauren-Elizabeth Balwit",
     "cohort": "IB2",
     "email": "amelia.balwit.27@uwccostarica.org"
   },
   {
     "id": "ib2-ana-lorena-alonzo",
-    "name": "Ana Lorena Alonzo",
+    "name": "Ana Lorena Alonzo Sandino",
     "cohort": "IB2",
     "email": "ana.alonzo.27@uwccostarica.org"
   },
   {
     "id": "ib2-anya-opal",
-    "name": "Anya Opal",
+    "name": "Anya Joss Opal",
     "cohort": "IB2",
     "email": "anya.opal.27@uwccostarica.org"
   },
@@ -674,7 +674,7 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ib2-arianna-candeloro",
-    "name": "Arianna Candeloro",
+    "name": "Ari Candeloro (Arianna)",
     "cohort": "IB2",
     "email": "arianna.candeloro.27@uwccostarica.org"
   },
@@ -692,25 +692,25 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ib2-aye-chan-pyae-zone",
-    "name": "Aye Chan Pyae Zone",
+    "name": "Asako Zone (Aye Chan Pyae)",
     "cohort": "IB2",
     "email": "aye.chan.27@uwccostarica.org"
   },
   {
     "id": "ib2-azure-adams",
-    "name": "Azure Adams",
+    "name": "Ash Adams (Azure Naima)",
     "cohort": "IB2",
     "email": "azure.adams.27@uwccostarica.org"
   },
   {
     "id": "ib2-benicio-brzozowski",
-    "name": "Benicio Brzozowski",
+    "name": "Benicio Brzozowski Astié",
     "cohort": "IB2",
     "email": "benicio.brzozowski.27@uwccostarica.org"
   },
   {
     "id": "ib2-berber-de-greef",
-    "name": "Berber de Greef",
+    "name": "Berber Linda de Greef",
     "cohort": "IB2",
     "email": "berber.degreef.27@uwccostarica.org"
   },
@@ -734,13 +734,13 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ib2-chieh-ni-janice-yang",
-    "name": "Chieh-Ni (Janice) Yang",
+    "name": "Janice Yang (Chieh-Ni)",
     "cohort": "IB2",
     "email": "janice.yang.27@uwccostarica.org"
   },
   {
     "id": "ib2-chinoyerem-miracle-onyegbula",
-    "name": "Chinoyerem Miracle Onyegbula",
+    "name": "Miracle Chinoyerem Onyegbula",
     "cohort": "IB2",
     "email": "miracle.onyegbula.27@uwccostarica.org"
   },
@@ -764,15 +764,21 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ib2-eain-pyae",
-    "name": "Eain Pyae",
+    "name": "Ella Pyae (Eain)",
     "cohort": "IB2",
     "email": "eain.pyae.27@uwccostarica.org"
   },
   {
     "id": "ib2-eaint-htar-wazin-aung",
-    "name": "Eaint Htar Wazin Aung",
+    "name": "Amanda Aung (Eaint Htar Wazin)",
     "cohort": "IB2",
     "email": "eaint.htar.27@uwccostarica.org"
+  },
+  {
+    "id": "ib2-eddie-xi",
+    "name": "Eddie Xi (Jiale)",
+    "cohort": "IB2",
+    "email": null
   },
   {
     "id": "ib2-edith-bulat-jovinger",
@@ -782,13 +788,13 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ib2-elba-de-la-oliva",
-    "name": "Elba de la Oliva",
+    "name": "Elba de la Oliva Núñez",
     "cohort": "IB2",
     "email": "elba.delaoliva.27@uwccostarica.org"
   },
   {
     "id": "ib2-emely-johanya-lopez-torres",
-    "name": "Emely Johanya López Torres",
+    "name": "Emi López Torres (Emely Johanya)",
     "cohort": "IB2",
     "email": "emely.lopez.27@uwccostarica.org"
   },
@@ -806,13 +812,13 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ib2-fiorenza-echecopar-correa",
-    "name": "Fiorenza Echecopar Correa",
+    "name": "Fiore Echecopar Correa (Fiorenza)",
     "cohort": "IB2",
     "email": "fiorenza.echecopar.27@uwccostarica.org"
   },
   {
     "id": "ib2-florenz-levian-krau",
-    "name": "Florenz Levian Krauß",
+    "name": "Flo Krauß (Florenz Levian)",
     "cohort": "IB2",
     "email": "florenz.krauss.27@uwccostarica.org"
   },
@@ -830,19 +836,19 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ib2-hedda-olson",
-    "name": "Hedda Olson",
+    "name": "Hedda Wahl Olson",
     "cohort": "IB2",
     "email": "hedda.olson.27@uwccostarica.org"
   },
   {
     "id": "ib2-hillary-villena-quispe",
-    "name": "Hillary Villena Quispe",
+    "name": "Hilly Villena Quispe (Hillary Valeria)",
     "cohort": "IB2",
     "email": "hillary.villena.27@uwccostarica.org"
   },
   {
     "id": "ib2-hsuan-hao-chang",
-    "name": "Hsuan-Hao Chang",
+    "name": "Vic Chang (Hsuan-Hao)",
     "cohort": "IB2",
     "email": "vic.chang.27@uwccostarica.org"
   },
@@ -854,13 +860,13 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ib2-imran-tahiri",
-    "name": "Imran Tahiri",
+    "name": "Imran (Tahiri)",
     "cohort": "IB2",
     "email": "imran.tahiri.27@uwccostarica.org"
   },
   {
     "id": "ib2-isaac-sekagya",
-    "name": "Isaac Sekagya",
+    "name": "Isaac Sekagya (Kasirye Gabriel)",
     "cohort": "IB2",
     "email": "isaac.sekagya.27@uwccostarica.org"
   },
@@ -872,7 +878,7 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ib2-isabela-aurelio-de-vargas",
-    "name": "Isabela Aurélio de Vargas",
+    "name": "Bela Aurélio de Vargas (Isabela)",
     "cohort": "IB2",
     "email": "isabela.aureliodevargas.27@uwccostarica.org"
   },
@@ -896,7 +902,7 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ib2-jorge-alexander-rivero-anez",
-    "name": "Jorge Alexander Rivero Añez",
+    "name": "George Rivero Añez (Jorge Alexander)",
     "cohort": "IB2",
     "email": "jorge.rivero.27@uwccostarica.org"
   },
@@ -920,7 +926,7 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ib2-juliana-montarsolo",
-    "name": "Juliana Montarsolo",
+    "name": "Juliana Elizabeth Montarsolo",
     "cohort": "IB2",
     "email": "juliana.montarsolo.27@uwccostarica.org"
   },
@@ -932,19 +938,19 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ib2-kelzang-tobgyel",
-    "name": "Kelzang Tobgyel",
+    "name": "Kelz Tobgyel (Kelzang)",
     "cohort": "IB2",
     "email": "kelzang.tobgyel.27@uwccostarica.org"
   },
   {
     "id": "ib2-kirabo-mugambwa",
-    "name": "Kirabo Mugambwa",
+    "name": "Kirabo Kevina Mugambwa",
     "cohort": "IB2",
     "email": "kirabo.mugambwa.27@uwccostarica.org"
   },
   {
     "id": "ib2-kiran-wilcke",
-    "name": "Kiran Wilcke",
+    "name": "Kiran Maximilian Wilcke",
     "cohort": "IB2",
     "email": "kiran.wilcke.27@uwccostarica.org"
   },
@@ -956,7 +962,7 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ib2-kris-xavier-sealy",
-    "name": "Kris Xavier Sealy",
+    "name": "Kris Sealy (Kris-Xavier Julien)",
     "cohort": "IB2",
     "email": "kris.sealy.27@uwccostarica.org"
   },
@@ -968,7 +974,7 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ib2-kyle-imani",
-    "name": "Kyle Imani",
+    "name": "Kyle Imani Kageni",
     "cohort": "IB2",
     "email": "kyle.imani.27@uwccostarica.org"
   },
@@ -986,7 +992,7 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ib2-lucrezia-blanca-morra",
-    "name": "Lucrezia Blanca Morra",
+    "name": "Lucre Morra Ferrando (Lucrezia Blanca)",
     "cohort": "IB2",
     "email": "lucrezia.morra.27@uwccostarica.org"
   },
@@ -998,31 +1004,25 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ib2-maitreyi-manoj-nair",
-    "name": "Maitreyi Manoj Nair",
+    "name": "Myna Nair (Maitreyi Manoj)",
     "cohort": "IB2",
     "email": "maitreyi.manoj.27@uwccostarica.org"
   },
   {
     "id": "ib2-maxime-de-corioli",
-    "name": "Maxime De Corioli",
+    "name": "Max De Coriolis (Maxime)",
     "cohort": "IB2",
     "email": "maxime.decoriolis.27@uwccostarica.org"
   },
   {
     "id": "ib2-min-fu-mark-huang",
-    "name": "Min Fu (Mark) Huang",
+    "name": "Mark Huang (Min Fu)",
     "cohort": "IB2",
     "email": "mark.huang.27@uwccostarica.org"
   },
   {
-    "id": "ib2-mingyi-selena-zhang",
-    "name": "Mingyi (Selena) ZHANG",
-    "cohort": "IB2",
-    "email": null
-  },
-  {
     "id": "ib2-mung-hkawng-ja-ngai",
-    "name": "Mung Hkawng Ja Ngai",
+    "name": "Mung Hkwang Ja Ngai",
     "cohort": "IB2",
     "email": "mung.hkawng.27@uwccostarica.org"
   },
@@ -1033,14 +1033,14 @@ export const ROSTER: RosterStudent[] = [
     "email": "naya.niedermayr.27@uwccostarica.org"
   },
   {
-    "id": "ib2-nguyen-vivienne-thao-phuong",
-    "name": "Nguyen (Vivienne) Thao Phuong",
+    "id": "ib2-nguyen-thao-phuong",
+    "name": "Vivienne Nguyen (Phuong Thao)",
     "cohort": "IB2",
-    "email": "nguyen.phuong.27@uwccostarica.org"
+    "email": null
   },
   {
     "id": "ib2-oliver-pena",
-    "name": "Oliver Peña",
+    "name": "Oliver Peña Buydid",
     "cohort": "IB2",
     "email": "oliver.pena.27@uwccostarica.org"
   },
@@ -1052,19 +1052,19 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ib2-oluwafamisoke-oluwadunbarin-olatunbosun",
-    "name": "Oluwafamisoke Oluwadunbarin Olatunbosun",
+    "name": "Fami Olatunbosun (Oluwafamisoke Oluwadunbarin)",
     "cohort": "IB2",
     "email": "oluwafamisoke.olatunbosun.27@uwccostarica.org"
   },
   {
     "id": "ib2-oluwajomiloju-jedidah-thorpe",
-    "name": "Oluwajomiloju Jedidah Thorpe",
+    "name": "Jomi Thorpe (Oluwajomiloju Jedidah)",
     "cohort": "IB2",
     "email": "oluwajomiloju.jedidah.27@uwccostarica.org"
   },
   {
     "id": "ib2-pamela-solis-arias",
-    "name": "Pamela Solís Arias",
+    "name": "Pame Solís Arias (Pamela)",
     "cohort": "IB2",
     "email": "pamela.solis.27@uwccostarica.org"
   },
@@ -1100,13 +1100,13 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ib2-sofia-tomasikova",
-    "name": "Sofia Tomasikova",
+    "name": "Sofi Tomasikova (Sofia)",
     "cohort": "IB2",
     "email": "sofia.tomasikova.27@uwccostarica.org"
   },
   {
     "id": "ib2-sofia-mercado-gomez",
-    "name": "Sofía Mercado Gómez",
+    "name": "Sofi Mercado Gómez (Sofia)",
     "cohort": "IB2",
     "email": "sofia.mercado.27@uwccostarica.org"
   },
@@ -1124,7 +1124,7 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ib2-tara-van-wijk",
-    "name": "Tara van Wijk",
+    "name": "Tara Lynne van Wijk",
     "cohort": "IB2",
     "email": "tara.van.27@uwccostarica.org"
   },
@@ -1142,25 +1142,25 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ib2-ulrich-mohrhdart-doger",
-    "name": "Ulrich Mohrhdart Doger",
+    "name": "Ulrich Mohrhardt Doger",
     "cohort": "IB2",
     "email": "ulrich.mohrhardt.27@uwccostarica.org"
   },
   {
     "id": "ib2-ventsislav-dinkov",
-    "name": "Ventsislav Dinkov",
+    "name": "Ventsi Dinkov (Ventsislav Ventsislavov)",
     "cohort": "IB2",
     "email": "ventsislav.dinkov.27@uwccostarica.org"
   },
   {
     "id": "ib2-wenqing-liang",
-    "name": "Wenqing Liang",
+    "name": "Vicky Liang (Wenqing)",
     "cohort": "IB2",
     "email": "wenqing.liang.27@uwccostarica.org"
   },
   {
     "id": "ib2-xiaoshi-stone-zhao",
-    "name": "Xiaoshi (Stone) ZHAO",
+    "name": "Stone Zhao (Xiaoshi)",
     "cohort": "IB2",
     "email": "xiaoshi.zhao.27@uwccostarica.org"
   },
@@ -1184,7 +1184,7 @@ export const ROSTER: RosterStudent[] = [
   },
   {
     "id": "ib2-ying-nam-aung",
-    "name": "Ying Nam Aung",
+    "name": "Ja Nu Aung (Ying Nam Nang)",
     "cohort": "IB2",
     "email": "ying.nam.27@uwccostarica.org"
   },

@@ -21,7 +21,8 @@ function personScore<T extends { name: string }>(
   extraKeys: ReadonlyArray<(item: T) => string>,
 ): number {
   const needle = fold(query);
-  const fields = [item.name, ...item.name.split(/\s+/), ...extraKeys.map((getKey) => getKey(item))];
+  const nameFields = item.name.replace(/[()]/g, " ").split(/\s+/).filter(Boolean);
+  const fields = [item.name, ...nameFields, ...extraKeys.map((getKey) => getKey(item))];
   return Math.max(0, ...fields.map((field) => compare(fold(field), needle)));
 }
 

@@ -1,6 +1,14 @@
-import { useMemo, useState, type FormEvent } from "react";
+import {
+  Bell,
+  Mail,
+  MapPin,
+  Megaphone,
+  Users,
+} from "lucide-react";
+import { useMemo, useState, type FormEvent, type ReactNode } from "react";
 import type { EventMode, Student } from "../types";
 import { useAuth } from "../lib/auth";
+import { toISODate } from "../lib/calendar";
 import {
   createSchoolEvent,
   crDate,
@@ -13,18 +21,110 @@ import {
   type SchoolEvent,
   updateSchoolEvent,
 } from "../lib/schoolEvents";
-import { datesBetween, toISODate } from "../lib/calendar";
 import { AudiencePicker } from "./AudiencePicker";
 
-const MODES: { id: EventMode; label: string; hint: string }[] = [
-  { id: "mandatory", label: "Mandatory", hint: "Assigned. They cannot decline." },
-  { id: "invite", label: "Invite", hint: "They accept or decline." },
-  { id: "open", label: "Open signup", hint: "Eligible people join. Optional cap." },
-  { id: "info", label: "Announcement", hint: "On the calendar. No RSVP." },
+const MODES: {
+  id: EventMode;
+  label: string;
+  hint: string;
+  icon: ReactNode;
+}[] = [
+  {
+    id: "mandatory",
+    label: "Mandatory",
+    hint: "Assigned. No opt-out.",
+    icon: <Bell size={16} strokeWidth={1.75} aria-hidden />,
+  },
+  {
+    id: "invite",
+    label: "Invite",
+    hint: "Accept or decline.",
+    icon: <Mail size={16} strokeWidth={1.75} aria-hidden />,
+  },
+  {
+    id: "open",
+    label: "Open signup",
+    hint: "Join if eligible.",
+    icon: <Users size={16} strokeWidth={1.75} aria-hidden />,
+  },
+  {
+    id: "info",
+    label: "Announcement",
+    hint: "Calendar only.",
+    icon: <Megaphone size={16} strokeWidth={1.75} aria-hidden />,
+  },
 ];
+
+const fieldClass =
+  "h-12 w-full rounded-2xl bg-surface-container px-4 text-body-md outline-none focus-visible:ring-2 focus-visible:ring-primary/20";
 
 function todayStamp() {
   return toISODate(new Date());
+}
+
+function SwitchThumb({ on }: { on: boolean }) {
+  return (
+    <span
+      className={`relative h-[22px] w-[36px] shrink-0 rounded-full transition-colors duration-200 ${
+        on ? "bg-primary" : "bg-outline-variant"
+      }`}
+      aria-hidden
+    >
+      <span
+        className={`absolute top-[2px] left-[2px] h-[18px] w-[18px] rounded-full bg-white shadow-sm transition-transform duration-200 ${
+          on ? "translate-x-[14px]" : "translate-x-0"
+        }`}
+      />
+    </span>
+  );
+}
+
+function WhenRow({
+  label,
+  date,
+  time,
+  minDate,
+  allDay,
+  onDateChange,
+  onTimeChange,
+}: {
+  label: string;
+  date: string;
+  time: string;
+  minDate?: string;
+  allDay: boolean;
+  onDateChange: (value: string) => void;
+  onTimeChange: (value: string) => void;
+}) {
+  return (
+    <div className="event-when-row">
+      <p className="event-when-label">{label}</p>
+      <div className={`event-when-pair${allDay ? " is-all-day" : ""}`}>
+        <label className="event-when-field">
+          <span className="sr-only">{label} date</span>
+          <input
+            type="date"
+            value={date}
+            min={minDate}
+            onChange={(event) => onDateChange(event.target.value)}
+          />
+        </label>
+        {allDay ? null : (
+          <>
+            <span className="event-when-split" aria-hidden />
+            <label className="event-when-field">
+              <span className="sr-only">{label} time</span>
+              <input
+                type="time"
+                value={time}
+                onChange={(event) => onTimeChange(event.target.value)}
+              />
+            </label>
+          </>
+        )}
+      </div>
+    </div>
+  );
 }
 
 export function EventForm({
@@ -71,6 +171,18 @@ export function EventForm({
     () => expandAudience(students, targets).length,
     [students, targets],
   );
+  const occurrenceCount = useMemo(() => {
+    if (editing || freq === "none") return 0;
+    return occurrenceStamps(
+      date,
+      startTime,
+      endTime,
+      allDay,
+      freq,
+      untilDate,
+      endDate,
+    ).starts.length;
+  }, [allDay, date, editing, endDate, endTime, freq, startTime, untilDate]);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -178,205 +290,194 @@ export function EventForm({
     else onDone();
   }
 
-  return (
-    <form className="flex flex-col gap-5" onSubmit={(event) => void onSubmit(event)}>
-      <label className="block text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
-        Title
-        <input
-          required
-          value={title}
-          onChange={(event) => setTitle(event.target.value)}
-          className="mt-2 h-12 w-full rounded-2xl bg-surface-container px-4 text-body-md outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-        />
-      </label>
-      <label className="block text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
-        Where
-        <input
-          value={location}
-          placeholder="Room, house, lawn…"
-          onChange={(event) => setLocation(event.target.value)}
-          className="mt-2 h-12 w-full rounded-2xl bg-surface-container px-4 text-body-md outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-        />
-      </label>
-      <label className="block text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
-        Details
-        <textarea
-          value={description}
-          rows={3}
-          onChange={(event) => setDescription(event.target.value)}
-          className="mt-2 w-full rounded-2xl bg-surface-container px-4 py-3 text-body-md outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
-        />
-      </label>
+  function setStartDate(next: string) {
+    const nextEnd = endDate < next || endDate === date ? next : endDate;
+    setDate(next);
+    setEndDate(nextEnd);
+    if (nextEnd > next && freq === "daily") setFreq("none");
+  }
 
-      <label className="flex items-center gap-3 text-body-md">
-        <input
-          type="checkbox"
-          checked={allDay}
-          onChange={(event) => setAllDay(event.target.checked)}
-        />
-        All day
-      </label>
-      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <label className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
-          From
+  return (
+    <form
+      className="event-form flex flex-col gap-8"
+      onSubmit={(event) => void onSubmit(event)}
+    >
+      <section className="event-form-section">
+        <p className="event-form-kicker">The gathering</p>
+        <label className="block">
+          <span className="sr-only">Title</span>
           <input
-            type="date"
-            value={date}
-            onChange={(event) => {
-              const next = event.target.value;
-              const nextEnd = endDate < next || endDate === date ? next : endDate;
-              setDate(next);
-              setEndDate(nextEnd);
-              if (nextEnd > next && freq === "daily") setFreq("none");
-            }}
-            className="mt-2 h-12 w-full rounded-2xl bg-surface-container px-3 text-body-md outline-none"
+            required
+            value={title}
+            placeholder="What’s happening?"
+            onChange={(event) => setTitle(event.target.value)}
+            className={`${fieldClass} h-14 text-title-md tracking-tight`}
           />
         </label>
-        <label className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
-          Until
+        <label className="relative block">
+          <span className="sr-only">Where</span>
+          <MapPin
+            size={16}
+            strokeWidth={1.75}
+            className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-on-surface-variant"
+            aria-hidden
+          />
           <input
-            type="date"
-            value={endDate}
-            min={date}
-            onChange={(event) => {
-              const next = event.target.value;
+            value={location}
+            placeholder="Room, house, lawn…"
+            onChange={(event) => setLocation(event.target.value)}
+            className={`${fieldClass} pl-11`}
+          />
+        </label>
+        <label className="block">
+          <span className="sr-only">Details</span>
+          <textarea
+            value={description}
+            rows={3}
+            placeholder="Anything people should know"
+            onChange={(event) => setDescription(event.target.value)}
+            className="w-full rounded-2xl bg-surface-container px-4 py-3 text-body-md outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+          />
+        </label>
+      </section>
+
+      <section className="event-form-section">
+        <div className="flex items-center justify-between gap-3">
+          <p className="event-form-kicker">When</p>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={allDay}
+            className="flex shrink-0 items-center gap-2 rounded-full py-1 text-body-md text-on-surface focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+            onClick={() => setAllDay((open) => !open)}
+          >
+            All day
+            <SwitchThumb on={allDay} />
+          </button>
+        </div>
+
+        <div className="event-when">
+          <WhenRow
+            label="Starts"
+            date={date}
+            time={startTime}
+            allDay={allDay}
+            onDateChange={setStartDate}
+            onTimeChange={setStartTime}
+          />
+          <WhenRow
+            label="Ends"
+            date={endDate}
+            time={endTime}
+            minDate={date}
+            allDay={allDay}
+            onDateChange={(next) => {
               setEndDate(next);
               if (next > date && freq === "daily") setFreq("none");
             }}
-            className="mt-2 h-12 w-full rounded-2xl bg-surface-container px-3 text-body-md outline-none"
+            onTimeChange={setEndTime}
           />
-        </label>
-      </div>
-      {allDay ? null : (
-        <div className="grid grid-cols-2 gap-3">
-          <label className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
-            Starts
-            <input
-              type="time"
-              value={startTime}
-              onChange={(event) => setStartTime(event.target.value)}
-              className="mt-2 h-12 w-full rounded-2xl bg-surface-container px-3 text-body-md outline-none"
-            />
-          </label>
-          <label className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
-            Ends
-            <input
-              type="time"
-              value={endTime}
-              onChange={(event) => setEndTime(event.target.value)}
-              className="mt-2 h-12 w-full rounded-2xl bg-surface-container px-3 text-body-md outline-none"
-            />
-          </label>
+          {editing ? null : (
+            <>
+              <div className="event-when-row">
+                <p className="event-when-label">Repeat</p>
+                <div className="flex flex-wrap gap-2">
+                  {(
+                    endDate > date
+                      ? (["none", "weekly"] as const)
+                      : (["none", "weekly", "daily"] as const)
+                  ).map((id) => (
+                    <button
+                      key={id}
+                      type="button"
+                      className={`h-9 rounded-full px-3 text-label-sm tracking-wide ${
+                        freq === id
+                          ? "bg-primary text-on-primary"
+                          : "bg-surface-container text-on-surface"
+                      }`}
+                      onClick={() => setFreq(id)}
+                    >
+                      {id === "none" ? "Once" : id === "weekly" ? "Weekly" : "Daily"}
+                    </button>
+                  ))}
+                </div>
+              </div>
+              {freq !== "none" ? (
+                <div className="event-when-row">
+                  <p className="event-when-label">Until</p>
+                  <div className="event-when-pair is-all-day">
+                    <label className="event-when-field">
+                      <span className="sr-only">Repeats until</span>
+                      <input
+                        type="date"
+                        value={untilDate}
+                        min={date}
+                        onChange={(event) => setUntilDate(event.target.value)}
+                      />
+                    </label>
+                  </div>
+                </div>
+              ) : null}
+            </>
+          )}
         </div>
-      )}
-      {endDate > date ? (
-        <p className="text-body-md text-on-surface-variant">
-          Stretches {datesBetween(date, endDate).length} days.
-        </p>
-      ) : null}
+        {occurrenceCount > 1 ? (
+          <p className="text-label-sm text-on-surface-variant">
+            Posts {occurrenceCount} events.
+          </p>
+        ) : null}
+      </section>
 
       {editing ? null : (
         <>
-          <div>
-            <p className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
-              Repeat
-            </p>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {(
-                endDate > date
-                  ? (["none", "weekly"] as const)
-                  : (["none", "weekly", "daily"] as const)
-              ).map((id) => (
-                <button
-                  key={id}
-                  type="button"
-                  className={`h-9 rounded-full px-3 text-label-sm tracking-wide ${
-                    freq === id
-                      ? "bg-primary text-on-primary"
-                      : "bg-surface-container text-on-surface"
-                  }`}
-                  onClick={() => setFreq(id)}
-                >
-                  {id === "none" ? "Once" : id === "weekly" ? "Weekly" : "Daily"}
-                </button>
-              ))}
-            </div>
-            {freq !== "none" ? (
-              <label className="mt-3 block text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
-                Until
-                <input
-                  type="date"
-                  value={untilDate}
-                  onChange={(event) => setUntilDate(event.target.value)}
-                  className="mt-2 h-12 w-full rounded-2xl bg-surface-container px-3 text-body-md outline-none sm:max-w-xs"
-                />
-              </label>
-            ) : null}
-          </div>
-
-          <div>
-            <p className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
-              How people take part
-            </p>
-            <div className="mt-2 grid gap-2">
+          <section className="event-form-section">
+            <p className="event-form-kicker">How people take part</p>
+            <div className="event-mode-grid">
               {MODES.map((item) => (
                 <button
                   key={item.id}
                   type="button"
-                  className={`rounded-2xl px-4 py-3 text-left ${
-                    mode === item.id
-                      ? "bg-primary text-on-primary"
-                      : "bg-surface-container text-on-surface"
-                  }`}
+                  aria-pressed={mode === item.id}
+                  className="event-mode"
                   onClick={() => setMode(item.id)}
                 >
-                  <span className="block text-label-sm tracking-wide">{item.label}</span>
-                  <span
-                    className={`block text-label-sm ${
-                      mode === item.id ? "text-on-primary/80" : "text-on-surface-variant"
-                    }`}
-                  >
-                    {item.hint}
-                  </span>
+                  <span className="event-mode-icon">{item.icon}</span>
+                  <span className="event-mode-label">{item.label}</span>
+                  <span className="event-mode-hint">{item.hint}</span>
                 </button>
               ))}
             </div>
-          </div>
+            {mode === "open" ? (
+              <label className="block text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
+                Capacity (optional)
+                <input
+                  type="number"
+                  min={1}
+                  inputMode="numeric"
+                  value={capacity}
+                  placeholder="No limit"
+                  onChange={(event) => setCapacity(event.target.value)}
+                  className={`${fieldClass} mt-2 sm:max-w-xs`}
+                />
+              </label>
+            ) : null}
+          </section>
 
-          {mode === "open" ? (
-            <label className="block text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
-              Capacity (optional)
-              <input
-                type="number"
-                min={1}
-                inputMode="numeric"
-                value={capacity}
-                onChange={(event) => setCapacity(event.target.value)}
-                className="mt-2 h-12 w-full rounded-2xl bg-surface-container px-4 text-body-md outline-none sm:max-w-xs"
-              />
-            </label>
-          ) : null}
-
-          <div>
-            <p className="text-label-sm tracking-[0.08em] text-on-surface-variant uppercase">
-              Who
-            </p>
-            <div className="mt-3">
-              <AudiencePicker
-                students={students}
-                targets={targets}
-                onChange={setTargets}
-              />
+          <section className="event-form-section">
+            <div className="flex items-baseline justify-between gap-3">
+              <p className="event-form-kicker">Who it’s for</p>
+              <p className="text-label-sm text-on-surface-variant">
+                {audienceCount === 1 ? "1 student" : `${audienceCount} students`}
+              </p>
             </div>
-          </div>
+            <AudiencePicker
+              students={students}
+              targets={targets}
+              onChange={setTargets}
+            />
+          </section>
         </>
       )}
-
-      {needsApproval && !editing ? (
-        <p className="text-body-md text-on-surface-variant">
-          An admin will get an email to allow this before anyone else can see it.
-        </p>
-      ) : null}
 
       {error ? <p className="text-body-md text-error">{error}</p> : null}
       {notifyToken ? (

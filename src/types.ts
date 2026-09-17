@@ -15,6 +15,8 @@ export type Student = {
   name: string;
   cohort: CohortId;
   email: string | null;
+  country: string | null;
+  house: string | null;
   blocks: Partial<Record<BlockLetter, ClassEntry>>;
 };
 

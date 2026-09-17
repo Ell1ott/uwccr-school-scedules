@@ -1,4 +1,4 @@
-import { CalendarPlus, Sparkles } from "lucide-react";
+import { ArrowLeft, CalendarPlus, Sparkles } from "lucide-react";
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { useAuth } from "../lib/auth";
 import { useNow } from "../lib/now";
@@ -97,12 +97,24 @@ export function EventsPage({
     return (
       <div className="px-container-padding-mobile pt-[calc(env(safe-area-inset-top,0px)+1rem)] pb-mobile-nav md:px-container-padding-desktop md:pt-8 md:pb-16">
         <div className="mx-auto max-w-2xl">
-          <p className="text-label-sm tracking-[0.14em] text-on-surface-variant uppercase">
-            Events
-          </p>
-          <h1 className="mt-1 text-headline-lg-mobile tracking-tight">
-            {composing === "create" ? "New event" : "Edit event"}
-          </h1>
+          <header className="flex items-start gap-3">
+            <button
+              type="button"
+              className="mt-0.5 flex size-10 shrink-0 items-center justify-center rounded-full bg-surface-container text-on-surface-variant focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/20"
+              aria-label="Back to events"
+              onClick={() => onDraftChange(null)}
+            >
+              <ArrowLeft size={18} strokeWidth={1.75} aria-hidden />
+            </button>
+            <div>
+              <p className="text-label-sm tracking-[0.14em] text-on-surface-variant uppercase">
+                Events
+              </p>
+              <h1 className="text-headline-lg-mobile tracking-tight">
+                {composing === "create" ? "New event" : "Edit event"}
+              </h1>
+            </div>
+          </header>
           <div className="mt-6">
             <EventForm
               students={students}

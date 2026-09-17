@@ -16,6 +16,8 @@ from pathlib import Path
 from openpyxl import load_workbook
 from openpyxl.utils import range_boundaries
 
+from preferred_names import HOUSES_XLSX, ROSTER_XLSX, apply_houses, apply_preferred_names
+
 ROOT = Path(__file__).resolve().parents[1]
 OUT = ROOT / "src" / "data" / "students.json"
 CACHE_DIR = ROOT / "tmp"
@@ -338,6 +340,8 @@ def convert_source(xlsx: Path, cohort: str, id_prefix: str) -> dict:
                 "id": student["id"],
                 "name": student["name"],
                 "cohort": cohort,
+                "country": None,
+                "house": None,
                 "blocks": compact_blocks,
             }
         )
@@ -442,10 +446,40 @@ def main() -> None:
     ib2 = convert_source(ib2_xlsx, "IB2", "ib2-")
 
     payload_students = [*ib1["students"], *ib2["students"]]
+    if ROSTER_XLSX.exists():
+        overlay = apply_preferred_names(payload_students, ROSTER_XLSX)
+        payload_students = overlay["students"]
+        print(
+            f"Preferred names: matched {overlay['matched']}, "
+            f"unmatched roster {len(overlay['unmatched_rows'])}, "
+            f"unmatched students {len(overlay['unmatched_students'])}"
+        )
+        for row in overlay["unmatched_rows"]:
+            print(f"  roster skipped: {row['preferred'] or row['first']} ({row['legal']})")
+        for student in overlay["unmatched_students"]:
+            print(f"  student skipped: {student['name']}")
+    else:
+        print(f"No preferred-name roster at {ROSTER_XLSX.name}; leaving class-list names as-is")
+
+    if HOUSES_XLSX.exists():
+        houses = apply_houses(payload_students, HOUSES_XLSX)
+        payload_students = houses["students"]
+        print(
+            f"Houses: matched {houses['matched']}, "
+            f"unmatched roster {len(houses['unmatched_rows'])}, "
+            f"unmatched students {len(houses['unmatched_students'])}"
+        )
+        for row in houses["unmatched_rows"]:
+            print(f"  house roster skipped: {row['name']}")
+        for student in houses["unmatched_students"]:
+            print(f"  house student skipped: {student['name']}")
+    else:
+        print(f"No house roster at {HOUSES_XLSX.name}; leaving house empty")
+
     OUT.parent.mkdir(parents=True, exist_ok=True)
     payload = {
         "generatedAt": datetime.now(timezone.utc).isoformat(),
-        "source": f"{IB1_EXPORT_URL} + {IB2_XLSX.name}",
+        "source": f"{IB1_EXPORT_URL} + {IB2_XLSX.name} + {ROSTER_XLSX.name} + {HOUSES_XLSX.name}",
         "students": payload_students,
     }
     OUT.write_text(

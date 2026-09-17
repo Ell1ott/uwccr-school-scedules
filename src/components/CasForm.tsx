@@ -188,12 +188,6 @@ export function CasForm({
         </div>
       ) : null}
 
-      {needsApproval && !editing ? (
-        <p className="text-body-md text-on-surface-variant">
-          An admin will get an email to allow this before anyone else can see it.
-        </p>
-      ) : null}
-
       {error ? <p className="text-body-md text-error">{error}</p> : null}
       {notifyToken ? (
         <button

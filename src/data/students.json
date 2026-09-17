@@ -1,11 +1,13 @@
 {
   "generatedAt": "2026-09-15T20:00:46.417267+00:00",
-  "source": "https://docs.google.com/spreadsheets/d/1pGFqN1XrL4T_NDr_a9fkAmuwMf5ob3e_0_f6_uFDC8c/export?format=xlsx&gid=0 + IB2 Class list 2025-2026.xlsx",
+  "source": "https://docs.google.com/spreadsheets/d/1pGFqN1XrL4T_NDr_a9fkAmuwMf5ob3e_0_f6_uFDC8c/export?format=xlsx&gid=0 + IB2 Class list 2025-2026.xlsx + IB2 list (1).xlsx + OPEN HOUSE DISTRIBUITION.xlsx",
   "students": [
     {
       "id": "adrian-muwonge",
       "name": "Adrian Muwonge",
       "cohort": "IB1",
+      "country": "Uganda",
+      "house": "Montezuma",
       "blocks": {
         "A": {
           "subject": "Biology",
@@ -55,6 +57,8 @@
       "id": "adrianna-auma-vuhya-mbagaya",
       "name": "Adrianna Auma Vuhya Mbagaya",
       "cohort": "IB1",
+      "country": "Kenya",
+      "house": "Flamingo",
       "blocks": {
         "A": {
           "subject": "French B",
@@ -102,8 +106,10 @@
     },
     {
       "id": "alejandra-bremont-strakova",
-      "name": "Alejandra Bremont Straková",
+      "name": "Ale Bremont Straková (Alejandra)",
       "cohort": "IB1",
+      "country": "Slovakia",
+      "house": "Hermosa",
       "blocks": {
         "A": {
           "subject": "Physics",
@@ -151,8 +157,10 @@
     },
     {
       "id": "alexander-kuntz-kristiansen",
-      "name": "Alexander Kuntz Kristiansen",
+      "name": "Alex Kristiansen (Alexander Kuntz Aa)",
       "cohort": "IB1",
+      "country": "Denmark",
+      "house": "Tortuguero",
       "blocks": {
         "A": {
           "subject": "English Lang & Lit",
@@ -202,6 +210,8 @@
       "id": "amanda-yutian-song-li",
       "name": "Amanda Yutian Song Li",
       "cohort": "IB1",
+      "country": "Costa Rica",
+      "house": "Coco",
       "blocks": {
         "A": {
           "subject": "Biology",
@@ -251,6 +261,8 @@
       "id": "anahi-sachin-dhanani",
       "name": "Anahi Sachin Dhanani",
       "cohort": "IB1",
+      "country": "United Kingdom",
+      "house": "Montezuma",
       "blocks": {
         "A": {
           "subject": "Psychology",
@@ -300,6 +312,8 @@
       "id": "anna-eleanor-nalezny",
       "name": "Anna Eleanor Nalezny",
       "cohort": "IB1",
+      "country": "United States",
+      "house": "Cabo Blanco",
       "blocks": {
         "A": {
           "subject": "Anthropology",
@@ -349,6 +363,8 @@
       "id": "anouk-juulke-stahl",
       "name": "Anouk Juulke Stahl",
       "cohort": "IB1",
+      "country": "Germany",
+      "house": "Flamingo",
       "blocks": {
         "A": {
           "subject": "Anthropology",
@@ -396,8 +412,10 @@
     },
     {
       "id": "bastiaan-marc-scheurwater",
-      "name": "Bastiaan Marc Scheurwater",
+      "name": "Bas Scheurwater (Bastiaan Marc)",
       "cohort": "IB1",
+      "country": "Netherlands",
+      "house": "Tortuguero",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -445,8 +463,10 @@
     },
     {
       "id": "benjamin-tomas-esteban-oppenheimer",
-      "name": "Benjamín Tomás Esteban Oppenheímer",
+      "name": "Beni Esteban Oppenheímer (Benjamín Tomás)",
       "cohort": "IB1",
+      "country": "Spain",
+      "house": "Montezuma",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -496,6 +516,8 @@
       "id": "carl-gustav-mandl",
       "name": "Carl Gustav Mandl",
       "cohort": "IB1",
+      "country": "Germany",
+      "house": "Cabo Blanco",
       "blocks": {
         "A": {
           "subject": "Anthropology",
@@ -545,6 +567,8 @@
       "id": "charles-michael-kaikai",
       "name": "Charles Michael Kaikai",
       "cohort": "IB1",
+      "country": "Sierra Leone",
+      "house": "Malpaís",
       "blocks": {
         "A": {
           "subject": "Physics",
@@ -594,6 +618,8 @@
       "id": "chelsie-natalia-charria-flores",
       "name": "Chelsie Natalia Charria Flores",
       "cohort": "IB1",
+      "country": "Costa Rica",
+      "house": "Cabo Blanco",
       "blocks": {
         "A": {
           "subject": "Anthropology",
@@ -643,6 +669,8 @@
       "id": "chimiemena-shekinah-njoku",
       "name": "Chimiemena Shekinah Njoku",
       "cohort": "IB1",
+      "country": "Nigeria",
+      "house": "Hermosa",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -692,6 +720,8 @@
       "id": "chimme-pema-selden",
       "name": "Chimme Pema Selden",
       "cohort": "IB1",
+      "country": "Bhutan",
+      "house": "Cahuita",
       "blocks": {
         "A": {
           "subject": "Biology",
@@ -739,8 +769,10 @@
     },
     {
       "id": "chun-ying-lai",
-      "name": "Chun-Ying Lai",
+      "name": "Jimmy Lai (Chun-Ying)",
       "cohort": "IB1",
+      "country": "Taiwan",
+      "house": "Cabo Blanco",
       "blocks": {
         "B": {
           "subject": "Economics",
@@ -790,6 +822,8 @@
       "id": "coco-tresca-hyslop",
       "name": "Coco Tresca Hyslop",
       "cohort": "IB1",
+      "country": "United States",
+      "house": "Cahuita",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -839,6 +873,8 @@
       "id": "cora-naomi-de-silva",
       "name": "Cora Naomi De Silva",
       "cohort": "IB1",
+      "country": "Bermuda",
+      "house": "Cahuita",
       "blocks": {
         "B": {
           "subject": "Economics",
@@ -886,8 +922,10 @@
     },
     {
       "id": "daniel-marcelo-vargas-mata",
-      "name": "Daniel Marcelo Vargas Mata",
+      "name": "Marcelo Vargas Mata (Daniel)",
       "cohort": "IB1",
+      "country": "Costa Rica",
+      "house": "Tortuguero",
       "blocks": {
         "A": {
           "subject": "Anthropology",
@@ -935,8 +973,10 @@
     },
     {
       "id": "daniela-de-los-angeles-barquero-montoya",
-      "name": "Daniela De Los Angeles Barquero Montoya",
+      "name": "Angeles Barquero Montoya (Daniela)",
       "cohort": "IB1",
+      "country": "Costa Rica",
+      "house": "Hermosa",
       "blocks": {
         "A": {
           "subject": "Spanish Lang & Lit",
@@ -986,6 +1026,8 @@
       "id": "darina-charlotte-seumenicht",
       "name": "Darina Charlotte Seumenicht",
       "cohort": "IB1",
+      "country": "Germany",
+      "house": "Montezuma",
       "blocks": {
         "A": {
           "subject": "English Lang & Lit",
@@ -1035,6 +1077,8 @@
       "id": "derick-adolfo-rivas-delgado",
       "name": "Derick Adolfo Rivas Delgado",
       "cohort": "IB1",
+      "country": "Nicaragua",
+      "house": "Malpaís",
       "blocks": {
         "B": {
           "subject": "Economics",
@@ -1084,6 +1128,8 @@
       "id": "edit-csernus",
       "name": "Edit Csernus",
       "cohort": "IB1",
+      "country": "Hungary",
+      "house": "Flamingo",
       "blocks": {
         "A": {
           "subject": "Biology",
@@ -1133,6 +1179,8 @@
       "id": "eileen-laurie-hagan",
       "name": "Eileen Laurie Hagan",
       "cohort": "IB1",
+      "country": "United States",
+      "house": "Coco",
       "blocks": {
         "A": {
           "subject": "Anthropology",
@@ -1182,6 +1230,8 @@
       "id": "eldar-musayev",
       "name": "Eldar Musayev",
       "cohort": "IB1",
+      "country": "Lithuania",
+      "house": "Tortuguero",
       "blocks": {
         "B": {
           "subject": "Visual Arts",
@@ -1229,8 +1279,10 @@
     },
     {
       "id": "ella-sophia-shaw",
-      "name": "Ella Sophia Shaw",
+      "name": "Sophia Shaw (Ella)",
       "cohort": "IB1",
+      "country": "United Kingdom",
+      "house": "Malpaís",
       "blocks": {
         "B": {
           "subject": "Visual Arts",
@@ -1280,6 +1332,8 @@
       "id": "elliot-friedrich",
       "name": "Elliot Friedrich",
       "cohort": "IB1",
+      "country": "Germany",
+      "house": "Cabo Blanco",
       "blocks": {
         "A": {
           "subject": "Anthropology",
@@ -1329,6 +1383,8 @@
       "id": "emilie-lisa-francese",
       "name": "Emilie Lisa Francese",
       "cohort": "IB1",
+      "country": "Switzerland",
+      "house": "Cahuita",
       "blocks": {
         "B": {
           "subject": "English Lang & Lit",
@@ -1376,8 +1432,10 @@
     },
     {
       "id": "en-ting-chen",
-      "name": "En-Ting Chen",
+      "name": "Vanessa Chen (En-Ting)",
       "cohort": "IB1",
+      "country": "Taiwan",
+      "house": "Montezuma",
       "blocks": {
         "B": {
           "subject": "Economics",
@@ -1435,6 +1493,8 @@
       "id": "eoin-chandra-o-donaill-zanoni",
       "name": "Eoin Chandra O Donaill Zanoni",
       "cohort": "IB1",
+      "country": "Brazil",
+      "house": "Tortuguero",
       "blocks": {
         "A": {
           "subject": "Anthropology",
@@ -1484,6 +1544,8 @@
       "id": "erik-frydecky",
       "name": "Erik Frýdecký",
       "cohort": "IB1",
+      "country": "Czech Republic",
+      "house": "Cabo Blanco",
       "blocks": {
         "A": {
           "subject": "French B",
@@ -1531,8 +1593,10 @@
     },
     {
       "id": "ernesto-horacio-geymonat-armand-ugon",
-      "name": "Ernesto Horacio Geymonat Armand Ugon",
+      "name": "Ernest Geymonat Armand Ugon (Ernesto Horacio)",
       "cohort": "IB1",
+      "country": "Uruguay",
+      "house": "Tortuguero",
       "blocks": {
         "A": {
           "subject": "Physics",
@@ -1582,6 +1646,8 @@
       "id": "eva-movchan",
       "name": "Eva Movchan",
       "cohort": "IB1",
+      "country": "Russia",
+      "house": "Malpaís",
       "blocks": {
         "A": {
           "subject": "Physics",
@@ -1631,6 +1697,8 @@
       "id": "fabiana-roman-perez",
       "name": "Fabiana Román Pérez",
       "cohort": "IB1",
+      "country": "Costa Rica",
+      "house": "Flamingo",
       "blocks": {
         "A": {
           "subject": "French B",
@@ -1678,8 +1746,10 @@
     },
     {
       "id": "fiorella-jazmin-melgarejo-esquivel",
-      "name": "Fiorella Jazmin Melgarejo Esquivel",
+      "name": "Fio Melgarejo Esquivel (Fiorella Jazmin)",
       "cohort": "IB1",
+      "country": "Paraguay",
+      "house": "Cahuita",
       "blocks": {
         "A": {
           "subject": "Spanish Lang & Lit",
@@ -1729,6 +1799,8 @@
       "id": "gael-kalenga-kabale",
       "name": "Gael Kalenga Kabale",
       "cohort": "IB1",
+      "country": "Democratic Republic of the Congo",
+      "house": "Tortuguero",
       "blocks": {
         "A": {
           "subject": "Biology",
@@ -1776,8 +1848,10 @@
     },
     {
       "id": "glynnes-enidt-brett-ortiz",
-      "name": "Glynnes Enidt Brett Ortiz",
+      "name": "Enid Brett Ortiz (Glynnes Enidt)",
       "cohort": "IB1",
+      "country": "Costa Rica",
+      "house": "Flamingo",
       "blocks": {
         "A": {
           "subject": "Spanish Lang & Lit",
@@ -1827,6 +1901,8 @@
       "id": "halia-farran-souweine",
       "name": "Halia Farran Souweine",
       "cohort": "IB1",
+      "country": "Canada",
+      "house": "Malpaís",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -1876,6 +1952,8 @@
       "id": "hanifah-zahidah",
       "name": "Hanifah Zahidah",
       "cohort": "IB1",
+      "country": "Vietnam",
+      "house": "Coco",
       "blocks": {
         "A": {
           "subject": "Physics",
@@ -1925,6 +2003,8 @@
       "id": "herman-dahl-gaustad",
       "name": "Herman Dahl Gaustad",
       "cohort": "IB1",
+      "country": "Norway",
+      "house": "Malpaís",
       "blocks": {
         "A": {
           "subject": "Anthropology",
@@ -1982,6 +2062,8 @@
       "id": "ilia-ivanov-hristanov",
       "name": "Ilia Ivanov Hristanov",
       "cohort": "IB1",
+      "country": "Bulgaria",
+      "house": "Tortuguero",
       "blocks": {
         "B": {
           "subject": "Economics",
@@ -2031,6 +2113,8 @@
       "id": "jase-baidya",
       "name": "Jase Baidya",
       "cohort": "IB1",
+      "country": "Nepal",
+      "house": "Malpaís",
       "blocks": {
         "A": {
           "subject": "English Lang & Lit",
@@ -2080,6 +2164,8 @@
       "id": "jasmine-feliz-tielenius-kruythoff",
       "name": "Jasmine Feliz Tielenius Kruythoff",
       "cohort": "IB1",
+      "country": "Netherlands",
+      "house": "Hermosa",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -2127,8 +2213,10 @@
     },
     {
       "id": "javier-fuentes-hermoso",
-      "name": "Javier Fuentes Hermoso",
+      "name": "Javi Fuentes Hermoso (Javier)",
       "cohort": "IB1",
+      "country": "Spain",
+      "house": "Malpaís",
       "blocks": {
         "A": {
           "subject": "Physics",
@@ -2178,6 +2266,8 @@
       "id": "jing-u-lin",
       "name": "Jing-U Lin",
       "cohort": "IB1",
+      "country": "Uganda",
+      "house": "Malpaís",
       "blocks": {
         "A": {
           "subject": "Physics",
@@ -2227,6 +2317,8 @@
       "id": "justin-kiiza-kwikiriza",
       "name": "Justin Kiiza Kwikiriza",
       "cohort": "IB1",
+      "country": "Uganda",
+      "house": "Cabo Blanco",
       "blocks": {
         "A": {
           "subject": "French B",
@@ -2274,8 +2366,10 @@
     },
     {
       "id": "kaiyi-xu-austin",
-      "name": "Kaiyi Xu (Austin)",
+      "name": "Austin Xu (Kaiyi)",
       "cohort": "IB1",
+      "country": "China",
+      "house": "Montezuma",
       "blocks": {
         "A": {
           "subject": "English Lang & Lit",
@@ -2323,8 +2417,10 @@
     },
     {
       "id": "katalina-segura-alfaro",
-      "name": "Katalina Segura Alfaro",
+      "name": "Kata Segura Alfaro (Katalina)",
       "cohort": "IB1",
+      "country": "Costa Rica",
+      "house": "Coco",
       "blocks": {
         "A": {
           "subject": "Spanish Lang & Lit",
@@ -2374,6 +2470,8 @@
       "id": "kianny-mileska-acosta-ceciliano",
       "name": "Kianny Mileska Acosta Ceciliano",
       "cohort": "IB1",
+      "country": "Costa Rica",
+      "house": "Cahuita",
       "blocks": {
         "A": {
           "subject": "Spanish Lang & Lit",
@@ -2423,6 +2521,8 @@
       "id": "laila-emmanuelle-thorburn-chen",
       "name": "Laila Emmanuelle Thorburn Chen",
       "cohort": "IB1",
+      "country": "Jamaica",
+      "house": "Cabo Blanco",
       "blocks": {
         "A": {
           "subject": "Anthropology",
@@ -2472,6 +2572,8 @@
       "id": "laura-camila-zamora-chamorro",
       "name": "Laura Camila Zamora Chamorro",
       "cohort": "IB1",
+      "country": "Colombia",
+      "house": "Hermosa",
       "blocks": {
         "A": {
           "subject": "Psychology",
@@ -2521,6 +2623,8 @@
       "id": "lauren-dulce-gonzales-veltman",
       "name": "Lauren Dulce Gonzales Veltman",
       "cohort": "IB1",
+      "country": "Netherlands",
+      "house": "Cahuita",
       "blocks": {
         "B": {
           "subject": "Global Politics",
@@ -2570,6 +2674,8 @@
       "id": "layla-malia-khubchandani",
       "name": "Layla Malia Khubchandani",
       "cohort": "IB1",
+      "country": "Canada",
+      "house": "Montezuma",
       "blocks": {
         "A": {
           "subject": "Psychology",
@@ -2619,6 +2725,8 @@
       "id": "lottie-stares-lewis",
       "name": "Lottie Stares Lewis",
       "cohort": "IB1",
+      "country": "United Kingdom",
+      "house": "Hermosa",
       "blocks": {
         "A": {
           "subject": "Psychology",
@@ -2668,6 +2776,8 @@
       "id": "louise-dalstr-m-thoma",
       "name": "Louise Dalstrøm Thoma",
       "cohort": "IB1",
+      "country": "Norway",
+      "house": "Hermosa",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -2717,6 +2827,8 @@
       "id": "luis-fernando-rueda-matute",
       "name": "Luis Fernando Rueda Matute",
       "cohort": "IB1",
+      "country": "Honduras",
+      "house": "Montezuma",
       "blocks": {
         "A": {
           "subject": "Biology",
@@ -2764,8 +2876,10 @@
     },
     {
       "id": "luis-lozano-samper",
-      "name": "Luis Lozano Samper",
+      "name": "Luis Lozano Samper (Luisa Ignacio)",
       "cohort": "IB1",
+      "country": "Colombia",
+      "house": "Montezuma",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -2815,6 +2929,8 @@
       "id": "maithe-antonia-gonzalez-concha",
       "name": "Maithe Antonia Gonzalez Concha",
       "cohort": "IB1",
+      "country": "Chile",
+      "house": "Flamingo",
       "blocks": {
         "B": {
           "subject": "Global Politics",
@@ -2864,6 +2980,8 @@
       "id": "marek-daniel-barancik",
       "name": "Marek Daniel Barančík",
       "cohort": "IB1",
+      "country": "Slovakia",
+      "house": "Tortuguero",
       "blocks": {
         "B": {
           "subject": "Economics",
@@ -2911,8 +3029,10 @@
     },
     {
       "id": "maria-fernanda-castillo-cuellar",
-      "name": "Maria Fernanda Castillo Cuellar",
+      "name": "Mafer Castillo Cuellar (María Fernanda)",
       "cohort": "IB1",
+      "country": "El Salvador",
+      "house": "Coco",
       "blocks": {
         "B": {
           "subject": "Theatre",
@@ -2960,8 +3080,10 @@
     },
     {
       "id": "maria-jose-candelas-vargas",
-      "name": "Maria José Candelas Vargas",
+      "name": "Majo Candelas Vargas (Maria José)",
       "cohort": "IB1",
+      "country": "Venezuela",
+      "house": "Cahuita",
       "blocks": {
         "A": {
           "subject": "Anthropology",
@@ -3009,8 +3131,10 @@
     },
     {
       "id": "maria-panagiota-kaoudi",
-      "name": "Maria Panagiota Kaoudi",
+      "name": "Maritina Kaoudi (Maria Panagiota)",
       "cohort": "IB1",
+      "country": "Greece",
+      "house": "Coco",
       "blocks": {
         "B": {
           "subject": "Economics",
@@ -3060,6 +3184,8 @@
       "id": "mariana-jimenez-cerdas",
       "name": "Mariana Jiménez Cerdas",
       "cohort": "IB1",
+      "country": "Costa Rica",
+      "house": "Montezuma",
       "blocks": {
         "A": {
           "subject": "English Lang & Lit",
@@ -3117,6 +3243,8 @@
       "id": "matei-daniel-ghitoiu",
       "name": "Matei Daniel Ghitoiu",
       "cohort": "IB1",
+      "country": "Romania",
+      "house": "Malpaís",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -3166,6 +3294,8 @@
       "id": "mateo-andres-benitez-lara",
       "name": "Mateo Andrés BenÍtez Lara",
       "cohort": "IB1",
+      "country": "El Salvador",
+      "house": "Cabo Blanco",
       "blocks": {
         "A": {
           "subject": "Spanish Lang & Lit",
@@ -3215,6 +3345,8 @@
       "id": "maxime-gabin-dinard-maucoeur",
       "name": "Maxime Gabin Dinard-Maucoeur",
       "cohort": "IB1",
+      "country": "France",
+      "house": "Malpaís",
       "blocks": {
         "A": {
           "subject": "Biology",
@@ -3264,6 +3396,8 @@
       "id": "masa-pasic",
       "name": "Maša Pašić",
       "cohort": "IB1",
+      "country": "Serbia",
+      "house": "Cahuita",
       "blocks": {
         "A": {
           "subject": "English Lang & Lit",
@@ -3307,6 +3441,8 @@
       "id": "mitra-mahin-abram",
       "name": "Mitra Mahin Abram",
       "cohort": "IB1",
+      "country": "Afghanistan",
+      "house": "Flamingo",
       "blocks": {
         "A": {
           "subject": "Physics",
@@ -3354,8 +3490,10 @@
     },
     {
       "id": "mpundu-herve-impano",
-      "name": "Mpundu Hervé Impano",
+      "name": "Hervé Impano (Mpundu)",
       "cohort": "IB1",
+      "country": "Rwanda",
+      "house": "Cabo Blanco",
       "blocks": {
         "A": {
           "subject": "Physics",
@@ -3405,6 +3543,8 @@
       "id": "nala-jasmina-norsworthy",
       "name": "Nala Jasmina Norsworthy",
       "cohort": "IB1",
+      "country": "United Kingdom",
+      "house": "Hermosa",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -3454,6 +3594,8 @@
       "id": "namtran-thien-tran",
       "name": "Namtran Thien Tran",
       "cohort": "IB1",
+      "country": "United States",
+      "house": "Flamingo",
       "blocks": {
         "A": {
           "subject": "Anthropology",
@@ -3503,6 +3645,8 @@
       "id": "natasza-maria-obrycka",
       "name": "Natasza Maria Obrycka",
       "cohort": "IB1",
+      "country": "Poland",
+      "house": "Cahuita",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -3552,6 +3696,8 @@
       "id": "nicola-chebet-sabula",
       "name": "Nicola Chebet Sabula",
       "cohort": "IB1",
+      "country": "Kenya",
+      "house": "Flamingo",
       "blocks": {
         "A": {
           "subject": "French B",
@@ -3601,6 +3747,8 @@
       "id": "nika-fransis",
       "name": "Nika Fransis",
       "cohort": "IB1",
+      "country": "Israel",
+      "house": "Malpaís",
       "blocks": {
         "B": {
           "subject": "Visual Arts",
@@ -3650,6 +3798,8 @@
       "id": "noah-daniel-burege",
       "name": "Noah Daniel Burege",
       "cohort": "IB1",
+      "country": "United States",
+      "house": "Montezuma",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -3699,6 +3849,8 @@
       "id": "olivia-sayaka-bates-persson",
       "name": "Olivia Sayaka Bates Persson",
       "cohort": "IB1",
+      "country": "Canada",
+      "house": "Coco",
       "blocks": {
         "A": {
           "subject": "French B",
@@ -3748,6 +3900,8 @@
       "id": "oslin-smith-irigoyen-alvarado",
       "name": "Oslin Smith Irigoyen Alvarado",
       "cohort": "IB1",
+      "country": "Nicaragua",
+      "house": "Malpaís",
       "blocks": {
         "B": {
           "subject": "Economics",
@@ -3797,6 +3951,8 @@
       "id": "rebecca-signoretti",
       "name": "Rebecca Signoretti",
       "cohort": "IB1",
+      "country": "Italy",
+      "house": "Coco",
       "blocks": {
         "B": {
           "subject": "Visual Arts",
@@ -3846,6 +4002,8 @@
       "id": "richesse-kadima-tshibangu",
       "name": "Richesse Kadima Tshibangu",
       "cohort": "IB1",
+      "country": "Democratic Republic of the Congo",
+      "house": "Tortuguero",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -3895,6 +4053,8 @@
       "id": "rosa-elizabeth-balaguer-davis",
       "name": "Rosa Elizabeth Balaguer Davis",
       "cohort": "IB1",
+      "country": "United Kingdom",
+      "house": "Coco",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -3944,6 +4104,8 @@
       "id": "roxane-husain",
       "name": "Roxane Husain",
       "cohort": "IB1",
+      "country": "Belgium",
+      "house": "Montezuma",
       "blocks": {
         "B": {
           "subject": "Global Politics",
@@ -3991,8 +4153,10 @@
     },
     {
       "id": "rudy-eduardo-siguan-ixcal",
-      "name": "Rudy Eduardo Siguan Ixcal",
+      "name": "Eduardo Siguan Ixcal (Rudy)",
       "cohort": "IB1",
+      "country": "Guatemala",
+      "house": "Tortuguero",
       "blocks": {
         "A": {
           "subject": "Spanish Lang & Lit",
@@ -4042,6 +4206,8 @@
       "id": "sampada-adhikari",
       "name": "Sampada Adhikari",
       "cohort": "IB1",
+      "country": "Nepal",
+      "house": "Coco",
       "blocks": {
         "A": {
           "subject": "English Lang & Lit",
@@ -4089,8 +4255,10 @@
     },
     {
       "id": "samuel-grey-villarreal-montoya",
-      "name": "Samuel Grey Villarreal Montoya",
+      "name": "Sam Villarreal Montoya (Samuel Grey)",
       "cohort": "IB1",
+      "country": "United States",
+      "house": "Tortuguero",
       "blocks": {
         "A": {
           "subject": "Biology",
@@ -4140,6 +4308,8 @@
       "id": "sebastian-roberto-sanchez-obregon",
       "name": "Sebastián Roberto Sánchez Obregón",
       "cohort": "IB1",
+      "country": "Peru",
+      "house": "Cabo Blanco",
       "blocks": {
         "A": {
           "subject": "Spanish Lang & Lit",
@@ -4189,6 +4359,8 @@
       "id": "selma-medog-gedon",
       "name": "Selma Medog Gedon",
       "cohort": "IB1",
+      "country": "Germany",
+      "house": "Cahuita",
       "blocks": {
         "A": {
           "subject": "Biology",
@@ -4238,6 +4410,8 @@
       "id": "sheena-wangumo-wanyoro",
       "name": "Sheena Wangumo Wanyoro",
       "cohort": "IB1",
+      "country": "Kenya",
+      "house": "Malpaís",
       "blocks": {
         "A": {
           "subject": "Physics",
@@ -4287,6 +4461,8 @@
       "id": "sofia-pagan-ortigas",
       "name": "Sofía Pagan Ortigas",
       "cohort": "IB1",
+      "country": "Spain",
+      "house": "Coco",
       "blocks": {
         "A": {
           "subject": "Spanish Lang & Lit",
@@ -4336,6 +4512,8 @@
       "id": "sonam-deywa-jamtsho",
       "name": "Sonam Deywa Jamtsho",
       "cohort": "IB1",
+      "country": "Bhutan",
+      "house": "Tortuguero",
       "blocks": {
         "A": {
           "subject": "Physics",
@@ -4383,8 +4561,10 @@
     },
     {
       "id": "sonam-jourden",
-      "name": "Sonam Jourden",
+      "name": "Jourden (Sonam)",
       "cohort": "IB1",
+      "country": "India",
+      "house": "Montezuma",
       "blocks": {
         "A": {
           "subject": "Physics",
@@ -4434,6 +4614,8 @@
       "id": "sophia-jasmine-binti-shahriman",
       "name": "Sophia Jasmine Binti Shahriman",
       "cohort": "IB1",
+      "country": "Malaysia",
+      "house": "Hermosa",
       "blocks": {
         "A": {
           "subject": "English Lang & Lit",
@@ -4483,6 +4665,8 @@
       "id": "sragvi-umesh-bhoyar",
       "name": "Sragvi Umesh Bhoyar",
       "cohort": "IB1",
+      "country": "India",
+      "house": "Hermosa",
       "blocks": {
         "A": {
           "subject": "Biology",
@@ -4530,8 +4714,10 @@
     },
     {
       "id": "tenzin-norsang",
-      "name": "Tenzin Norsang",
+      "name": "Norsang (Tenzin)",
       "cohort": "IB1",
+      "country": "India",
+      "house": "Malpaís",
       "blocks": {
         "A": {
           "subject": "Biology",
@@ -4579,8 +4765,10 @@
     },
     {
       "id": "teresa-camarundin-campos",
-      "name": "Teresa Camarundin Campos",
+      "name": "Teresa Camarudin Campos",
       "cohort": "IB1",
+      "country": "Portugal",
+      "house": "Coco",
       "blocks": {
         "A": {
           "subject": "French B",
@@ -4630,6 +4818,8 @@
       "id": "theope-selene-kassimati-agiorgiti",
       "name": "Theope Selene Kassimati Agiorgiti",
       "cohort": "IB1",
+      "country": "Greece",
+      "house": "Flamingo",
       "blocks": {
         "B": {
           "subject": "Visual Arts",
@@ -4679,6 +4869,8 @@
       "id": "trisha-tushar-bolinjkar",
       "name": "Trisha Tushar Bolinjkar",
       "cohort": "IB1",
+      "country": "United States",
+      "house": "Hermosa",
       "blocks": {
         "A": {
           "subject": "English Lang & Lit",
@@ -4728,6 +4920,8 @@
       "id": "tushita-negi",
       "name": "Tushita Negi",
       "cohort": "IB1",
+      "country": "India",
+      "house": "Flamingo",
       "blocks": {
         "A": {
           "subject": "Psychology",
@@ -4777,6 +4971,8 @@
       "id": "yajur-ojha",
       "name": "Yajur Ojha",
       "cohort": "IB1",
+      "country": "Nepal",
+      "house": "Tortuguero",
       "blocks": {
         "A": {
           "subject": "Physics",
@@ -4826,6 +5022,8 @@
       "id": "yune-sandi-wone",
       "name": "Yune Sandi Wone",
       "cohort": "IB1",
+      "country": "Myanmar",
+      "house": "Flamingo",
       "blocks": {
         "A": {
           "subject": "Physics",
@@ -4873,8 +5071,10 @@
     },
     {
       "id": "zachary-lewis-evans",
-      "name": "Zachary Lewis Evans",
+      "name": "Zach Evans (Zachary Lewis)",
       "cohort": "IB1",
+      "country": "United Kingdom",
+      "house": "Montezuma",
       "blocks": {
         "B": {
           "subject": "Visual Arts",
@@ -4922,8 +5122,10 @@
     },
     {
       "id": "zhixuan-li-ethan",
-      "name": "Zhixuan Li (Ethan)",
+      "name": "Ethan Li (Zhixuan)",
       "cohort": "IB1",
+      "country": "China",
+      "house": "Tortuguero",
       "blocks": {
         "A": {
           "subject": "Biology",
@@ -4973,6 +5175,8 @@
       "id": "zoey-briseida-macias-garcia",
       "name": "Zoey Briseida Macias Garcia",
       "cohort": "IB1",
+      "country": "Mexico",
+      "house": "Hermosa",
       "blocks": {
         "A": {
           "subject": "Psychology",
@@ -5022,6 +5226,8 @@
       "id": "ib2-aarush-kumar",
       "name": "Aarush Kumar",
       "cohort": "IB2",
+      "country": null,
+      "house": "Tortuguero",
       "blocks": {
         "A": {
           "subject": "Economics",
@@ -5069,8 +5275,10 @@
     },
     {
       "id": "ib2-agne-meckovskyte",
-      "name": "Agne Mečkovskytė",
+      "name": "Agnė Mečkovskytė",
       "cohort": "IB2",
+      "country": null,
+      "house": "Coco",
       "blocks": {
         "A": {
           "subject": "Economics",
@@ -5118,8 +5326,10 @@
     },
     {
       "id": "ib2-aileen-marcela-lopez-diaz",
-      "name": "Aileen Marcela López Díaz",
+      "name": "Marcela López Díaz (Aileen)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Hermosa",
       "blocks": {
         "A": {
           "subject": "Visual Arts",
@@ -5169,6 +5379,8 @@
       "id": "ib2-alina-araya-hernandez",
       "name": "Alina Araya Hernández",
       "cohort": "IB2",
+      "country": null,
+      "house": "Coco",
       "blocks": {
         "A": {
           "subject": "History",
@@ -5218,6 +5430,8 @@
       "id": "ib2-amaya-ridaura-meierwisch",
       "name": "Amaya Ridaura Meierwisch",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cabo Blanco",
       "blocks": {
         "A": {
           "subject": "Visual Arts",
@@ -5265,8 +5479,10 @@
     },
     {
       "id": "ib2-amelia-balwit",
-      "name": "Amelia Balwit",
+      "name": "Amelia Lauren-Elizabeth Balwit",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cabo Blanco",
       "blocks": {
         "B": {
           "subject": "English Lit",
@@ -5314,8 +5530,10 @@
     },
     {
       "id": "ib2-ana-lorena-alonzo",
-      "name": "Ana Lorena Alonzo",
+      "name": "Ana Lorena Alonzo Sandino",
       "cohort": "IB2",
+      "country": null,
+      "house": "Hermosa",
       "blocks": {
         "A": {
           "subject": "Chemistry",
@@ -5363,8 +5581,10 @@
     },
     {
       "id": "ib2-anya-opal",
-      "name": "Anya Opal",
+      "name": "Anya Joss Opal",
       "cohort": "IB2",
+      "country": null,
+      "house": "Malpaís",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -5414,6 +5634,8 @@
       "id": "ib2-aoife-jassami-wade",
       "name": "Aoife Jassami Wade",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cahuita",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -5461,8 +5683,10 @@
     },
     {
       "id": "ib2-arianna-candeloro",
-      "name": "Arianna Candeloro",
+      "name": "Ari Candeloro (Arianna)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Malpaís",
       "blocks": {
         "A": {
           "subject": "History",
@@ -5512,6 +5736,8 @@
       "id": "ib2-aryaka-bist",
       "name": "Aryaka Bist",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cahuita",
       "blocks": {
         "A": {
           "subject": "Economics",
@@ -5561,6 +5787,8 @@
       "id": "ib2-aunati-kumar",
       "name": "Aunati Kumar",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cabo Blanco",
       "blocks": {
         "A": {
           "subject": "English Lang & Lit",
@@ -5608,8 +5836,10 @@
     },
     {
       "id": "ib2-aye-chan-pyae-zone",
-      "name": "Aye Chan Pyae Zone",
+      "name": "Asako Zone (Aye Chan Pyae)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Flamingo",
       "blocks": {
         "A": {
           "subject": "Visual Arts",
@@ -5657,8 +5887,10 @@
     },
     {
       "id": "ib2-azure-adams",
-      "name": "Azure Adams",
+      "name": "Ash Adams (Azure Naima)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Hermosa",
       "blocks": {
         "B": {
           "subject": "Biology",
@@ -5706,8 +5938,10 @@
     },
     {
       "id": "ib2-benicio-brzozowski",
-      "name": "Benicio Brzozowski",
+      "name": "Benicio Brzozowski Astié",
       "cohort": "IB2",
+      "country": null,
+      "house": "Montezuma",
       "blocks": {
         "B": {
           "subject": "Physics",
@@ -5755,8 +5989,10 @@
     },
     {
       "id": "ib2-berber-de-greef",
-      "name": "Berber de Greef",
+      "name": "Berber Linda de Greef",
       "cohort": "IB2",
+      "country": null,
+      "house": "Hermosa",
       "blocks": {
         "A": {
           "subject": "Visual Arts",
@@ -5806,6 +6042,8 @@
       "id": "ib2-bhim-prasad-timalsina",
       "name": "Bhim Prasad Timalsina",
       "cohort": "IB2",
+      "country": null,
+      "house": "Malpaís",
       "blocks": {
         "B": {
           "subject": "Physics",
@@ -5855,6 +6093,8 @@
       "id": "ib2-catharina-johanna-mitzi-helena-keller-with",
       "name": "Catharina Johanna Mitzi Helena Keller-With",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cahuita",
       "blocks": {
         "A": {
           "subject": "Visual Arts",
@@ -5904,6 +6144,8 @@
       "id": "ib2-cecilie-miklasz-carstensen",
       "name": "Cecilie Miklasz Carstensen",
       "cohort": "IB2",
+      "country": null,
+      "house": null,
       "blocks": {
         "B": {
           "subject": "Biology",
@@ -5951,8 +6193,10 @@
     },
     {
       "id": "ib2-chieh-ni-janice-yang",
-      "name": "Chieh-Ni (Janice) Yang",
+      "name": "Janice Yang (Chieh-Ni)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Hermosa",
       "blocks": {
         "A": {
           "subject": "Chemistry",
@@ -6000,8 +6244,10 @@
     },
     {
       "id": "ib2-chinoyerem-miracle-onyegbula",
-      "name": "Chinoyerem Miracle Onyegbula",
+      "name": "Miracle Chinoyerem Onyegbula",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cabo Blanco",
       "blocks": {
         "A": {
           "subject": "English Lang & Lit",
@@ -6051,6 +6297,8 @@
       "id": "ib2-daniel-alejandro-aparicio-canales",
       "name": "Daniel Alejandro Aparicio Canales",
       "cohort": "IB2",
+      "country": null,
+      "house": "Montezuma",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -6138,6 +6386,8 @@
       "id": "ib2-daniel-camilo-gonzalez-marin",
       "name": "Daniel Camilo Gonzalez Marin",
       "cohort": "IB2",
+      "country": null,
+      "house": "Tortuguero",
       "blocks": {
         "B": {
           "subject": "Spanish Lang & Lit",
@@ -6187,6 +6437,8 @@
       "id": "ib2-danielle-namuwonge",
       "name": "Danielle Namuwonge",
       "cohort": "IB2",
+      "country": null,
+      "house": "Coco",
       "blocks": {
         "A": {
           "subject": "Chemistry",
@@ -6234,8 +6486,10 @@
     },
     {
       "id": "ib2-eain-pyae",
-      "name": "Eain Pyae",
+      "name": "Ella Pyae (Eain)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Coco",
       "blocks": {
         "A": {
           "subject": "Chemistry",
@@ -6283,8 +6537,10 @@
     },
     {
       "id": "ib2-eaint-htar-wazin-aung",
-      "name": "Eaint Htar Wazin Aung",
+      "name": "Amanda Aung (Eaint Htar Wazin)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cahuita",
       "blocks": {
         "A": {
           "subject": "Chemistry",
@@ -6332,8 +6588,10 @@
     },
     {
       "id": "ib2-eddie-xi",
-      "name": "Eddie Xi",
+      "name": "Eddie Xi (Jiale)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cabo Blanco",
       "blocks": {
         "B": {
           "subject": "Physics",
@@ -6383,6 +6641,8 @@
       "id": "ib2-edith-bulat-jovinger",
       "name": "Edith Bulat Jövinger",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cahuita",
       "blocks": {
         "A": {
           "subject": "English Lang & Lit",
@@ -6430,8 +6690,10 @@
     },
     {
       "id": "ib2-elba-de-la-oliva",
-      "name": "Elba de la Oliva",
+      "name": "Elba de la Oliva Núñez",
       "cohort": "IB2",
+      "country": null,
+      "house": "Hermosa",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -6479,8 +6741,10 @@
     },
     {
       "id": "ib2-emely-johanya-lopez-torres",
-      "name": "Emely Johanya López Torres",
+      "name": "Emi López Torres (Emely Johanya)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cahuita",
       "blocks": {
         "B": {
           "subject": "Spanish Lang & Lit",
@@ -6530,6 +6794,8 @@
       "id": "ib2-federico-corda",
       "name": "Federico Corda",
       "cohort": "IB2",
+      "country": null,
+      "house": "Malpaís",
       "blocks": {
         "B": {
           "subject": "Spanish B",
@@ -6579,6 +6845,8 @@
       "id": "ib2-filip-suchanski",
       "name": "Filip Suchanski",
       "cohort": "IB2",
+      "country": null,
+      "house": "Tortuguero",
       "blocks": {
         "B": {
           "subject": "Physics",
@@ -6620,8 +6888,10 @@
     },
     {
       "id": "ib2-fiorenza-echecopar-correa",
-      "name": "Fiorenza Echecopar Correa",
+      "name": "Fiore Echecopar Correa (Fiorenza)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Coco",
       "blocks": {
         "A": {
           "subject": "Visual Arts",
@@ -6669,8 +6939,10 @@
     },
     {
       "id": "ib2-florenz-levian-krau",
-      "name": "Florenz Levian Krauß",
+      "name": "Flo Krauß (Florenz Levian)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Tortuguero",
       "blocks": {
         "B": {
           "subject": "Physics",
@@ -6720,6 +6992,8 @@
       "id": "ib2-gabriel-blanco-herrera",
       "name": "Gabriel Blanco Herrera",
       "cohort": "IB2",
+      "country": null,
+      "house": "Malpaís",
       "blocks": {
         "A": {
           "subject": "English Lang & Lit",
@@ -6769,6 +7043,8 @@
       "id": "ib2-grete-mika-gollenbeck",
       "name": "Grete Mika Gollenbeck",
       "cohort": "IB2",
+      "country": null,
+      "house": "Coco",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -6816,8 +7092,10 @@
     },
     {
       "id": "ib2-hedda-olson",
-      "name": "Hedda Olson",
+      "name": "Hedda Wahl Olson",
       "cohort": "IB2",
+      "country": null,
+      "house": "Malpaís",
       "blocks": {
         "A": {
           "subject": "Chemistry",
@@ -6859,8 +7137,10 @@
     },
     {
       "id": "ib2-hillary-villena-quispe",
-      "name": "Hillary Villena Quispe",
+      "name": "Hilly Villena Quispe (Hillary Valeria)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cahuita",
       "blocks": {
         "A": {
           "subject": "Visual Arts",
@@ -6908,8 +7188,10 @@
     },
     {
       "id": "ib2-hsuan-hao-chang",
-      "name": "Hsuan-Hao Chang",
+      "name": "Vic Chang (Hsuan-Hao)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Tortuguero",
       "blocks": {
         "A": {
           "subject": "Visual Arts",
@@ -6959,6 +7241,8 @@
       "id": "ib2-ignacio-oreamuno-alpizar",
       "name": "Ignacio Oreamuno Alpizar",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cabo Blanco",
       "blocks": {
         "A": {
           "subject": "Economics",
@@ -7006,8 +7290,10 @@
     },
     {
       "id": "ib2-imran-tahiri",
-      "name": "Imran Tahiri",
+      "name": "Imran (Tahiri)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Montezuma",
       "blocks": {
         "A": {
           "subject": "Economics",
@@ -7055,8 +7341,10 @@
     },
     {
       "id": "ib2-isaac-sekagya",
-      "name": "Isaac Sekagya",
+      "name": "Isaac Sekagya (Kasirye Gabriel)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Tortuguero",
       "blocks": {
         "A": {
           "subject": "Economics",
@@ -7106,6 +7394,8 @@
       "id": "ib2-isabel-canas-ferreira-daltrop",
       "name": "Isabel Canas-Ferreira Daltrop",
       "cohort": "IB2",
+      "country": null,
+      "house": "Hermosa",
       "blocks": {
         "A": {
           "subject": "History",
@@ -7153,8 +7443,10 @@
     },
     {
       "id": "ib2-isabela-aurelio-de-vargas",
-      "name": "Isabela Aurélio de Vargas",
+      "name": "Bela Aurélio de Vargas (Isabela)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Coco",
       "blocks": {
         "A": {
           "subject": "Economics",
@@ -7204,6 +7496,8 @@
       "id": "ib2-jade-yixuan-wang",
       "name": "Jade Yixuan Wang",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cabo Blanco",
       "blocks": {
         "B": {
           "subject": "Anthropology",
@@ -7253,6 +7547,8 @@
       "id": "ib2-jafeth-suarez-calderon",
       "name": "Jafeth Suarez Calderón",
       "cohort": "IB2",
+      "country": null,
+      "house": "Tortuguero",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -7302,6 +7598,8 @@
       "id": "ib2-jessica-lee-hayduk",
       "name": "Jessica Lee Hayduk",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cahuita",
       "blocks": {
         "A": {
           "subject": "Chemistry",
@@ -7349,8 +7647,10 @@
     },
     {
       "id": "ib2-jorge-alexander-rivero-anez",
-      "name": "Jorge Alexander Rivero Añez",
+      "name": "George Rivero Añez (Jorge Alexander)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cabo Blanco",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -7400,6 +7700,8 @@
       "id": "ib2-josie-may-thomas",
       "name": "Josie May Thomas",
       "cohort": "IB2",
+      "country": null,
+      "house": "Montezuma",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -7449,6 +7751,8 @@
       "id": "ib2-jules-melgaard",
       "name": "Jules Melgaard",
       "cohort": "IB2",
+      "country": null,
+      "house": "Malpaís",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -7498,6 +7802,8 @@
       "id": "ib2-julian-waszink-miller",
       "name": "Julian Waszink Miller",
       "cohort": "IB2",
+      "country": null,
+      "house": "Tortuguero",
       "blocks": {
         "A": {
           "subject": "English Lang & Lit",
@@ -7545,8 +7851,10 @@
     },
     {
       "id": "ib2-juliana-montarsolo",
-      "name": "Juliana Montarsolo",
+      "name": "Juliana Elizabeth Montarsolo",
       "cohort": "IB2",
+      "country": null,
+      "house": "Hermosa",
       "blocks": {
         "A": {
           "subject": "English Lang & Lit",
@@ -7596,6 +7904,8 @@
       "id": "ib2-kartik-bedi",
       "name": "Kartik Bedi",
       "cohort": "IB2",
+      "country": null,
+      "house": "Montezuma",
       "blocks": {
         "A": {
           "subject": "Chemistry",
@@ -7643,8 +7953,10 @@
     },
     {
       "id": "ib2-kelzang-tobgyel",
-      "name": "Kelzang Tobgyel",
+      "name": "Kelz Tobgyel (Kelzang)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cahuita",
       "blocks": {
         "A": {
           "subject": "English Lang & Lit",
@@ -7692,8 +8004,10 @@
     },
     {
       "id": "ib2-kirabo-mugambwa",
-      "name": "Kirabo Mugambwa",
+      "name": "Kirabo Kevina Mugambwa",
       "cohort": "IB2",
+      "country": null,
+      "house": "Coco",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -7741,8 +8055,10 @@
     },
     {
       "id": "ib2-kiran-wilcke",
-      "name": "Kiran Wilcke",
+      "name": "Kiran Maximilian Wilcke",
       "cohort": "IB2",
+      "country": null,
+      "house": "Montezuma",
       "blocks": {
         "A": {
           "subject": "English Lang & Lit",
@@ -7792,6 +8108,8 @@
       "id": "ib2-klaudia-wyrebkowska",
       "name": "Klaudia Wyrębkowska",
       "cohort": "IB2",
+      "country": null,
+      "house": "Flamingo",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -7839,8 +8157,10 @@
     },
     {
       "id": "ib2-kris-xavier-sealy",
-      "name": "Kris Xavier Sealy",
+      "name": "Kris Sealy (Kris-Xavier Julien)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Tortuguero",
       "blocks": {
         "A": {
           "subject": "English Lang & Lit",
@@ -7890,6 +8210,8 @@
       "id": "ib2-kristhel-gabriela-ayapan-balcarcel",
       "name": "Kristhel Gabriela Ayapán Balcárcel",
       "cohort": "IB2",
+      "country": null,
+      "house": "Montezuma",
       "blocks": {
         "A": {
           "subject": "Visual Arts",
@@ -7937,8 +8259,10 @@
     },
     {
       "id": "ib2-kyle-imani",
-      "name": "Kyle Imani",
+      "name": "Kyle Imani Kageni",
       "cohort": "IB2",
+      "country": null,
+      "house": "Tortuguero",
       "blocks": {
         "A": {
           "subject": "Economics",
@@ -7988,6 +8312,8 @@
       "id": "ib2-laora-servant",
       "name": "Laora Servant",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cabo Blanco",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -8037,6 +8363,8 @@
       "id": "ib2-leo-mark-gibson-davies",
       "name": "Leo Mark Gibson Davies",
       "cohort": "IB2",
+      "country": null,
+      "house": "Montezuma",
       "blocks": {
         "B": {
           "subject": "Physics",
@@ -8084,8 +8412,10 @@
     },
     {
       "id": "ib2-lucrezia-blanca-morra",
-      "name": "Lucrezia Blanca Morra",
+      "name": "Lucre Morra Ferrando (Lucrezia Blanca)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cabo Blanco",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -8143,6 +8473,8 @@
       "id": "ib2-lydia-elizabeth-gathoni-cummins-mburu",
       "name": "Lydia Elizabeth Gathoni Cummins-Mburu",
       "cohort": "IB2",
+      "country": null,
+      "house": "Hermosa",
       "blocks": {
         "A": {
           "subject": "English Lang & Lit",
@@ -8190,8 +8522,10 @@
     },
     {
       "id": "ib2-maitreyi-manoj-nair",
-      "name": "Maitreyi Manoj Nair",
+      "name": "Myna Nair (Maitreyi Manoj)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Coco",
       "blocks": {
         "A": {
           "subject": "Economics",
@@ -8247,8 +8581,10 @@
     },
     {
       "id": "ib2-maxime-de-corioli",
-      "name": "Maxime De Corioli",
+      "name": "Max De Coriolis (Maxime)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Montezuma",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -8296,8 +8632,10 @@
     },
     {
       "id": "ib2-min-fu-mark-huang",
-      "name": "Min Fu (Mark) Huang",
+      "name": "Mark Huang (Min Fu)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cabo Blanco",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -8345,8 +8683,10 @@
     },
     {
       "id": "ib2-mung-hkawng-ja-ngai",
-      "name": "Mung Hkawng Ja Ngai",
+      "name": "Mung Hkwang Ja Ngai",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cabo Blanco",
       "blocks": {
         "A": {
           "subject": "Economics",
@@ -8396,6 +8736,8 @@
       "id": "ib2-naya-niedermayr",
       "name": "Naya Niedermayr",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cabo Blanco",
       "blocks": {
         "A": {
           "subject": "English Lang & Lit",
@@ -8443,8 +8785,10 @@
     },
     {
       "id": "ib2-nguyen-thao-phuong",
-      "name": "Nguyen Thao Phuong",
+      "name": "Vivienne Nguyen (Phuong Thao)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Hermosa",
       "blocks": {
         "A": {
           "subject": "Economics",
@@ -8492,8 +8836,10 @@
     },
     {
       "id": "ib2-oliver-pena",
-      "name": "Oliver Peña",
+      "name": "Oliver Peña Buydid",
       "cohort": "IB2",
+      "country": null,
+      "house": "Malpaís",
       "blocks": {
         "B": {
           "subject": "Spanish Lang & Lit",
@@ -8543,6 +8889,8 @@
       "id": "ib2-olivia-moe-jordan",
       "name": "Olivia Moe-Jordan",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cahuita",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -8590,8 +8938,10 @@
     },
     {
       "id": "ib2-oluwafamisoke-oluwadunbarin-olatunbosun",
-      "name": "Oluwafamisoke Oluwadunbarin Olatunbosun",
+      "name": "Fami Olatunbosun (Oluwafamisoke Oluwadunbarin)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Coco",
       "blocks": {
         "A": {
           "subject": "Economics",
@@ -8639,8 +8989,10 @@
     },
     {
       "id": "ib2-oluwajomiloju-jedidah-thorpe",
-      "name": "Oluwajomiloju Jedidah Thorpe",
+      "name": "Jomi Thorpe (Oluwajomiloju Jedidah)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cahuita",
       "blocks": {
         "A": {
           "subject": "Economics",
@@ -8688,8 +9040,10 @@
     },
     {
       "id": "ib2-pamela-solis-arias",
-      "name": "Pamela Solís Arias",
+      "name": "Pame Solís Arias (Pamela)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Hermosa",
       "blocks": {
         "A": {
           "subject": "Chemistry",
@@ -8739,6 +9093,8 @@
       "id": "ib2-pedro-ortuno-garcia",
       "name": "Pedro Ortuño García",
       "cohort": "IB2",
+      "country": null,
+      "house": "Tortuguero",
       "blocks": {
         "A": {
           "subject": "Economics",
@@ -8788,6 +9144,8 @@
       "id": "ib2-pia-de-ville-de-goyet",
       "name": "Pia de Ville de Goyet",
       "cohort": "IB2",
+      "country": null,
+      "house": "Montezuma",
       "blocks": {
         "A": {
           "subject": "Chemistry",
@@ -8837,6 +9195,8 @@
       "id": "ib2-ronja-grundig",
       "name": "Ronja Grundig",
       "cohort": "IB2",
+      "country": null,
+      "house": "Hermosa",
       "blocks": {
         "B": {
           "subject": "Anthropology",
@@ -8886,6 +9246,8 @@
       "id": "ib2-rosmeily-de-jesus-reyes",
       "name": "Rosmeily de Jesús Reyes",
       "cohort": "IB2",
+      "country": null,
+      "house": "Flamingo",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -8935,6 +9297,8 @@
       "id": "ib2-salome-d-aboville",
       "name": "Salomé d'Aboville",
       "cohort": "IB2",
+      "country": null,
+      "house": "Coco",
       "blocks": {
         "B": {
           "subject": "Spanish B",
@@ -8982,8 +9346,10 @@
     },
     {
       "id": "ib2-sofia-tomasikova",
-      "name": "Sofia Tomasikova",
+      "name": "Sofi Tomasikova (Sofia)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Malpaís",
       "blocks": {
         "A": {
           "subject": "English Lang & Lit",
@@ -9031,8 +9397,10 @@
     },
     {
       "id": "ib2-sofia-mercado-gomez",
-      "name": "Sofía Mercado Gómez",
+      "name": "Sofi Mercado Gómez (Sofia)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Coco",
       "blocks": {
         "A": {
           "subject": "History",
@@ -9082,6 +9450,8 @@
       "id": "ib2-sophia-gehann",
       "name": "Sophia Gehann",
       "cohort": "IB2",
+      "country": null,
+      "house": null,
       "blocks": {
         "A": {
           "subject": "English Lang & Lit",
@@ -9131,6 +9501,8 @@
       "id": "ib2-tahmina-tamim",
       "name": "Tahmina Tamim",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cahuita",
       "blocks": {
         "A": {
           "subject": "Chemistry",
@@ -9178,8 +9550,10 @@
     },
     {
       "id": "ib2-tara-van-wijk",
-      "name": "Tara van Wijk",
+      "name": "Tara Lynne van Wijk",
       "cohort": "IB2",
+      "country": null,
+      "house": "Flamingo",
       "blocks": {
         "B": {
           "subject": "Global Politics",
@@ -9229,6 +9603,8 @@
       "id": "ib2-tenzin-jigme",
       "name": "Tenzin Jigme",
       "cohort": "IB2",
+      "country": null,
+      "house": "Montezuma",
       "blocks": {
         "A": {
           "subject": "Economics",
@@ -9278,6 +9654,8 @@
       "id": "ib2-tilda-gaspar",
       "name": "Tilda Gaspar",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cabo Blanco",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -9325,8 +9703,10 @@
     },
     {
       "id": "ib2-ulrich-mohrhdart-doger",
-      "name": "Ulrich Mohrhdart Doger",
+      "name": "Ulrich Mohrhardt Doger",
       "cohort": "IB2",
+      "country": null,
+      "house": "Tortuguero",
       "blocks": {
         "A": {
           "subject": "Global Politics",
@@ -9374,8 +9754,10 @@
     },
     {
       "id": "ib2-ventsislav-dinkov",
-      "name": "Ventsislav Dinkov",
+      "name": "Ventsi Dinkov (Ventsislav Ventsislavov)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cabo Blanco",
       "blocks": {
         "A": {
           "subject": "Economics",
@@ -9423,8 +9805,10 @@
     },
     {
       "id": "ib2-wenqing-liang",
-      "name": "Wenqing Liang",
+      "name": "Vicky Liang (Wenqing)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cahuita",
       "blocks": {
         "A": {
           "subject": "Economics",
@@ -9472,8 +9856,10 @@
     },
     {
       "id": "ib2-xiaoshi-stone-zhao",
-      "name": "Xiaoshi (Stone) ZHAO",
+      "name": "Stone Zhao (Xiaoshi)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Malpaís",
       "blocks": {
         "A": {
           "subject": "Economics",
@@ -9523,6 +9909,8 @@
       "id": "ib2-ximena-rosalyn-ventura-diaz",
       "name": "Ximena Rosalyn Ventura Diaz",
       "cohort": "IB2",
+      "country": null,
+      "house": "Flamingo",
       "blocks": {
         "A": {
           "subject": "History",
@@ -9572,6 +9960,8 @@
       "id": "ib2-yannis-christian-erni",
       "name": "Yannis Christian Erni",
       "cohort": "IB2",
+      "country": null,
+      "house": "Cabo Blanco",
       "blocks": {
         "A": {
           "subject": "Economics",
@@ -9621,6 +10011,8 @@
       "id": "ib2-yao-wei-zheng-he",
       "name": "Yao Wei Zheng He",
       "cohort": "IB2",
+      "country": null,
+      "house": "Malpaís",
       "blocks": {
         "A": {
           "subject": "Visual Arts",
@@ -9668,8 +10060,10 @@
     },
     {
       "id": "ib2-ying-nam-aung",
-      "name": "Ying Nam Aung",
+      "name": "Ja Nu Aung (Ying Nam Nang)",
       "cohort": "IB2",
+      "country": null,
+      "house": "Hermosa",
       "blocks": {
         "B": {
           "subject": "Biology",
@@ -9719,6 +10113,8 @@
       "id": "ib2-zoe-sara-amat",
       "name": "Zoé Sara Amat",
       "cohort": "IB2",
+      "country": null,
+      "house": "Flamingo",
       "blocks": {
         "B": {
           "subject": "Global Politics",
