@@ -157,24 +157,135 @@ function htmlToText(html: string) {
     .trim();
 }
 
+const URL_IN_TEXT = /\bhttps?:\/\/[^\s<>"']+/gi;
+
+function peelUrl(raw: string) {
+  return decodeEntities(raw.trim())
+    .replace(/^<|>$/g, "")
+    .replace(/[),.;!?]+$/g, "");
+}
+
+function tryHttpUrl(raw: string): URL | null {
+  try {
+    const url = new URL(peelUrl(raw));
+    if (url.protocol !== "http:" && url.protocol !== "https:") return null;
+    return url;
+  } catch {
+    return null;
+  }
+}
+
+function unwrapTrackedUrl(url: URL): URL {
+  const host = url.hostname.replace(/^www\./i, "").toLowerCase();
+  const target =
+    host === "google.com" && url.pathname === "/url"
+      ? url.searchParams.get("q") ?? url.searchParams.get("url")
+      : host.endsWith("safelinks.protection.outlook.com")
+        ? url.searchParams.get("url")
+        : null;
+  const next = target ? tryHttpUrl(target) : null;
+  return next ? unwrapTrackedUrl(next) : url;
+}
+
+function isUsefulEventLink(url: URL) {
+  const host = url.hostname.replace(/^www\./i, "").toLowerCase();
+  const path = url.pathname.toLowerCase();
+
+  if (host === "forms.gle" || host === "forms.google.com") return true;
+  if (
+    host === "forms.office.com" ||
+    host === "forms.cloud.microsoft" ||
+    host === "forms.microsoft.com"
+  ) {
+    return true;
+  }
+  if (
+    host === "typeform.com" ||
+    host.endsWith(".typeform.com") ||
+    host === "jotform.com" ||
+    host.endsWith(".jotform.com") ||
+    host === "surveymonkey.com" ||
+    host === "signupgenius.com" ||
+    host === "tally.so" ||
+    host === "fillout.com" ||
+    host.endsWith(".fillout.com")
+  ) {
+    return true;
+  }
+  if (host === "docs.google.com") {
+    return (
+      path.startsWith("/forms") ||
+      path.startsWith("/document") ||
+      path.startsWith("/spreadsheets") ||
+      path.startsWith("/presentation") ||
+      path.startsWith("/file")
+    );
+  }
+  if (host === "drive.google.com") {
+    return /\/(file|open|uc|drive)\b/.test(path);
+  }
+  if (host === "sites.google.com") return path.length > 1;
+  if (host === "padlet.com" || host.endsWith(".padlet.com")) return true;
+  if (host === "airtable.com" || host.endsWith(".airtable.com")) {
+    return path.includes("/shr") || path.startsWith("/app");
+  }
+  if (host === "uwccostarica.reachboarding.com") {
+    return path.includes("/signup") && url.searchParams.get("d") !== "1";
+  }
+  if (host === "uwccostarica.org" && path.length > 1) return true;
+  if (host === "zoom.us" || host.endsWith(".zoom.us")) {
+    return (
+      path.startsWith("/j/") ||
+      path.startsWith("/w/") ||
+      path.startsWith("/meeting/")
+    );
+  }
+  if (host === "meet.google.com" && path.length > 1) return true;
+  if (host === "teams.microsoft.com" && path.includes("meetup-join")) {
+    return true;
+  }
+  if (host === "chat.whatsapp.com") return true;
+  return false;
+}
+
+function usefulHref(raw: string): string | null {
+  const parsed = tryHttpUrl(raw);
+  if (!parsed) return null;
+  const url = unwrapTrackedUrl(parsed);
+  return isUsefulEventLink(url) ? url.href : null;
+}
+
 function extractLinks(html: string, text: string): string[] {
   const found: string[] = [];
   const push = (raw: string) => {
-    let url = decodeEntities(raw.trim()).replace(/^<|>$/g, "");
-    url = url.replace(/[),.;!?]+$/g, "");
-    if (!/^https?:\/\//i.test(url)) return;
-    if (/^(mailto|cid|javascript|data):/i.test(url)) return;
-    if (!found.includes(url)) found.push(url);
+    const href = usefulHref(raw);
+    if (href && !found.includes(href)) found.push(href);
   };
   const hrefRe = /href\s*=\s*(?:"([^"]+)"|'([^']+)'|([^\s>]+))/gi;
   for (const match of html.matchAll(hrefRe)) {
     push(match[1] ?? match[2] ?? match[3] ?? "");
   }
-  const textRe = /\bhttps?:\/\/[^\s<>"']+/gi;
-  for (const match of `${html}\n${text}`.matchAll(textRe)) {
+  for (const match of text.matchAll(URL_IN_TEXT)) {
     push(match[0]);
   }
   return found;
+}
+
+function scrubDescription(text: string) {
+  const withoutWrapped = text.replace(
+    /\(\s*https?:\/\/[^\s<>"')]+\)/gi,
+    (full) => {
+      const inner = full.slice(1, -1).trim();
+      return usefulHref(inner) ? full : "";
+    },
+  );
+  return withoutWrapped
+    .replace(URL_IN_TEXT, (raw) => (usefulHref(raw) ? raw : ""))
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/ +([.,;:!?])/g, "$1")
+    .trim();
 }
 
 function parseAddress(value: string) {
@@ -302,6 +413,7 @@ async function extractEvent(input: {
   from: string;
   subject: string;
   body: string;
+  links: string[];
 }): Promise<ExtractedEvent> {
   const groqKey = Deno.env.get("GROQ_API_KEY") ?? "";
   if (!groqKey) throw new Error("GROQ_API_KEY is not set on the edge function");
@@ -322,11 +434,15 @@ async function extractEvent(input: {
             "You extract school calendar events from emails for UWC Costa Rica. Timezone is America/Costa_Rica. Today is " +
             today +
             ". Set is_event false for newsletters, reminders without a new dated gathering, personal mail, spam, replies that are not announcing an event, and anything without a usable date. Dates must be YYYY-MM-DD. Extract start_time and end_time when present; any common format is fine (e.g. 3pm, 3:00 PM, 15:00). If no start time, all_day true. If only a start time is given, leave end_time null. If the gathering lasts more than one day, set end_date to the last inclusive day; otherwise end_date equals date. If audience is unclear, targets=[{kind:all_students,cohort:null,student_query:null}]. If participation is unclear, mode=info. Do not invent a date. " +
-            "For description, convert the email into a clean event description. Keep all of the information from the email. Do not invent details or write it as a first-person invitation.",
+            "For description, write a clean event description with the details students actually need (what it is, what to bring, how to sign up, important rules). Include only useful links: signup/registration forms, shared docs or sheets, event pages, and meeting join links. Do not invent details or write it as a first-person invitation. Omit email signatures, quoted threads, social media, Calendly, tracking or image URLs, calendar RSVP/view links, unsubscribe links, the school homepage, and long guest or recipient lists.",
         },
         {
           role: "user",
-          content: `From: ${input.from}\nSubject: ${input.subject}\n\n${input.body.slice(0, 12000)}`,
+          content:
+            `From: ${input.from}\nSubject: ${input.subject}\n\n${input.body.slice(0, 12000)}` +
+            (input.links.length
+              ? `\n\nUseful links from the email:\n${input.links.join("\n")}`
+              : ""),
         },
       ],
       response_format: {
@@ -525,7 +641,13 @@ Deno.serve(async (req) => {
       return json({ ok: true, skipped: "self-mail" });
     }
 
-    const extracted = await extractEvent(parsed);
+    const links = extractLinks(received.html ?? "", parsed.body);
+    const extracted = await extractEvent({
+      from: parsed.from,
+      subject: parsed.subject,
+      body: parsed.body,
+      links,
+    });
     if (!extracted.is_event) {
       await updateLog(admin, emailId, {
         decision: "skipped",
@@ -613,14 +735,15 @@ Deno.serve(async (req) => {
     }
 
     const fromLabel = parsed.from.trim() || envelopeFrom;
-    const already = extracted.description.toLowerCase();
-    const links = extractLinks(received.html ?? "", parsed.body).filter(
+    const cleaned = scrubDescription(extracted.description.trim());
+    const already = cleaned.toLowerCase();
+    const extraLinks = links.filter(
       (url) => !already.includes(url.toLowerCase()),
     );
     const description = [
-      extracted.description.trim(),
+      cleaned,
       `Imported from email by ${fromLabel} (${parsed.subject.trim() || envelopeSubject}).`,
-      links.join("\n"),
+      extraLinks.join("\n"),
     ]
       .filter(Boolean)
       .join("\n\n");
